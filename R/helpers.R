@@ -1,5 +1,5 @@
 # Various -----------------------------------------------------------------
-#' Get $Y_{ij0}$
+#' Get \eqn{Y_{ij0}}$
 #'
 #' @param i subject
 #' @param j time index
@@ -14,11 +14,14 @@ get_Yij0 <- function(i, j, Y, mi){
   return(Yij0)
 }
 
-#' Get $B_ij$
+
+
+#' Get \eqn{B_ij}$
 #'
 #' @param i subject
 #' @param j time index
 #' @param B B-spline basis matrix
+#' @param mi number of time points for subject i
 #'
 #' @returns
 #'
@@ -32,7 +35,7 @@ get_Bij <- function(i, j, B, mi){
 
 
 
-#' Get $Z_{ijl}$
+#' Get \eqn{Z_{ijl}}$
 #'
 #' @param i subject
 #' @param j time index
@@ -40,7 +43,6 @@ get_Bij <- function(i, j, B, mi){
 #' @param Z matrix of external variables
 #'
 #' @returns
-#' @export
 #'
 #' @examples
 get_Z_ijl <- function(i, j, l, Z){

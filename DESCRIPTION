@@ -3,7 +3,7 @@ Title: (G)eneralized (E)stimating (E)quations for (Cl)ustering with (E)xternal (
 Version: 0.0.0.9000
 Authors@R: 
     person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: (G)eneralized (E)stimating (E)quations for (Cl)ustering with (E)xternal (Variables) in (R)
+Description: (G)eneralized (E)stimating (E)quations for (Cl)ustering with (E)xternal (Variables) in (R). 
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

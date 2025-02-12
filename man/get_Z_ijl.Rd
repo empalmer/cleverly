@@ -2,7 +2,7 @@
 % Please edit documentation in R/helpers.R
 \name{get_Z_ijl}
 \alias{get_Z_ijl}
-\title{Get $Z_{ijl}$}
+\title{Get \eqn{Z_{ijl}}$}
 \usage{
 get_Z_ijl(i, j, l, Z)
 }
@@ -16,5 +16,5 @@ get_Z_ijl(i, j, l, Z)
 \item{Z}{matrix of external variables}
 }
 \description{
-Get $Z_{ijl}$
+Get \eqn{Z_{ijl}}$
 }

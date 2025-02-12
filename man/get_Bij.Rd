@@ -2,7 +2,7 @@
 % Please edit documentation in R/helpers.R
 \name{get_Bij}
 \alias{get_Bij}
-\title{Get $B_ij$}
+\title{Get \eqn{B_ij}$}
 \usage{
 get_Bij(i, j, B, mi)
 }
@@ -12,7 +12,9 @@ get_Bij(i, j, B, mi)
 \item{j}{time index}
 
 \item{B}{B-spline basis matrix}
+
+\item{mi}{number of time points for subject i}
 }
 \description{
-Get $B_ij$
+Get \eqn{B_ij}$
 }

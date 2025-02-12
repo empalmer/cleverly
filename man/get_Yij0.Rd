@@ -2,7 +2,7 @@
 % Please edit documentation in R/helpers.R
 \name{get_Yij0}
 \alias{get_Yij0}
-\title{Get $Y_{ij0}$}
+\title{Get \eqn{Y_{ij0}}$}
 \usage{
 get_Yij0(i, j, Y, mi)
 }
@@ -16,5 +16,5 @@ get_Yij0(i, j, Y, mi)
 \item{mi}{number of time points for subject i}
 }
 \description{
-Get $Y_{ij0}$
+Get \eqn{Y_{ij0}}$
 }
