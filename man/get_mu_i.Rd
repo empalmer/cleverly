@@ -7,7 +7,10 @@
 get_mu_i(i, mi, Y, beta, Z, B, K)
 }
 \arguments{
-\item{B}{}
+\item{K}{}
+}
+\value{
+Vector of length K*mi with each K first
 }
 \description{
 Get mu_i mean vector for ith sample

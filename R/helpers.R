@@ -16,6 +16,55 @@ get_Y_ij0 <- function(i, j, Y, mi) {
 
 
 
+
+#' Get \eqn{Y_i}
+#'
+#' @param i
+#' @param Y
+#' @param mi
+#'
+#' @returns Matrix of dimension mi x K
+#' @export
+#'
+#' @examples
+get_Y_i_mat <- function(i, mi, Y){
+  Y_i <- Y[((i - 1) * mi + 1):(i * mi), ]
+  rownames(Y_i) <- paste0("j=", 1:mi)
+  colnames(Y_i) <- paste0("k=", 1:ncol(Y))
+  return(Y_i)
+}
+
+
+
+#' Get Yi as a vector
+#'
+#' different k responses are listed after each other. so it goes
+#' y(i,j=1,k=1), ... yi(j = mi, k = 1), yi(j = 1, k = 2)...
+#' NOPE! Other way around...
+#'
+#' @param i
+#' @param Y
+#' @param mi
+#' @param Y_mat
+#'
+#' @returns Vector of length K * mi
+#' @export
+#'
+#' @examples
+get_Y_i_vec <- function(i, mi, Y, Y_mat){
+  if (missing(Y_mat)) {
+    Y_i_mat <- get_Y_i_mat(i, mi, Y)
+  }
+
+  # This goes row by row.
+  Y_i_vec <- as.vector(t(Y_i_mat))
+  js <- rep(1:mi, each = ncol(Y))
+  ks <- rep(1:ncol(Y),  mi)
+  names(Y_i_vec) <- paste0("i=", i, ",j=", js, ",k=", ks)
+  return(Y_i_vec)
+}
+
+
 #' Get \eqn{B_ij}
 #'
 #' @param i subject
@@ -28,6 +77,7 @@ get_Y_ij0 <- function(i, j, Y, mi) {
 #'
 get_B_ij <- function(i, j, B, mi) {
   B_ij <- B[((i - 1) * mi + j), ]
+  names(B_ij) <- paste0("i=", i, ",j=", j, ",l=", 1:ncol(B))
   return(B_ij)
 }
 
@@ -53,6 +103,17 @@ get_Z_ijl <- function(i, j, l, Z) {
 
 
 
+#' Get \eqn{\beta_{kl}}
+#'
+#' @param k
+#' @param l
+#' @param beta
+#' @param P
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 get_beta_kl <- function(k, l, beta, P) {
   beta_kl <- beta[((k - 1) * P + 1):(k * P), (l + 1)]
   return(beta_kl)
@@ -85,7 +146,9 @@ get_alpha_ijk <- function(i, j, k, beta, Z, B, mi) {
 
     lsum[l + 1] <- Z_ijl * t(B_ij) %*% beta_lk
   }
-  return(exp(sum(lsum)))
+  alpha_ijk <- exp(sum(lsum))
+  names(alpha_ijk) <- paste0("i=", i, ",j=", j, ",k=", k)
+  return(alpha_ijk)
 }
 
 
@@ -104,9 +167,9 @@ get_alpha_ijk <- function(i, j, k, beta, Z, B, mi) {
 #'
 #' @examples
 get_alpha_ij <- function(i, j, beta, Z, B, K, mi) {
-  alphas <- numeric(K)
+  alphas <- c()
   for (k in 1:K) {
-    alphas[k] <- get_alpha_ijk(i, j, k, beta, Z, B, mi)
+    alphas <- c(alphas, get_alpha_ijk(i, j, k, beta, Z, B, mi))
   }
   return(alphas)
 }
@@ -135,9 +198,16 @@ get_alpha_ij <- function(i, j, beta, Z, B, K, mi) {
 get_mu_ij <- function(Y_ij0, alpha_ij, i, j, beta, Z, B, K, mi) {
   if (missing(alpha_ij)) {
     # calculate with i, j, beta, Z, B
-    alpha_ij <- get_alpha_ij(i, j, beta, Z, B, K, mi)
+    alpha_ij <- get_alpha_ij(i = i,
+                             j = j,
+                             beta = beta,
+                             Z = Z, B = B, K = K, mi = mi)
+    mu_ij <- Y_ij0 / sum(alpha_ij) * alpha_ij
+    names(mu_ij) <- paste0("i=", i, ",j=", j, ",k=", 1:K)
+  } else {
+    mu_ij <- Y_ij0 / sum(alpha_ij) * alpha_ij
+    names(mu_ij) <- names(alpha_ij)
   }
-  mu_ij <- Y_ij0 / sum(alpha_ij) * alpha_ij
   return(mu_ij)
 }
 
@@ -150,6 +220,7 @@ get_mu_ij <- function(Y_ij0, alpha_ij, i, j, beta, Z, B, K, mi) {
 #' @param beta
 #' @param Z
 #' @param B
+#' @param K
 #'
 #' @returns Vector of length K*mi with each K first
 #' @export
@@ -171,6 +242,22 @@ get_mu_i <- function(i, mi, Y, beta, Z, B, K) {
 
 # Variance -----------------------------------------------------
 
+#' Get term U_ij
+#'
+#' @param Y_ij0
+#' @param alpha_ij
+#' @param i
+#' @param j
+#' @param beta
+#' @param Z
+#' @param B
+#' @param K
+#' @param mi
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 get_U_ij <- function(Y_ij0, alpha_ij, i, j, beta, Z, B, K, mi) {
   if (missing(alpha_ij)) {
     # calculate with i, j, beta, Z, B
@@ -182,8 +269,24 @@ get_U_ij <- function(Y_ij0, alpha_ij, i, j, beta, Z, B, K, mi) {
   return(U_ij)
 }
 
-# get_U_ij(Yij0 = 100, alpha_ij = get_alpha_ij(i = 1, j = 2, beta, Z, B))
 
+#' Get DM variance for ith subject jth timepoint
+#'
+#' @param Y_ij0
+#' @param phi
+#' @param alpha_ij
+#' @param i
+#' @param j
+#' @param beta
+#' @param Z
+#' @param B
+#' @param K
+#' @param mi
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 get_V_ijj <- function(Y_ij0, phi, alpha_ij, i, j, beta, Z, B, K, mi) {
   if (missing(alpha_ij)) {
     # calculate with i, j, beta, Z, B
@@ -195,4 +298,4 @@ get_V_ijj <- function(Y_ij0, phi, alpha_ij, i, j, beta, Z, B, K, mi) {
   return(V_ijj)
 }
 
-# get_V_i <- function(i)
+

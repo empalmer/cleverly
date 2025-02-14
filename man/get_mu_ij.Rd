@@ -7,7 +7,10 @@
 get_mu_ij(Y_ij0, alpha_ij, i, j, beta, Z, B, K, mi)
 }
 \arguments{
-\item{...}{}
+\item{alpha_ij}{}
+}
+\value{
+Vector of length K
 }
 \description{
 Get the ijth values for mu

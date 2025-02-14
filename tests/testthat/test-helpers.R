@@ -2,10 +2,64 @@
 
 # Various -----------------------------------------------------------------
 
-test_that("extract yij", {
+test_that("Y ij0", {
   Y <- readRDS(test_path("test_data", "Y.rds"))
   expect_equal(get_Y_ij0(i = 1, j = 1, Y = Y, mi = 3), 100)
 })
+
+
+test_that("Y i", {
+  Y <- readRDS(test_path("test_data", "Y.rds"))
+  K <- 4
+  mi <- 3
+  # Check dimensions
+  expect_equal(dim(get_Y_i_mat(i = 1, mi = mi, Y = Y))[1], mi)
+  expect_equal(dim(get_Y_i_mat(i = 1, mi = mi, Y = Y))[2], K)
+})
+
+
+
+test_that("Y vec and matrix", {
+  Y <-  readRDS(test_path("test_data", "Y.rds"))
+  beta <- readRDS(test_path("test_data", "beta.rds"))
+  Z <- readRDS(test_path("test_data", "Z.rds"))
+  B <- readRDS(test_path("test_data", "B.rds"))
+  K <- 4
+  mi <- 3
+
+  Y_i_mat <- get_Y_i_mat(i = 1, mi = mi, Y = Y)
+  Y_i_vec <- get_Y_i_vec(i = 1, mi = mi, Y = Y)
+
+  #j=1
+  expect_equal(as.numeric(Y_i_mat[1, ]),
+               as.numeric(Y_i_vec[1:K]))
+  #j = 2
+  expect_equal(as.numeric(Y_i_mat[2, ]),
+               as.numeric(Y_i_vec[(K+1):(2*K)]))
+
+})
+
+
+
+test_that("Y and mu indexing match", {
+  Y <-  readRDS(test_path("test_data", "Y.rds"))
+  beta <- readRDS(test_path("test_data", "beta.rds"))
+  Z <- readRDS(test_path("test_data", "Z.rds"))
+  B <- readRDS(test_path("test_data", "B.rds"))
+  K <- 4
+  mi <- 3
+
+  Y_i <- get_Y_i_vec(i = 1, mi = mi, Y = Y)
+  mu_i <- get_mu_i(i = 1, mi = mi, Y = Y, beta, Z, B, K)
+
+  expect_equal(names(Y_i), names(mu_i))
+})
+
+
+
+
+
+
 
 
 test_that("B", {
@@ -52,11 +106,16 @@ test_that("Check alpha_ij", {
   B <- readRDS(test_path("test_data","B.rds"))
   K <- 4
 
-  alpha_ij <- get_alpha_ij(i = 1, j = 1, beta = beta, Z = Z, B = B, K = K, mi = 3)
+  alpha_ij <- get_alpha_ij(i = 1, j = 1,
+                           beta = beta,
+                           Z = Z,
+                           B = B,
+                           K = K,
+                           mi = 3)
   # Should be of dimension K
   expect_length(alpha_ij, K)
 
-  expect_equal(alpha_ij[1], 1.204884947)
+  expect_equal(as.numeric(alpha_ij)[1], 1.204884947)
 })
 
 
@@ -71,15 +130,28 @@ test_that("Check mu_ij", {
 
   # Test if alpha is supplied
   mu_ij_alpha <- get_mu_ij(Y_ij0 = 100,
-                     alpha_ij = get_alpha_ij(i = 1, j = 1, beta = beta, Z = Z, B = B, K = K, mi = 3))
+                     alpha_ij = get_alpha_ij(i = 1,
+                                             j = 1,
+                                             beta = beta,
+                                             Z = Z,
+                                             B = B,
+                                             K = K,
+                                             mi = 3))
   # Should be of dimension K
   expect_length(mu_ij_alpha, K)
-  expect_equal(round(mu_ij_alpha[1]), 30.0)
+  expect_equal(round(as.numeric(mu_ij_alpha[1])), 30.0)
 
   # Test if alpha is not supplied
-  mu_ij <- get_mu_ij(Y_ij0 = 100, i = 1, j = 1, beta = beta, Z = Z, B = B, K = K, mi = 3)
+  mu_ij <- get_mu_ij(Y_ij0 = 100,
+                     i = 1,
+                     j = 1,
+                     beta = beta,
+                     Z = Z,
+                     B = B,
+                     K = K,
+                     mi = 3)
   expect_length(mu_ij, K)
-  expect_equal(round(mu_ij[1]), 30.0)
+  expect_equal(round(as.numeric(mu_ij[1])), 30.0)
 })
 
 
@@ -122,9 +194,6 @@ test_that("Check Uij", {
   # Check right dimension:
   expect_equal(dim(U_ij)[1], K)
 })
-
-
-
 
 
 # Check case where L = 0 --------------------------------------------------
