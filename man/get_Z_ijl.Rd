@@ -7,16 +7,16 @@
 get_Z_ijl(i, j, l, Z)
 }
 \arguments{
-\item{i}{subject}
+\item{i}{subject index}
 
 \item{j}{time index}
 
 \item{l}{external variable index}
 
-\item{Z}{matrix of external variables}
+\item{Z}{matrix of external variables of dimension N x L}
 }
 \value{
-Scalar for the lth external variable for subject i at time j
+Scalar for the l-th external variable for subject i at time j
 }
 \description{
 Get \eqn{Z_{ijl}}

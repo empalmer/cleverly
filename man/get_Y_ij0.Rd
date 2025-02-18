@@ -11,7 +11,7 @@ get_Y_ij0(i, j, Y, mi)
 
 \item{j}{time index}
 
-\item{Y}{response}
+\item{Y}{response matrix of dimension N x K}
 
 \item{mi}{number of time points for subject i}
 }

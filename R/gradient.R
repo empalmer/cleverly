@@ -1,4 +1,4 @@
-# Gradient -----------------------------------------------------
+# Terms -----------------------------------------------------
 
 
 #' Get the Yi minus mui term of the gradient
@@ -16,8 +16,13 @@
 #'
 #' @examples
 get_Yi_minus_mui <- function(i, Y, mi, beta, Z, B, K){
-  Y_i <- get_Y_i_vec(i, Y, mi)
-  mu_i <- get_mu_i(i, mi, Y, beta, Z, B, K)
+  Y_i <- get_Y_i_vec(i = 1, mi = mi, Y = Y)
+  mu_i <- get_mu_i(i = 1,
+                   mi = mi, Y = Y,
+                   beta = beta,
+                   Z = Z,
+                   B = B,
+                   K = K)
 
   term_i <- Y_i - mu_i
 
@@ -25,38 +30,201 @@ get_Yi_minus_mui <- function(i, Y, mi, beta, Z, B, K){
 }
 
 
-get_gradient_i <- function(){
-  NULL
+
+#' Get Vi inverse
+#'
+#' @param i
+#' @param Y
+#' @param mi
+#' @param phi
+#' @param beta
+#' @param Z
+#' @param B
+#' @param K
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+get_Vi_inv <- function(V_i, i, Y, mi, phi, beta, Z, B, K){
+  if (missing(V_i)) {
+    V_i <- get_V_i(i = i,
+                   Y = Y,
+                   phi = phi,
+                   beta = beta,
+                   Z = Z,
+                   B = B,
+                   K = K,
+                   mi = mi)
+  }
+  #V_i_inv <- solve(V_i)
+  V_i_inv <- MASS::ginv(V_i)
+  return(V_i_inv)
 }
 
-get_gradient <- function(){
-  NULL
-}
+
 
 # Partials -----------------------------------------------------
 
-get_partials_ijl <- function(i, j, l, Y_ij0, Z, B, beta){
-  # U_ij will calculate alphas based on i, j, Z, beta.
-  U_ij <- get_U_ij(i = i, j = j, beta = beta, Z = Z, B = B)
-  Z_ijl <- get_Z_ijl(i, j, l, Z)
-  B_ij <- get_B_ij(i, j, B)
+#' Get partials matrix for i, j, l
+#'
+#' @param i
+#' @param j
+#' @param l
+#' @param mi
+#' @param K
+#' @param Y
+#' @param Z
+#' @param B
+#' @param beta
+#'
+#' @returns Matrix of dimension PK x K
+#' @export
+#'
+#' @examples
+get_partials_ijl <- function(i, j, l, mi, K, Y, Z, B, beta){
+  Y_ij0 <- get_Y_ij0(i = i, j = j, Y = Y, mi = mi)
+  U_ij <- get_U_ij(i = i, j = j, beta = beta, Z = Z, B = B, K = K, mi = mi)
+  Z_ijl <- get_Z_ijl(i = i, j = j, l = l, Z = Z)
+  B_ij <- get_B_ij(i = i, j = j, B = B, mi = mi)
 
   partials_ijl <- Y_ij0 * Z_ijl * kronecker(U_ij, B_ij)
-
   return(partials_ijl)
 }
 
-#get_partials_ijl(i = 1, j = 2, l = 1, Y_ij0 = 100, Z, B, beta)
 
 
-get_partials_il <- function(i, l, Y, Z, B, beta, mi = 3, K, P){
+#' Get full partials matrix for a given i, l
+#'
+#' @param i
+#' @param l
+#' @param Y
+#' @param Z
+#' @param B
+#' @param beta
+#' @param mi
+#' @param K
+#' @param P
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+get_partials_il <- function(i, l, Y, Z, B, beta, mi){
+  P <- ncol(B)
+  K <- ncol(Y)
   partials_il <- matrix(nrow = K*P, ncol = K*mi)
   for (j in 1:mi) {
     partials_il[, ((j - 1)*K + 1):(j*K)] <-
-      get_partials_ijl(i, j, l, Y_ij0 = get_Y_ij0(i, j, Y), Z, B, beta)
+      get_partials_ijl(i = i,
+                       j = j,
+                       l = l,
+                       mi = mi,
+                       K = K,
+                       Y = Y,
+                       Z = Z,
+                       B = B,
+                       beta = beta)
   }
   return(partials_il)
 }
 
-#get_partials_il(i = 1, l = 1, Y, Z, B, beta, mi = 3, K, P) %>% View()
 
+
+# Gradient ----------------------------------------------------------------
+
+
+#' Title
+#'
+#' @param i
+#' @param Y
+#' @param mi
+#' @param phi
+#' @param beta
+#' @param Z
+#' @param B
+#' @param K
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+get_gradient_il <- function(i, l, Y, mi, phi, beta, Z, B){
+  K <- ncol(Y)
+  partials_il <- get_partials_il(i = i,
+    l = l,
+    Y = Y,
+    Z = Z,
+    B = B,
+    beta = beta,
+    mi = mi
+  )
+  V_i_inv <- get_Vi_inv(i = i,
+    Y = Y,
+    mi = mi,
+    phi = phi,
+    beta = beta,
+    Z = Z,
+    B = B,
+    K = K
+  )
+  Yi_minus_mui <- get_Yi_minus_mui(i = i,
+    Y = Y,
+    mi = mi,
+    beta = beta,
+    Z = Z,
+    B = B,
+    K = K
+  )
+  gradient_il <-  partials_il %*% V_i_inv %*% Yi_minus_mui
+}
+
+
+
+#' Title
+#'
+#' @param Y Matrix of dimension M x K
+#' @param subject_ids numeric
+#' @param time_ids numeric
+#' @param l external variable index
+#' @param phi variance parameter
+#' @param beta
+#' @param Z
+#' @param B
+#' @param K
+#'
+#' @returns vector of length PK x 1
+#' @export
+#'
+#' @examples
+get_gradient_l <- function(Y, subject_ids, time_ids, l, phi, beta, Z, B){
+  P <- ncol(B)
+  K <- ncol(Y)
+  gradient_sum <- numeric(P*K)
+  Y_values <- get_Y_wrapper(Y = Y, subject_ids = subject_ids, time_ids = time_ids)
+  Y_use <- Y_values$Y
+  subject_ids_use <- Y_values$subject_id_values
+
+
+  mis <- get_mis(Y, subject_ids, time_ids)$mi
+
+  for (i in 1:length(mis)) {
+    gradient_il <- get_gradient_il(
+      i = i,
+      l = l,
+      Y = Y_use,
+      mi = mis[i],
+      phi = phi,
+      beta = beta,
+      Z = Z,
+      B = B
+    )
+    gradient_sum <- gradient_sum + gradient_il
+  }
+  return(gradient_sum)
+}
+
+
+get_gradient <- function(){
+  NULL
+}

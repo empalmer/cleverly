@@ -7,7 +7,7 @@
 get_alpha_ij(i, j, beta, Z, B, K, mi)
 }
 \arguments{
-\item{i}{subject}
+\item{i}{subject index}
 
 \item{j}{time index}
 

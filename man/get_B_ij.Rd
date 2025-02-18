@@ -7,11 +7,11 @@
 get_B_ij(i, j, B, mi)
 }
 \arguments{
-\item{i}{subject}
+\item{i}{subject index}
 
 \item{j}{time index}
 
-\item{B}{B-spline basis matrix}
+\item{B}{B-spline basis matrix of dimension N x P}
 
 \item{mi}{number of time points for subject i}
 }

@@ -58,6 +58,74 @@ test_that("Y and mu indexing match", {
 
 
 
+test_that("Test Y wrapper", {
+
+  Y <-  readRDS(test_path("test_data", "Y.rds"))
+  sid <- rep(1:5, each = 3)
+  tid <- rep(1:3, 5)
+
+
+  # Case where Y is a matrix and subject and time are external columns
+  Y_mat <- get_Y_wrapper(
+    Y = Y,
+    subject_ids = sid,
+    time_ids = tid)
+
+  # Case where Y is a matrix and subject and time are external character columns.
+  Y_mat_character <- get_Y_wrapper(
+    Y = Y,
+    subject_ids = rep(LETTERS[1:5], each = 3),
+    time_ids = rep(letters[1:3], 5)
+  )
+
+  # Case where Y is a data frame and subject and time are exteral columns (character)
+  Y_df_character <- get_Y_wrapper(
+    Y = data.frame(Y),
+    subject_ids = rep(LETTERS[1:5], each = 3),
+    time_ids = rep(letters[1:3], 5)
+  )
+
+
+  # Case where Y is a data frame and subject and time are columns in Y
+  Y_df_column <- get_Y_wrapper(
+    Y = data.frame(Y, sid = sid, tid = tid),
+    subject_ids = sid,
+    time_ids = tid
+  )
+
+
+  expect_equal(Y_mat, Y_df_column)
+  expect_equal(Y_mat_character, Y_df_character)
+
+
+  # expect errors:
+  expect_error(
+    get_Y_wrapper(
+      Y = data.frame(Y, sid = sid, tid = tid),
+      subject_ids = sid,
+      time_ids = 1:100
+    ), "Invalid ID")
+
+  expect_error(
+    get_Y_wrapper(
+      Y = 1:100,
+      subject_ids = sid,
+      time_ids = nope
+    ), "Y must be either a data frame or a matrix")
+
+})
+
+
+
+test_that("Check mis", {
+  Y <-  readRDS(test_path("test_data", "Y.rds"))
+  sid <- rep(letters[1:5], each = 3)
+  tid <- rep(1:3, 5)
+
+  mis <- get_mis(Y, subject_ids = sid, time_ids = tid)
+  expect_equal(mis$mi, rep(3, 5))
+  expect_equal(mis$subject_id, letters[1:5])
+})
 
 
 
@@ -72,6 +140,7 @@ test_that("Z", {
   Z <- readRDS(test_path("test_data", "Z.rds"))
   expect_equal(get_Z_ijl(i = 1, j = 2, l = 2, Z = Z), 1)
 })
+
 
 
 test_that("Z0 all 1", {
@@ -180,8 +249,7 @@ test_that("Check Uij", {
   B <- readRDS(test_path("test_data", "B.rds"))
   K <- 4
 
-  U_ij <- get_U_ij(Y_ij0 = 100,
-                   alpha_ij = get_alpha_ij(i = 1,
+  U_ij <- get_U_ij(alpha_ij = get_alpha_ij(i = 1,
                                            j = 2,
                                            beta = beta,
                                            Z = Z,
@@ -196,6 +264,72 @@ test_that("Check Uij", {
 })
 
 
+test_that("Check Vijj dimension", {
+  beta <- readRDS(test_path("test_data", "beta.rds"))
+  Z <- readRDS(test_path("test_data", "Z.rds"))
+  B <- readRDS(test_path("test_data", "B.rds"))
+  K <- 4
+
+  V_ijj <- get_V_ijj(Y_ij0 = 100,
+                     phi = 1,
+                     alpha_ij = get_alpha_ij(i = 1,
+                                             j = 2,
+                                             beta = beta,
+                                             Z = Z,
+                                             B = B,
+                                             K = K,
+                                             mi = 3))
+  # Check is square
+  expect_equal(dim( V_ijj)[1], dim( V_ijj)[2])
+
+  # Check right dimension:
+  expect_equal(dim(V_ijj)[1], K)
+})
+
+test_that("Check Vi dimension", {
+  beta <- readRDS(test_path("test_data", "beta.rds"))
+  Z <- readRDS(test_path("test_data", "Z.rds"))
+  B <- readRDS(test_path("test_data", "B.rds"))
+  Y <-  readRDS(test_path("test_data", "Y.rds"))
+  K <- 4
+  mi <- 3
+
+  V_i <- get_V_i(i = 1,
+                 Y = Y,
+                 phi = 1,
+                 beta = beta,
+                 Z = Z,
+                 B = B,
+                 K = K,
+                 mi = mi)
+  # Check is square
+  expect_equal(dim(V_i)[1], dim(V_i)[2])
+
+  # Check right dimension:
+  expect_equal(dim(V_i)[1], K * mi)
+
+})
+
+
 # Check case where L = 0 --------------------------------------------------
+
+
+test_that("Check alpha_ijk l0", {
+  beta <- readRDS(test_path("test_data", "betal0.rds"))
+  Z <- readRDS(test_path("test_data", "Zl0.rds"))
+  B <- readRDS(test_path("test_data", "Bl0.rds"))
+  K <- 4
+
+  alpha_ijk <- get_alpha_ijk(i = 1, j = 1, k = 1, beta = beta, Z = Z, B = B, mi = 3)
+  # Check dimensions
+  # Should be one value
+  expect_length(alpha_ijk, 1)
+})
+
+
+
+
+
+# Check cases when mi not all the same  -----------------------------------
 
 

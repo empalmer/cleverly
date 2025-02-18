@@ -7,7 +7,13 @@
 get_Y_i_vec(i, mi, Y, Y_mat)
 }
 \arguments{
-\item{Y_mat}{}
+\item{i}{subject index}
+
+\item{mi}{number of time points for subject i}
+
+\item{Y}{response matrix of dimension N x K}
+
+\item{Y_mat}{(optional) pre-calculated Yi-matrix from Y}
 }
 \value{
 Vector of length K * mi

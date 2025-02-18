@@ -7,16 +7,22 @@
 get_alpha_ijk(i, j, k, beta, Z, B, mi)
 }
 \arguments{
-\item{i}{subject}
+\item{i}{subject index}
 
 \item{j}{time index}
 
+\item{k}{response index}
+
 \item{beta}{matrix of dimension (P*K) x L}
+
+\item{Z}{matrix of external variables of dimension N x L}
+
+\item{B}{B spline basis matrix of dimension (N x P)}
 
 \item{mi}{Number of timepoints for subject i}
 }
 \value{
-Numeric
+Numeric (1x1)
 }
 \description{
 Calculate alpha for a single \eqn{i = 1, j = 1, k = 1} from \eqn{\beta}

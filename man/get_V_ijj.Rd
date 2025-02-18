@@ -9,6 +9,9 @@ get_V_ijj(Y_ij0, phi, alpha_ij, i, j, beta, Z, B, K, mi)
 \arguments{
 \item{mi}{}
 }
+\value{
+matrix of dimension K x K for a single j
+}
 \description{
 Get DM variance for ith subject jth timepoint
 }

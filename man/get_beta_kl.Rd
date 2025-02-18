@@ -7,7 +7,16 @@
 get_beta_kl(k, l, beta, P)
 }
 \arguments{
-\item{P}{}
+\item{k}{response index}
+
+\item{l}{external variable index}
+
+\item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
+
+\item{P}{number of B-spline coefficients}
+}
+\value{
+Vector of length P
 }
 \description{
 Get \eqn{\beta_{kl}}

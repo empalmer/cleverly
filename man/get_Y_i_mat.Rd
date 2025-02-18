@@ -7,7 +7,11 @@
 get_Y_i_mat(i, mi, Y)
 }
 \arguments{
-\item{mi}{}
+\item{i}{subject index}
+
+\item{mi}{number of time points for subject i}
+
+\item{Y}{response matrix of dimension N x K}
 }
 \value{
 Matrix of dimension mi x K
