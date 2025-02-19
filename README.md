@@ -6,16 +6,16 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of GEEclevR is to …
+The goal of cleverly is to …
 
 ## Installation
 
-You can install the development version of GEEclevR from
+You can install the development version of cleverly from
 [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("pak")
-pak::pak("empalmer/GEEclevR")
+pak::pak("empalmer/cleverly")
 ```
 
 ## Example
@@ -23,7 +23,7 @@ pak::pak("empalmer/GEEclevR")
 This is a basic example which shows you how to solve a common problem:
 
 ``` r
-library(GEEclevR)
+library(cleverly)
 ## basic example code
 ```
 

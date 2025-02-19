@@ -7,7 +7,7 @@
 algorithm1(Y, Z, subject_ids, time, lp, gamma, d, nknots, order, tol, smax)
 }
 \arguments{
-\item{Y}{Matrix Each response should be a separate column. Each row should be a separate subject/time combination. There should be M total rows.}
+\item{Y}{Matrix of counts Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
 
 \item{Z}{matrix that starts with a column of 1s. Of dimension M x L + 1}
 

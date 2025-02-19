@@ -1,4 +1,4 @@
-#' GEEclevR
+#' cleverly
 #'
 #' @param Y either a data frame or matrix of numeric response variables. Each response should be a separate column. Each row should be a separate subject/time combination. There should be M total rows. Must be ordered in time.
 #' @param subject_ids either a vector of length(Y) or a column reference if Y is a data frame
@@ -29,7 +29,6 @@ cleverly <- function(Y,
                      smax = 100) {
 
   # Checks ----------
-  # This should actually be moved to a wrapper function! probably called geeclevR
   Y_user <- Y
   Y_list <- get_Y_wrapper(Y_user, subject_ids, time)
   mis <- get_mis(Y_user, subject_ids, time)
