@@ -1,16 +1,29 @@
 # Various -----------------------------------------------------------------
+
+get_indeces <- function(i, mis){
+  start <- c(0, cumsum(mis))[i] + 1
+  end <- cumsum(mis)[i]
+  return(id = start:end)
+}
+
+
+
+
+
 #' Get \eqn{Y_{ij0}}
 #'
 #' @param i subject
 #' @param j time index
 #' @param Y response matrix of dimension N x K
-#' @param mi number of time points for subject i
+#' @param mis vector of the number of timepoints for each sample. Of length n
 #'
 #' @returns Scalar of the total sum constraint for a given i, j
 #' @export
 #'
-get_Y_ij0 <- function(i, j, Y, mi) {
-  Y_ij0 <- sum(Y[((i - 1) * mi + j), ])
+get_Y_ij0 <- function(i, j, Y, mis) {
+  i_start <- c(0, cumsum(mis))[i] + 1
+  Y_ij0 <- sum(Y[i_start + j - 1, ])
+  #Y_ij0 <- sum(Y[((i - 1) * mi + j), ])
   return(Y_ij0)
 }
 
@@ -109,16 +122,18 @@ get_Y_wrapper <- function(Y, subject_ids, time_ids) {
 #'
 #' @param i subject index
 #' @param Y response matrix of dimension N x K
-#' @param mi number of time points for subject i
+#' @param mis vector of the number of timepoints for each sample. Of length n
 #'
 #' @returns Matrix of dimension mi x K
 #' @export
 #'
 #' @examples
-get_Y_i_mat <- function(i, mi, Y){
-  Y_i <- Y[((i - 1) * mi + 1):(i * mi), ]
-  rownames(Y_i) <- paste0("j=", 1:mi)
-  colnames(Y_i) <- paste0("k=", 1:ncol(Y))
+get_Y_i_mat <- function(i, mis, Y){
+  indeces <- get_indeces(i, mis)
+  Y_i <- Y[indeces, ]
+  #Y_i <- Y[((i - 1) * mi + 1):(i * mi), ]
+  rownames(Y_i) <- paste0("j=", 1:mis[i])
+  colnames(Y_i) <- paste0("i=",i,"k=", 1:ncol(Y))
   return(Y_i)
 }
 
@@ -132,42 +147,29 @@ get_Y_i_mat <- function(i, mi, Y){
 #'
 #' @param i subject index
 #' @param Y response matrix of dimension N x K
-#' @param mi number of time points for subject i
+#' @param mis vector of the number of timepoints for each sample. Of length n
 #' @param Y_mat (optional) pre-calculated Yi-matrix from Y
 #'
 #' @returns Vector of length K * mi
 #' @export
 #'
 #' @examples
-get_Y_i_vec <- function(i, mi, Y, Y_mat){
+get_Y_i_vec <- function(i, mis, Y, Y_mat){
   if (missing(Y_mat)) {
-    Y_i_mat <- get_Y_i_mat(i, mi, Y)
+    Y_i_mat <- get_Y_i_mat(i = i,
+                           mis = mis,
+                           Y = Y)
   }
 
   # This goes row by row.
   Y_i_vec <- as.vector(t(Y_i_mat))
-  js <- rep(1:mi, each = ncol(Y))
-  ks <- rep(1:ncol(Y),  mi)
+  js <- rep(1:mis[i], each = ncol(Y))
+  ks <- rep(1:ncol(Y),  mis[i])
   names(Y_i_vec) <- paste0("i=", i, ",j=", js, ",k=", ks)
   return(Y_i_vec)
 }
 
 
-#' Get \eqn{B_ij}
-#'
-#' @param i subject index
-#' @param j time index
-#' @param B B-spline basis matrix of dimension N x P
-#' @param mi number of time points for subject i
-#'
-#' @returns A vector of length P
-#' @export
-#'
-get_B_ij <- function(i, j, B, mi) {
-  B_ij <- B[((i - 1) * mi + j), ]
-  names(B_ij) <- paste0("i=", i, ",j=", j, ",l=", 1:ncol(B))
-  return(B_ij)
-}
 
 
 
@@ -184,8 +186,9 @@ get_B_ij <- function(i, j, B, mi) {
 #' @export
 #'
 #' @examples
-get_Z_ijl <- function(i, j, l, Z) {
-  Z_ijl <- Z[i + (j - 1), (l + 1)]
+get_Z_ijl <- function(i, j, l, Z, mis) {
+  i_start <- c(0, cumsum(mis))[i] + 1
+  Z_ijl <- Z[i_start + j - 1, (l + 1)]
   return(Z_ijl)
 }
 
@@ -211,7 +214,41 @@ get_beta_kl <- function(k, l, beta, P) {
 
 
 # B spline basis ----------------------------------------------------------
+#' Get \eqn{B_ij}
+#'
+#' @param i subject index
+#' @param j time index
+#' @param B B-spline basis matrix of dimension N x P
+#' @param mis vector of the number of timepoints for each sample. Of length n
+#'
+#' @returns A vector of length P
+#' @export
+#'
+get_B_ij <- function(i, j, B, mis) {
+  i_start <- c(0, cumsum(mis))[i] + 1
+  i_start + j - 1
+  B_ij <- B[i_start + j - 1, ]
+  names(B_ij) <- paste0("i=", i, ",j=", j, ",l=", 1:ncol(B))
+  return(B_ij)
+}
 
+
+#' Title
+#'
+#' @param time
+#' @param order
+#' @param nknots
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+get_B <- function(time, order, nknots){
+  B <- fda::bsplineS(time,
+                     get_knots(time, k = order, m = nknots),
+                     norder = order)
+  return(B)
+}
 
 # Alphas ------------------------------------------------------------------
 
@@ -229,14 +266,14 @@ get_beta_kl <- function(k, l, beta, P) {
 #' @export
 #'
 #' @examples
-get_alpha_ijk <- function(i, j, k, beta, Z, B, mi) {
+get_alpha_ijk <- function(i, j, k, beta, Z, B, mis) {
   P <- ncol(B)
   L <- ncol(Z) - 1
   lsum <- numeric(L)
-  B_ij <- get_B_ij(i, j, B, mi)
+  B_ij <- get_B_ij(i, j, B, mis)
 
   for (l in 0:L) {
-    Z_ijl <- get_Z_ijl(i, j, l, Z)
+    Z_ijl <- get_Z_ijl(i, j, l, Z, mis)
     beta_lk <- get_beta_kl(k, l, beta, P)
     lsum[l + 1] <- Z_ijl * t(B_ij) %*% beta_lk
   }
@@ -260,10 +297,10 @@ get_alpha_ijk <- function(i, j, k, beta, Z, B, mi) {
 #' @export
 #'
 #' @examples
-get_alpha_ij <- function(i, j, beta, Z, B, K, mi) {
+get_alpha_ij <- function(i, j, beta, Z, B, K, mis) {
   alphas <- c()
   for (k in 1:K) {
-    alphas <- c(alphas, get_alpha_ijk(i, j, k, beta, Z, B, mi))
+    alphas <- c(alphas, get_alpha_ijk(i, j, k, beta, Z, B, mis))
   }
   return(alphas)
 }
@@ -289,13 +326,16 @@ get_alpha_ij <- function(i, j, beta, Z, B, K, mi) {
 #' @export
 #'
 #' @examples
-get_mu_ij <- function(Y_ij0, alpha_ij, i, j, beta, Z, B, K, mi) {
+get_mu_ij <- function(Y_ij0, alpha_ij, i, j, beta, Z, B, K, mis) {
   if (missing(alpha_ij)) {
     # calculate with i, j, beta, Z, B
     alpha_ij <- get_alpha_ij(i = i,
                              j = j,
                              beta = beta,
-                             Z = Z, B = B, K = K, mi = mi)
+                             Z = Z,
+                             B = B,
+                             K = K,
+                             mis = mis)
     mu_ij <- Y_ij0 / sum(alpha_ij) * alpha_ij
     names(mu_ij) <- paste0("i=", i, ",j=", j, ",k=", 1:K)
   } else {
@@ -320,13 +360,20 @@ get_mu_ij <- function(Y_ij0, alpha_ij, i, j, beta, Z, B, K, mi) {
 #' @export
 #'
 #' @examples
-get_mu_i <- function(i, mi, Y, beta, Z, B, K) {
+get_mu_i <- function(i, mis, Y, beta, Z, B, K) {
   mu_i <- c()
   K <- ncol(Y)
+  mi <- mis[i]
   for (j in 1:mi) {
-    Y_ij0 <- get_Y_ij0(i, j, Y, mi)
-    mu_ij <- get_mu_ij(Y_ij0 = Y_ij0, i = i, j = j,
-                       beta = beta, Z = Z, B = B, K = K, mi = mi)
+    Y_ij0 <- get_Y_ij0(i, j, Y, mis)
+    mu_ij <- get_mu_ij(Y_ij0 = Y_ij0,
+                       i = i,
+                       j = j,
+                       beta = beta,
+                       Z = Z,
+                       B = B,
+                       K = K,
+                       mis = mis)
     mu_i <- c(mu_i, mu_ij)
   }
   return(mu_i)
@@ -410,13 +457,14 @@ get_V_ijj <- function(Y_ij0, phi, alpha_ij, i, j, beta, Z, B, K, mi) {
 #' @export
 #'
 #' @examples
-get_V_i <- function(i, Y, Y_ij0, phi, beta, Z, B, K, mi) {
+get_V_i <- function(i, Y, Y_ij0, phi, beta, Z, B, K, mis) {
   V_ij_list <- list()
   if (missing(Y_ij0)) {
-    Y_ij0 <- get_Y_ij0(i, 1, Y, mi)
+    Y_ij0 <- get_Y_ij0(i, 1, Y, mis)
   }
+  mi <- mis[i]
   for (j in 1:mi) {
-    Y_ij0 <- get_Y_ij0(i, j, Y, mi)
+    Y_ij0 <- get_Y_ij0(i, j, Y, mis)
     V_ijj <- get_V_ijj(Y_ij0 = Y_ij0,
                        phi = phi,
                        alpha_ij = get_alpha_ij(i = i,
@@ -425,7 +473,7 @@ get_V_i <- function(i, Y, Y_ij0, phi, beta, Z, B, K, mi) {
                                                Z = Z,
                                                B = B,
                                                K = K,
-                                               mi = mi))
+                                               mis = mis))
     V_ij_list[[j]] <- V_ijj
   }
   V_i_bdiag <- Matrix::bdiag(V_ij_list)
@@ -466,6 +514,20 @@ format_Z <- function(Z){
   return(Z)
 }
 
+
+
+#' Title
+#'
+#' @param lp
+#' @param Z
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+format_lp <- function(lp, Z){
+  return(lp)
+}
 
 
 #' Get breaks for B-spline basis

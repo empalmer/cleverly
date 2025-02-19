@@ -22,11 +22,11 @@ algorithm1 <- function(Y,
                        time,
                        lp,
                        gamma,
-                       d = 3,
-                       nknots = 3,
-                       order = 3,
-                       tol = 1e6,
-                       smax = 100) {
+                       d,
+                       nknots,
+                       order,
+                       tol,
+                       smax) {
 
   P <- nknots + order
   L <- ncol(Z) - 1
@@ -37,22 +37,30 @@ algorithm1 <- function(Y,
   beta <- initialize_beta(K = K, L = L, P = P)
 
   # Calculate B-spline basis based on time for each subject/time
-  B <- fda::bsplineS(time,
-                     get_knots(time, k = order, m = nknots),
-                     norder = order)
+  B <- get_B(time, order, nknots)
 
 
   diff <- 100
   s <- 0
   while ((diff > tol) & (s < smax)) {
-    beta_lp_minus <- algorithm2(Y, Z, lp, B, beta, D, gamma)
-    beta_lp <- algorithm3(Y, Z, lp, B, beta_lp_minus, gamma) # DUMMY STAND IN
+    beta_lp_minus <- algorithm2(Y = Y,
+                                Z = Z,
+                                lp = lp,
+                                B = B,
+                                beta = beta,
+                                D = D,
+                                gamma = gamma)
+    #beta_lp <- algorithm3(Y, Z, lp, B, beta_lp_minus, gamma) # DUMMY STAND IN
 
 
-    diff <- sum(abs(beta_lp - beta))
-    beta <- beta_lp
+    #diff <- sum(abs(beta_lp - beta))
+    #beta <- beta_lp
+    #
+    s <- s + 1
   }
 
+  return(list(B = B,
+              beta = beta))
 }
 
 
