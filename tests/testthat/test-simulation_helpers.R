@@ -10,7 +10,7 @@ test_that("Z works", {
 
   mis <- time$mis
 
-  Z <- sim_Z(mis)
+  Z_sim <- sim_Z(mis)
 })
 
 

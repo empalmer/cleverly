@@ -399,10 +399,10 @@ get_mu_i <- function(i, mis, Y, beta, Z, B, K) {
 #' @export
 #'
 #' @examples
-get_U_ij <- function(alpha_ij, i, j, beta, Z, B, K, mi) {
+get_U_ij <- function(alpha_ij, i, j, beta, Z, B, K, mis) {
   if (missing(alpha_ij)) {
     # calculate with i, j, beta, Z, B
-    alpha_ij <- get_alpha_ij(i, j, beta, Z, B, K, mi)
+    alpha_ij <- get_alpha_ij(i, j, beta, Z, B, K, mis)
   }
   alpha_ij0 <- sum(alpha_ij)
 

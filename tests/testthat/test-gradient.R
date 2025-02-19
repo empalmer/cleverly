@@ -5,10 +5,11 @@ test_that("Yi  minus mui", {
   Y <-  readRDS(test_path("test_data", "Y.rds"))
   K <- 4
   mi <- 3
+  mis <- rep(3, 5)
 
   term <- get_Yi_minus_mui(i = 1,
                            Y = Y,
-                           mi = mi,
+                           mis = mis,
                            beta = beta,
                            Z = Z,
                            B = B,
@@ -24,11 +25,11 @@ test_that("Vi inverse", {
   Y <-  readRDS(test_path("test_data", "Y.rds"))
   K <- 4
   mi <- 3
-
+  mis <- rep(3, 5)
 
   V_i_inv <- get_Vi_inv(i = 1,
                         Y = Y,
-                        mi = mi,
+                        mis = mis,
                         phi = .5,
                         beta = beta,
                         Z = Z,
@@ -49,12 +50,13 @@ test_that("Partials ijl dimension", {
   K <- 4
   mi <- 3
   P <- 6
+  mis <- rep(3, 5)
 
   partials <- get_partials_ijl(i = 1,
                            j = 2,
                            l = 2,
                            Y = Y,
-                           mi = mi,
+                           mis = mis,
                            beta = beta,
                            Z = Z,
                            B = B,
@@ -74,11 +76,12 @@ test_that("Partials il dimension",{
   K <- 4
   mi <- 3
   P <- 6
+  mis <- rep(3, 5)
 
   partials <- get_partials_il(i = 1,
                               l = 2,
                               Y = Y,
-                              mi = mi,
+                              mis = mis,
                               beta = beta,
                               Z = Z,
                               B = B)
@@ -96,11 +99,12 @@ test_that("Gradient il dimension",{
   K <- 4
   mi <- 3
   P <- 6
+  mis <- rep(3, 5)
 
   gradient_il <- get_gradient_il(i = 1,
                               l = 2,
                               Y = Y,
-                              mi = mi,
+                              mis = mis,
                               phi = .5,
                               beta = beta,
                               Z = Z,
@@ -118,11 +122,12 @@ test_that("Gradient i",{
   K <- 4
   mi <- 3
   P <- 6
+  mis <- rep(3, 5)
 
   gradient_il <- get_gradient_il(i = 1,
                                  l = 2,
                                  Y = Y,
-                                 mi = mi,
+                                 mis = mis,
                                  phi = .5,
                                  beta = beta,
                                  Z = Z,
@@ -143,6 +148,7 @@ test_that("Gradient l",{
   P <- 6
   sid <- rep(1:5, each = 3)
   tid <- rep(1:3, 5)
+
 
   gradient_l <- get_gradient_l(Y = Y,
                                subject_ids = sid,

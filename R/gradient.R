@@ -15,10 +15,11 @@
 #' @export
 #'
 #' @examples
-get_Yi_minus_mui <- function(i, Y, mi, beta, Z, B, K){
-  Y_i <- get_Y_i_vec(i = 1, mi = mi, Y = Y)
+get_Yi_minus_mui <- function(i, Y, mis, beta, Z, B, K){
+  Y_i <- get_Y_i_vec(i = 1, mis = mis, Y = Y)
   mu_i <- get_mu_i(i = 1,
-                   mi = mi, Y = Y,
+                   mis = mis,
+                   Y = Y,
                    beta = beta,
                    Z = Z,
                    B = B,
@@ -46,7 +47,7 @@ get_Yi_minus_mui <- function(i, Y, mi, beta, Z, B, K){
 #' @export
 #'
 #' @examples
-get_Vi_inv <- function(V_i, i, Y, mi, phi, beta, Z, B, K){
+get_Vi_inv <- function(V_i, i, Y, mis, phi, beta, Z, B, K){
   if (missing(V_i)) {
     V_i <- get_V_i(i = i,
                    Y = Y,
@@ -55,7 +56,7 @@ get_Vi_inv <- function(V_i, i, Y, mi, phi, beta, Z, B, K){
                    Z = Z,
                    B = B,
                    K = K,
-                   mi = mi)
+                   mis = mis)
   }
   #V_i_inv <- solve(V_i)
   V_i_inv <- MASS::ginv(V_i)
@@ -82,11 +83,31 @@ get_Vi_inv <- function(V_i, i, Y, mi, phi, beta, Z, B, K){
 #' @export
 #'
 #' @examples
-get_partials_ijl <- function(i, j, l, mi, K, Y, Z, B, beta){
-  Y_ij0 <- get_Y_ij0(i = i, j = j, Y = Y, mi = mi)
-  U_ij <- get_U_ij(i = i, j = j, beta = beta, Z = Z, B = B, K = K, mi = mi)
-  Z_ijl <- get_Z_ijl(i = i, j = j, l = l, Z = Z)
-  B_ij <- get_B_ij(i = i, j = j, B = B, mi = mi)
+get_partials_ijl <- function(i, j, l, mis, K, Y, Z, B, beta){
+  Y_ij0 <- get_Y_ij0(i = i,
+                     j = j,
+                     Y = Y,
+                     mis = mis)
+  U_ij <- get_U_ij(
+    i = i,
+    j = j,
+    beta = beta,
+    Z = Z,
+    B = B,
+    K = K,
+    mis = mis
+  )
+  Z_ijl <- get_Z_ijl(
+    i = i,
+    j = j,
+    l = l,
+    Z = Z,
+    mis = mis
+  )
+  B_ij <- get_B_ij(i = i,
+                   j = j,
+                   B = B,
+                   mis = mis)
 
   partials_ijl <- Y_ij0 * Z_ijl * kronecker(U_ij, B_ij)
   return(partials_ijl)
@@ -110,16 +131,17 @@ get_partials_ijl <- function(i, j, l, mi, K, Y, Z, B, beta){
 #' @export
 #'
 #' @examples
-get_partials_il <- function(i, l, Y, Z, B, beta, mi){
+get_partials_il <- function(i, l, Y, Z, B, beta, mis){
   P <- ncol(B)
   K <- ncol(Y)
+  mi <- mis[i]
   partials_il <- matrix(nrow = K*P, ncol = K*mi)
   for (j in 1:mi) {
     partials_il[, ((j - 1)*K + 1):(j*K)] <-
       get_partials_ijl(i = i,
                        j = j,
                        l = l,
-                       mi = mi,
+                       mis = mis,
                        K = K,
                        Y = Y,
                        Z = Z,
@@ -149,7 +171,7 @@ get_partials_il <- function(i, l, Y, Z, B, beta, mi){
 #' @export
 #'
 #' @examples
-get_gradient_il <- function(i, l, Y, mi, phi, beta, Z, B){
+get_gradient_il <- function(i, l, Y, mis, phi, beta, Z, B){
   K <- ncol(Y)
   partials_il <- get_partials_il(i = i,
     l = l,
@@ -157,11 +179,11 @@ get_gradient_il <- function(i, l, Y, mi, phi, beta, Z, B){
     Z = Z,
     B = B,
     beta = beta,
-    mi = mi
+    mis = mis
   )
   V_i_inv <- get_Vi_inv(i = i,
     Y = Y,
-    mi = mi,
+    mis = mis,
     phi = phi,
     beta = beta,
     Z = Z,
@@ -170,7 +192,7 @@ get_gradient_il <- function(i, l, Y, mi, phi, beta, Z, B){
   )
   Yi_minus_mui <- get_Yi_minus_mui(i = i,
     Y = Y,
-    mi = mi,
+    mis = mis,
     beta = beta,
     Z = Z,
     B = B,
@@ -213,7 +235,7 @@ get_gradient_l <- function(Y, subject_ids, time_ids, l, phi, beta, Z, B){
       i = i,
       l = l,
       Y = Y_use,
-      mi = mis[i],
+      mis = mis,
       phi = phi,
       beta = beta,
       Z = Z,
