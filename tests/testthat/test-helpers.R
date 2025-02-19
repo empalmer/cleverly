@@ -135,7 +135,6 @@ test_that("Check mis", {
 
 
 
-
 test_that("B", {
   mis <- rep(3, 5)
   B <- readRDS(test_path("test_data", "B.rds"))

@@ -1,6 +1,6 @@
 #' GEEclevR
 #'
-#' @param Y either a data frame or matrix of numeric response variables. Each response should be a separate column. Each row should be a separate subject/time combination. There should be M total rows.
+#' @param Y either a data frame or matrix of numeric response variables. Each response should be a separate column. Each row should be a separate subject/time combination. There should be M total rows. Must be ordered in time.
 #' @param subject_ids either a vector of length(Y) or a column reference if Y is a data frame
 #' @param time either a vector of length(Y) or a column reference if Y is a data frame. Must be numeric
 #' @param lp either a numeric index of which external variable to cluster on, or the name of the column of Z that contains the clustering variable. Specify numeric 0 to cluster via baseline.
@@ -16,7 +16,7 @@
 #' @export
 #'
 #' @examples
-GEEclevR <- function(Y,
+cleverly <- function(Y,
                      Z,
                      subject_ids,
                      time,

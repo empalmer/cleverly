@@ -1,6 +1,6 @@
 #' Algorithm 1
 #'
-#' @param Y Matrix Each response should be a separate column. Each row should be a separate subject/time combination. There should be M total rows.
+#' @param Y Matrix of counts Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
 #' @param subject_ids vector of numeric ids for each subject
 #' @param time vector of numeric ids
 #' @param lp clustering index
