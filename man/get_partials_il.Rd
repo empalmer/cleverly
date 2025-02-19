@@ -4,7 +4,7 @@
 \alias{get_partials_il}
 \title{Get full partials matrix for a given i, l}
 \usage{
-get_partials_il(i, l, Y, Z, B, beta, mi)
+get_partials_il(i, l, Y, Z, B, beta, mis)
 }
 \arguments{
 \item{P}{}

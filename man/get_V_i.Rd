@@ -4,7 +4,7 @@
 \alias{get_V_i}
 \title{Get Vi diagonal matrix of all js.}
 \usage{
-get_V_i(i, Y, Y_ij0, phi, beta, Z, B, K, mi)
+get_V_i(i, Y, Y_ij0, phi, beta, Z, B, K, mis)
 }
 \arguments{
 \item{mi}{}

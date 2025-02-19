@@ -49,7 +49,7 @@ sim_Z <- function(mis){
 # # Simulate Y ----------------------------------------------------
 #
 #
-sim_Y_ij <- function(i, j, beta, Z, B, Y_ij0, K, mi){
+sim_Y_ij <- function(i, j, beta, Z, B, Y_ij0, K, mis){
   Y_ij <- MGLM::rdirmn(n = 1,
                        size = Y_ij0,
                        alpha = get_alpha_ij(i = i,
@@ -58,16 +58,17 @@ sim_Y_ij <- function(i, j, beta, Z, B, Y_ij0, K, mi){
                                             Z = Z,
                                             B = B,
                                             K = K,
-                                            mi = mi))
+                                            mis = mis))
   return(Y_ij) # Returns a 1xK matrix
 }
 
 # Simulate Y for all i, j, k
-sim_Yi <- function(i, beta, Z, B, K, mi){
+sim_Yi <- function(i, beta, Z, B, K, mis){
+  mi <- mis[i]
   Y_i <- matrix(nrow = mi, ncol = K)
   for (j in 1:mi) {
     Y_ij0 <- sample(50:150, 1)
-    Y_i[j,] <- sim_Y_ij(i, j, beta, Z, B, Y_ij0, K, mi)
+    Y_i[j,] <- sim_Y_ij(i, j, beta, Z, B, Y_ij0, K, mis)
   }
   return(Y_i)
 }
@@ -79,7 +80,13 @@ sim_Y <- function(beta, Z, B, K, mis){
   n <- length(mis)
   for (i in 1:n) {
     #Y[((i - 1)*mis[i] + 1):(i*mis[i]), ] <- sim_Yi(i, beta, Z, B)
-    Y <- rbind(Y, sim_Yi(i, beta, Z, B, K, mis[i]))
+    Y <- rbind(Y,
+               sim_Yi(i,
+                      beta,
+                      Z,
+                      B,
+                      K,
+                      mis))
   }
   return(Y)
 }

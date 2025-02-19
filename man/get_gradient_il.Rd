@@ -4,7 +4,7 @@
 \alias{get_gradient_il}
 \title{Title}
 \usage{
-get_gradient_il(i, l, Y, mi, phi, beta, Z, B, K)
+get_gradient_il(i, l, Y, mis, phi, beta, Z, B)
 }
 \arguments{
 \item{K}{}

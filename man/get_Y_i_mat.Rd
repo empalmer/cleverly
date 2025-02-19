@@ -4,12 +4,12 @@
 \alias{get_Y_i_mat}
 \title{Get \eqn{Y_i}}
 \usage{
-get_Y_i_mat(i, mi, Y)
+get_Y_i_mat(i, mis, Y)
 }
 \arguments{
 \item{i}{subject index}
 
-\item{mi}{number of time points for subject i}
+\item{mis}{vector of the number of timepoints for each sample. Of length n}
 
 \item{Y}{response matrix of dimension N x K}
 }

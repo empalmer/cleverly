@@ -4,7 +4,7 @@
 \alias{get_mu_i}
 \title{Get mu_i mean vector for ith sample}
 \usage{
-get_mu_i(i, mi, Y, beta, Z, B, K)
+get_mu_i(i, mis, Y, beta, Z, B, K)
 }
 \arguments{
 \item{K}{}

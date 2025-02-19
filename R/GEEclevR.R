@@ -59,4 +59,6 @@ GEEclevR <- function(Y,
                        tol = tol,
                        smax = smax)
 
+  return()
+
 }

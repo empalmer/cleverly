@@ -4,7 +4,7 @@
 \alias{get_Yi_minus_mui}
 \title{Get the Yi minus mui term of the gradient}
 \usage{
-get_Yi_minus_mui(i, Y, mi, beta, Z, B, K)
+get_Yi_minus_mui(i, Y, mis, beta, Z, B, K)
 }
 \arguments{
 \item{K}{}
