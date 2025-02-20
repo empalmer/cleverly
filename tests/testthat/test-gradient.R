@@ -18,6 +18,23 @@ test_that("Yi  minus mui", {
 })
 
 
+test_that("Yi  minus mui SIM", {
+  sim <- base_sim()
+
+  i <- 3
+  term <- get_Yi_minus_mui(i = i,
+                           Y = sim$Y,
+                           mis = sim$mis,
+                           beta = sim$beta,
+                           Z = sim$Z,
+                           B = sim$B,
+                           K = sim$K)
+
+  expect_length(term, sim$K*sim$mis[i])
+})
+
+
+
 test_that("Vi inverse", {
   beta <- readRDS(test_path("test_data", "beta.rds"))
   Z <- readRDS(test_path("test_data", "Z.rds"))
@@ -38,6 +55,24 @@ test_that("Vi inverse", {
 
   # Check dimensions
   expect_equal(dim(V_i_inv)[1], K*mi)
+})
+
+
+test_that("Vi inv SIM ", {
+  sim <- base_sim()
+
+  i <- 1
+  V_i_inv <- get_Vi_inv(i = i,
+                        Y = sim$Y,
+                        mis = sim$mis,
+                        phi = .5,
+                        beta = sim$beta,
+                        Z = sim$Z,
+                        B = sim$B,
+                        K = sim$K)
+
+  # Check dimensions
+  expect_equal(dim(V_i_inv)[1], sim$K*sim$mis[i])
 })
 
 
@@ -67,6 +102,24 @@ test_that("Partials ijl dimension", {
   expect_equal(dim(partials)[2], K)
 })
 
+test_that("Partials ijl dim SIM", {
+  sim <- base_sim()
+  partials <- get_partials_ijl(i = 1,
+                               j = 2,
+                               l = 2,
+                               Y = sim$Y,
+                               mis = sim$mis,
+                               beta = sim$beta,
+                               Z = sim$Z,
+                               B = sim$B,
+                               K = sim$K)
+
+  # Check dimensions
+  expect_equal(dim(partials)[1], sim$K*sim$P)
+  expect_equal(dim(partials)[2], sim$K)
+})
+
+
 
 test_that("Partials il dimension",{
   beta <- readRDS(test_path("test_data", "beta.rds"))
@@ -91,6 +144,28 @@ test_that("Partials il dimension",{
   expect_equal(dim(partials)[2], K*mi)
 })
 
+
+test_that("Partials il dim SIM ",{
+  sim <- base_sim()
+
+  i <- 1
+  partials <- get_partials_il(i = i,
+                              l = 2,
+                              Y = sim$Y,
+                              mis = sim$mis,
+                              beta = sim$beta,
+                              Z = sim$Z,
+                              B = sim$B)
+
+  # Check dimensions
+  expect_equal(dim(partials)[1], sim$K*sim$P)
+  expect_equal(dim(partials)[2], sim$K*sim$mis[i])
+})
+
+
+
+
+
 test_that("Gradient il dimension",{
   beta <- readRDS(test_path("test_data", "beta.rds"))
   Z <- readRDS(test_path("test_data", "Z.rds"))
@@ -113,6 +188,25 @@ test_that("Gradient il dimension",{
   # Check dimensions
   expect_length(gradient_il, P*K)
 })
+
+
+test_that("Gradient il dim SIM",{
+  sim <- base_sim()
+
+  gradient_il <- get_gradient_il(i = 1,
+                                 l = 2,
+                                 Y = sim$Y,
+                                 mis = sim$mis,
+                                 phi = .5,
+                                 beta = sim$beta,
+                                 Z = sim$Z,
+                                 B = sim$B)
+
+  # Check dimensions
+  expect_length(gradient_il, sim$P*sim$K)
+})
+
+
 
 test_that("Gradient i",{
   beta <- readRDS(test_path("test_data", "beta.rds"))
@@ -151,8 +245,8 @@ test_that("Gradient l",{
 
 
   gradient_l <- get_gradient_l(Y = Y,
-                               subject_ids = sid,
-                               time_ids = tid,
+                               is = sid,
+                               mis = rep(3, 5),
                                l = 0,
                                phi = .5,
                                beta = beta,
@@ -163,3 +257,18 @@ test_that("Gradient l",{
   expect_length(gradient_l, P*K)
 })
 
+test_that("Gradient l SIM",{
+  sim <- base_sim()
+
+  gradient_l <- get_gradient_l(Y = sim$Y,
+                               is = sim$is,
+                               mis = rep(3, 5),
+                               l = 0,
+                               phi = .5,
+                               beta = sim$beta,
+                               Z = sim$Z,
+                               B = sim$B)
+
+  # Check dimensions
+  expect_length(gradient_l, sim$P*sim$K)
+})

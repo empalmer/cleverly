@@ -20,6 +20,8 @@ knitr::opts_chunk$set(
 
 The goal of cleverly is to ...
 
+Reminder: update README using `build_readme()`
+
 ## Installation
 
 You can install the development version of cleverly from [GitHub](https://github.com/) with:

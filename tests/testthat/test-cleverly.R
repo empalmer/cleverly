@@ -1,14 +1,15 @@
-test_that("GEEwrapper works", {
+test_that("cleverly wrapper works", {
 
   Y_mat <-  readRDS(test_path("test_data", "Y.rds"))
   sid <- rep(1:5, each = 3)
   tid <- rep(1:3, 5)
   Z_mat <- readRDS(test_path("test_data", "Z.rds"))
+  Z <- Z_mat[,-1]
 
   # Test the wrapper function
 
-  result <- GEEclevR(Y = Y_mat,
-                     Z = Z_mat,
+  result <- cleverly(Y = Y_mat,
+                     Z = Z,
                      subject_ids = sid,
                      time = tid,
                      lp = 1,

@@ -91,3 +91,38 @@ sim_Y <- function(beta, Z, B, K, mis){
   return(Y)
 }
 
+base_sim <- function(seed = 124){
+  set.seed(seed)
+  time_list <- sim_timepoints(n = 5)
+  time <- time_list$X$time
+  mis <- time_list$mis
+  is <- rep(1:5, mis)
+  M <- sum(mis)
+  K <- 4
+  Z <- sim_Z(mis)
+  B <- get_B(time, order = 3, nknots = 3)
+  P <- 6
+
+  # 2 clusters
+  betaC1 <- matrix(c(rep(c(1, 1, 1, 1, 1, 1), 2),     #l = 0
+                     rep(c(-2, -2, -2, -2, -2, -2),2),  #l = 1
+                     rep(c(1, 2, 3, 4, 5, 6), 2)), ncol = 3)#l = 2
+  betaC2 <- .5*betaC1
+  beta <- rbind(betaC1, betaC2)
+
+  Y <- sim_Y(beta = beta,
+             Z = Z,
+             B = B,
+             K = K,
+             mis = mis)
+
+  return(list(Y = Y,
+              Z = Z,
+              B = B,
+              is = is,
+              beta = beta,
+              mis = mis,
+              time = time,
+              K = K,
+              P = P))
+}

@@ -8,6 +8,8 @@
 
 The goal of cleverly is to …
 
+Reminder: update README using `build_readme()`
+
 ## Installation
 
 You can install the development version of cleverly from

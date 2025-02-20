@@ -21,7 +21,17 @@ test_that("Y i", {
   expect_equal(dim(Y_i_mat)[2], K)
 })
 
+test_that("Y i SIM ", {
+  sim <- base_sim()
 
+  i <- 3
+  Y_i_mat <- get_Y_i_mat(i = i, mis = sim$mis, Y = sim$Y)
+  Y_i_vec <- get_Y_i_vec(i = i, mis = sim$mis, Y = sim$Y)
+
+
+  expect_equal(dim(Y_i_mat)[1], sim$mis[i])
+  expect_equal(dim(Y_i_mat)[2], sim$K)
+})
 
 test_that("Y vec and matrix", {
   Y <-  readRDS(test_path("test_data", "Y.rds"))
@@ -32,8 +42,8 @@ test_that("Y vec and matrix", {
   mi <- 3
   mis <- rep(3, 5)
 
-  Y_i_mat <- get_Y_i_mat(i = 1, mi = mis, Y = Y)
-  Y_i_vec <- get_Y_i_vec(i = 1, mi = mis, Y = Y)
+  Y_i_mat <- get_Y_i_mat(i = 1, mis = mis, Y = Y)
+  Y_i_vec <- get_Y_i_vec(i = 1, mis = mis, Y = Y)
 
   #j=1
   expect_equal(as.numeric(Y_i_mat[1, ]),
@@ -266,6 +276,23 @@ test_that("Check mu_i", {
 })
 
 
+test_that("Check mu_i SIM", {
+  sim <- base_sim()
+
+  # Test if alpha is supplied
+  i <- 3
+  mu_i <- get_mu_i(i = i,
+                   mis = sim$mis,
+                   Y = sim$Y,
+                   beta = sim$beta,
+                   Z = sim$Z,
+                   B = sim$B,
+                   K = sim$K)
+
+  # Should be of dimension K
+  expect_length(mu_i, sim$K*sim$mis[i])
+})
+
 
 # Variance -----------------------------------------------------
 
@@ -368,4 +395,21 @@ test_that("Check alpha_ijk l0", {
 
 # Check cases when mi not all the same  -----------------------------------
 
+
+# Initializing algorithm  -----------------------------------------------
+
+
+test_that("format Z", {
+  Z_w1 <- readRDS(test_path("test_data", "Z.rds"))
+
+  # Case when Z includes column of 1s
+  Z <- format_Z(Z_w1)
+  expect_equal(Z, Z_w1)
+
+  # Case when Z does not include a column of 1s
+  Z_wo1 <- Z_w1[,-1]
+  Z1 <- format_Z(Z_wo1)
+  expect_equal(Z1, Z_w1)
+
+})
 

@@ -506,11 +506,15 @@ initialize_beta <- function(K, L, P){
 #'
 #' @param Z A matrix or data frame with columns of external variables for each subject/time
 #'
-#' @returns A matrix with a column of 1s representing L = 0, and values for the other extenral variables
+#' @returns A matrix with a column of 1s representing L = 0, and values for the other external variables
 #' @export
 #'
 #' @examples
 format_Z <- function(Z){
+  M <- nrow(Z)
+  if (!identical(Z[,1],rep(1, M))) {
+    Z <- cbind(1, Z)
+  }
   return(Z)
 }
 

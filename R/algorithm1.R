@@ -1,8 +1,8 @@
 #' Algorithm 1
 #'
 #' @param Y Matrix of counts Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
-#' @param subject_ids vector of numeric ids for each subject
-#' @param time vector of numeric ids
+#' @param is vector of numeric ids for each subject
+#' @param mis count vector of length n for the number of timepoints for each i
 #' @param lp clustering index
 #' @param Z matrix that starts with a column of 1s. Of dimension M x L + 1
 #' @param gamma Vector of length (L + 1) of penalization hyper parameters
@@ -18,10 +18,12 @@
 #' @examples
 algorithm1 <- function(Y,
                        Z,
-                       subject_ids,
+                       is,
                        time,
+                       mis,
                        lp,
                        gamma,
+                       phi,
                        d,
                        nknots,
                        order,
@@ -45,22 +47,29 @@ algorithm1 <- function(Y,
   while ((diff > tol) & (s < smax)) {
     beta_lp_minus <- algorithm2(Y = Y,
                                 Z = Z,
+                                is = is,
+                                mis = mis,
                                 lp = lp,
                                 B = B,
                                 beta = beta,
                                 D = D,
-                                gamma = gamma)
+                                gamma = gamma,
+                                phi)
     #beta_lp <- algorithm3(Y, Z, lp, B, beta_lp_minus, gamma) # DUMMY STAND IN
 
 
     #diff <- sum(abs(beta_lp - beta))
     #beta <- beta_lp
+    beta <- beta_lp_minus
     #
     s <- s + 1
   }
 
   return(list(B = B,
-              beta = beta))
+              beta = beta,
+              P = P,
+              L = L,
+              K = K))
 }
 
 

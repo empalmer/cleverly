@@ -16,8 +16,8 @@
 #'
 #' @examples
 get_Yi_minus_mui <- function(i, Y, mis, beta, Z, B, K){
-  Y_i <- get_Y_i_vec(i = 1, mis = mis, Y = Y)
-  mu_i <- get_mu_i(i = 1,
+  Y_i <- get_Y_i_vec(i = i, mis = mis, Y = Y)
+  mu_i <- get_mu_i(i = i,
                    mis = mis,
                    Y = Y,
                    beta = beta,
@@ -206,8 +206,8 @@ get_gradient_il <- function(i, l, Y, mis, phi, beta, Z, B){
 #' Title
 #'
 #' @param Y Matrix of dimension M x K
-#' @param subject_ids numeric
-#' @param time_ids numeric
+#' @param is numeric of length M
+#' @param mis counts of length n
 #' @param l external variable index
 #' @param phi variance parameter
 #' @param beta
@@ -219,22 +219,24 @@ get_gradient_il <- function(i, l, Y, mis, phi, beta, Z, B){
 #' @export
 #'
 #' @examples
-get_gradient_l <- function(Y, subject_ids, time_ids, l, phi, beta, Z, B){
+get_gradient_l <- function(Y, is, mis, l, phi, beta, Z, B){
   P <- ncol(B)
   K <- ncol(Y)
   gradient_sum <- numeric(P*K)
-  Y_values <- get_Y_wrapper(Y = Y, subject_ids = subject_ids, time_ids = time_ids)
-  Y_use <- Y_values$Y
-  subject_ids_use <- Y_values$subject_id_values
-
-
-  mis <- get_mis(Y, subject_ids, time_ids)$mi
+  # Y_values <- get_Y_wrapper(Y = Y,
+  #                           subject_ids = subject_ids,
+  #                           time_ids = time_ids)
+  # Y_use <- Y_values$Y
+  # subject_ids_use <- Y_values$subject_id_values
+  #
+  #
+  # mis <- get_mis(Y, subject_ids, time_ids)$mi
 
   for (i in 1:length(mis)) {
     gradient_il <- get_gradient_il(
       i = i,
       l = l,
-      Y = Y_use,
+      Y = Y,
       mis = mis,
       phi = phi,
       beta = beta,
