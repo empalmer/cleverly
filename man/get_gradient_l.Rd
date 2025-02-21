@@ -2,20 +2,20 @@
 % Please edit documentation in R/gradient.R
 \name{get_gradient_l}
 \alias{get_gradient_l}
-\title{Title}
+\title{Get the gradient for a given l}
 \usage{
-get_gradient_l(Y, subject_ids, time_ids, l, phi, beta, Z, B)
+get_gradient_l(Y, mi_vec, l, phi, beta, Z, B)
 }
 \arguments{
 \item{Y}{Matrix of dimension M x K}
 
-\item{subject_ids}{numeric}
-
-\item{time_ids}{numeric}
+\item{mi_vec}{counts of length n}
 
 \item{l}{external variable index}
 
 \item{phi}{variance parameter}
+
+\item{is}{numeric of length M}
 
 \item{K}{}
 }
@@ -23,5 +23,5 @@ get_gradient_l(Y, subject_ids, time_ids, l, phi, beta, Z, B)
 vector of length PK x 1
 }
 \description{
-Title
+Get the gradient for a given l
 }

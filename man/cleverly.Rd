@@ -9,13 +9,19 @@ cleverly(
   Z,
   subject_ids,
   time,
-  lp,
-  gamma,
-  d = 3,
+  lp = 0,
+  response_type = "counts",
+  gammas,
+  psi,
+  phi,
+  tau = 8/100,
+  theta = 300,
+  d = 2,
   nknots = 3,
   order = 3,
   tol = 1e+06,
-  smax = 100
+  max_outer_iter = 10,
+  max_admm_iter = 100
 )
 }
 \arguments{
@@ -29,8 +35,6 @@ cleverly(
 
 \item{lp}{either a numeric index of which external variable to cluster on, or the name of the column of Z that contains the clustering variable. Specify numeric 0 to cluster via baseline.}
 
-\item{gamma}{Vector of length (L + 1) of penalization hyper parameters}
-
 \item{d}{Order for the difference matrix}
 
 \item{nknots}{Number of knots for the B-spline basis}
@@ -38,6 +42,8 @@ cleverly(
 \item{order}{Order of the B-spline basis}
 
 \item{tol}{Tolerance for convergence}
+
+\item{gamma}{Vector of length (L + 1) of penalization hyper parameters}
 
 \item{smax}{Maximum number of iterations}
 }

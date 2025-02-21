@@ -8,20 +8,20 @@ test_that("timepoints work", {
 test_that("Z works", {
   time <- sim_timepoints(n = 5)
 
-  mis <- time$mis
+  mi_vec <- time$mi_vec
 
-  Z_sim <- sim_Z(mis)
+  Z_sim <- sim_Z(mi_vec)
 })
 
 
 test_that("Test sim Y works", {
   set.seed(124)
   time_list <- sim_timepoints(n = 5)
-  mis <- time_list$mis
+  mi_vec <- time_list$mi_vec
   time <- time_list$X$time
 
   K <- 4
-  Z <- sim_Z(mis)
+  Z <- sim_Z(mi_vec)
 
   B <- get_B(time, order = 3, nknots = 3)
 
@@ -40,18 +40,18 @@ test_that("Test sim Y works", {
                    B,
                    Y_ij0 = 100,
                    K = K,
-                   mis = mis)
+                   mi_vec = mi_vec)
 
   Y_i <- sim_Yi(i = 1,
                 beta = beta,
                 Z = Z,
                 B = B,
                 K = K,
-                mis = mis)
+                mi_vec = mi_vec)
 
   Y <- sim_Y(beta = beta,
              Z = Z,
              B = B,
              K = K,
-             mis = mis)
+             mi_vec = mi_vec)
 })

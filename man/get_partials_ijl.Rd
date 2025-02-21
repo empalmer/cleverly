@@ -4,10 +4,10 @@
 \alias{get_partials_ijl}
 \title{Get partials matrix for i, j, l}
 \usage{
-get_partials_ijl(i, j, l, mis, K, Y, Z, B, beta)
+get_partials_ijl(i, j, l, mi_vec, K, Y, Z, B, beta)
 }
 \arguments{
-\item{beta}{}
+\item{mi_vec}{}
 }
 \value{
 Matrix of dimension PK x K

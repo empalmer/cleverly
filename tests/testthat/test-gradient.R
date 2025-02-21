@@ -5,11 +5,11 @@ test_that("Yi  minus mui", {
   Y <-  readRDS(test_path("test_data", "Y.rds"))
   K <- 4
   mi <- 3
-  mis <- rep(3, 5)
+  mi_vec <- rep(3, 5)
 
   term <- get_Yi_minus_mui(i = 1,
                            Y = Y,
-                           mis = mis,
+                           mi_vec = mi_vec,
                            beta = beta,
                            Z = Z,
                            B = B,
@@ -24,13 +24,13 @@ test_that("Yi  minus mui SIM", {
   i <- 3
   term <- get_Yi_minus_mui(i = i,
                            Y = sim$Y,
-                           mis = sim$mis,
+                           mi_vec = sim$mi_vec,
                            beta = sim$beta,
                            Z = sim$Z,
                            B = sim$B,
                            K = sim$K)
 
-  expect_length(term, sim$K*sim$mis[i])
+  expect_length(term, sim$K*sim$mi_vec[i])
 })
 
 
@@ -42,11 +42,11 @@ test_that("Vi inverse", {
   Y <-  readRDS(test_path("test_data", "Y.rds"))
   K <- 4
   mi <- 3
-  mis <- rep(3, 5)
+  mi_vec <- rep(3, 5)
 
   V_i_inv <- get_Vi_inv(i = 1,
                         Y = Y,
-                        mis = mis,
+                        mi_vec = mi_vec,
                         phi = .5,
                         beta = beta,
                         Z = Z,
@@ -64,7 +64,7 @@ test_that("Vi inv SIM ", {
   i <- 1
   V_i_inv <- get_Vi_inv(i = i,
                         Y = sim$Y,
-                        mis = sim$mis,
+                        mi_vec = sim$mi_vec,
                         phi = .5,
                         beta = sim$beta,
                         Z = sim$Z,
@@ -72,7 +72,7 @@ test_that("Vi inv SIM ", {
                         K = sim$K)
 
   # Check dimensions
-  expect_equal(dim(V_i_inv)[1], sim$K*sim$mis[i])
+  expect_equal(dim(V_i_inv)[1], sim$K*sim$mi_vec[i])
 })
 
 
@@ -85,13 +85,13 @@ test_that("Partials ijl dimension", {
   K <- 4
   mi <- 3
   P <- 6
-  mis <- rep(3, 5)
+  mi_vec <- rep(3, 5)
 
   partials <- get_partials_ijl(i = 1,
                            j = 2,
                            l = 2,
                            Y = Y,
-                           mis = mis,
+                           mi_vec = mi_vec,
                            beta = beta,
                            Z = Z,
                            B = B,
@@ -108,7 +108,7 @@ test_that("Partials ijl dim SIM", {
                                j = 2,
                                l = 2,
                                Y = sim$Y,
-                               mis = sim$mis,
+                               mi_vec = sim$mi_vec,
                                beta = sim$beta,
                                Z = sim$Z,
                                B = sim$B,
@@ -129,12 +129,12 @@ test_that("Partials il dimension",{
   K <- 4
   mi <- 3
   P <- 6
-  mis <- rep(3, 5)
+  mi_vec <- rep(3, 5)
 
   partials <- get_partials_il(i = 1,
                               l = 2,
                               Y = Y,
-                              mis = mis,
+                              mi_vec = mi_vec,
                               beta = beta,
                               Z = Z,
                               B = B)
@@ -152,14 +152,14 @@ test_that("Partials il dim SIM ",{
   partials <- get_partials_il(i = i,
                               l = 2,
                               Y = sim$Y,
-                              mis = sim$mis,
+                              mi_vec = sim$mi_vec,
                               beta = sim$beta,
                               Z = sim$Z,
                               B = sim$B)
 
   # Check dimensions
   expect_equal(dim(partials)[1], sim$K*sim$P)
-  expect_equal(dim(partials)[2], sim$K*sim$mis[i])
+  expect_equal(dim(partials)[2], sim$K*sim$mi_vec[i])
 })
 
 
@@ -174,12 +174,12 @@ test_that("Gradient il dimension",{
   K <- 4
   mi <- 3
   P <- 6
-  mis <- rep(3, 5)
+  mi_vec <- rep(3, 5)
 
   gradient_il <- get_gradient_il(i = 1,
                               l = 2,
                               Y = Y,
-                              mis = mis,
+                              mi_vec = mi_vec,
                               phi = .5,
                               beta = beta,
                               Z = Z,
@@ -196,7 +196,7 @@ test_that("Gradient il dim SIM",{
   gradient_il <- get_gradient_il(i = 1,
                                  l = 2,
                                  Y = sim$Y,
-                                 mis = sim$mis,
+                                 mi_vec = sim$mi_vec,
                                  phi = .5,
                                  beta = sim$beta,
                                  Z = sim$Z,
@@ -216,12 +216,12 @@ test_that("Gradient i",{
   K <- 4
   mi <- 3
   P <- 6
-  mis <- rep(3, 5)
+  mi_vec <- rep(3, 5)
 
   gradient_il <- get_gradient_il(i = 1,
                                  l = 2,
                                  Y = Y,
-                                 mis = mis,
+                                 mi_vec = mi_vec,
                                  phi = .5,
                                  beta = beta,
                                  Z = Z,
@@ -245,8 +245,7 @@ test_that("Gradient l",{
 
 
   gradient_l <- get_gradient_l(Y = Y,
-                               is = sid,
-                               mis = rep(3, 5),
+                               mi_vec = rep(3, 5),
                                l = 0,
                                phi = .5,
                                beta = beta,
@@ -261,8 +260,7 @@ test_that("Gradient l SIM",{
   sim <- base_sim()
 
   gradient_l <- get_gradient_l(Y = sim$Y,
-                               is = sim$is,
-                               mis = rep(3, 5),
+                               mi_vec = rep(3, 5),
                                l = 0,
                                phi = .5,
                                beta = sim$beta,

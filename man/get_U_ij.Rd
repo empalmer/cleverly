@@ -4,7 +4,7 @@
 \alias{get_U_ij}
 \title{Get term U_ij}
 \usage{
-get_U_ij(alpha_ij, i, j, beta, Z, B, K, mis)
+get_U_ij(alpha_ij, i, j, beta, Z, B, K, mi_vec)
 }
 \arguments{
 \item{mi}{}

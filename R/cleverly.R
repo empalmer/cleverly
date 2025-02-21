@@ -23,13 +23,17 @@ cleverly <- function(Y,
                      time,
                      lp = 0,
                      response_type = "counts",
-                     gamma,
+                     gammas,
+                     psi,
                      phi,
-                     d = 3,
+                     tau = 8/100,
+                     theta = 300,
+                     d = 2,
                      nknots = 3,
                      order = 3,
                      tol = 1e6,
-                     smax = 100) {
+                     max_outer_iter = 10,
+                     max_admm_iter = 100) {
 
   # Format Y
   Y_user <- Y
@@ -40,14 +44,11 @@ cleverly <- function(Y,
   subject_ids <- Y_list$subject_id_values
   # Get is and js
   # Time needs to be changed to indexes
-
   is <- subject_ids
 
-
-
   # Get m_is
-  mis <- get_mis(Y_user, subject_ids, time)
-  js <- sequence(mis$mi)
+  mi_vec <- get_mi_vec(Y_user, subject_ids, time)
+  js <- sequence(mi_vec$mi)
 
   # Format Z
   if (!missing(Z)) {
@@ -69,15 +70,19 @@ cleverly <- function(Y,
                          Z = Z,
                          is = is,
                          time = time,
-                         mis = mis,
+                         mi_vec = mi_vec,
                          lp = lp,
-                         gamma = gamma,
+                         gammas = gammas,
+                         psi = psi,
                          phi = phi,
+                         tau = tau,
+                         theta = theta,
                          d = d,
                          nknots = nknots,
                          order = order,
                          tol = tol,
-                         smax = smax)
+                         max_outer_iter = max_outer_iter,
+                         max_admm_iter = max_admm_iter)
   } else {
     stop("Invalid response type or type not yet implemented.")
   }
@@ -86,7 +91,7 @@ cleverly <- function(Y,
   # Change eventually
   return(list(result = result,
               Y = Y,
-              mis = mis,
+              mi_vec = mi_vec,
               time = time,
               subject_ids = subject_ids,
               Z = Z,

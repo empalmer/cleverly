@@ -13,12 +13,17 @@ test_that("cleverly wrapper works", {
                      subject_ids = sid,
                      time = tid,
                      lp = 1,
-                     gamma = rep(1, 3),
-                     d = 3,
+                     gammas = rep(1, 3),
+                     psi = 1,
+                     phi = 1,
+                     tau = 1,
+                     theta = 1,
+                     d = 2,
                      nknots = 3,
                      order = 3,
                      tol = 1e6,
-                     smax = 2)
+                     max_outer_iter = 2,
+                     max_admm_iter = 2)
 
   expect_type(result, "list")
 })

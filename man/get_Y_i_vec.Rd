@@ -4,12 +4,12 @@
 \alias{get_Y_i_vec}
 \title{Get Yi as a vector}
 \usage{
-get_Y_i_vec(i, mis, Y, Y_mat)
+get_Y_i_vec(i, mi_vec, Y, Y_mat)
 }
 \arguments{
 \item{i}{subject index}
 
-\item{mis}{vector of the number of timepoints for each sample. Of length n}
+\item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
 
 \item{Y}{response matrix of dimension N x K}
 

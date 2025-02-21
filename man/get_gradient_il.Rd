@@ -4,10 +4,13 @@
 \alias{get_gradient_il}
 \title{Title}
 \usage{
-get_gradient_il(i, l, Y, mis, phi, beta, Z, B)
+get_gradient_il(i, l, Y, mi_vec, phi, beta, Z, B)
 }
 \arguments{
-\item{K}{}
+\item{B}{}
+}
+\value{
+Vector of length PK
 }
 \description{
 Title

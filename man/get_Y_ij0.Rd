@@ -4,7 +4,7 @@
 \alias{get_Y_ij0}
 \title{Get \eqn{Y_{ij0}}}
 \usage{
-get_Y_ij0(i, j, Y, mis)
+get_Y_ij0(i, j, Y, mi_vec)
 }
 \arguments{
 \item{i}{subject}
@@ -13,7 +13,7 @@ get_Y_ij0(i, j, Y, mis)
 
 \item{Y}{response matrix of dimension N x K}
 
-\item{mis}{vector of the number of timepoints for each sample. Of length n}
+\item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
 }
 \value{
 Scalar of the total sum constraint for a given i, j

@@ -4,10 +4,13 @@
 \alias{get_Vi_inv}
 \title{Get Vi inverse}
 \usage{
-get_Vi_inv(V_i, i, Y, mis, phi, beta, Z, B, K)
+get_Vi_inv(V_i, i, Y, mi_vec, phi, beta, Z, B, K)
 }
 \arguments{
-\item{K}{}
+\item{V_i}{}
+}
+\value{
+Matrix of dimension Kmi x Kmi
 }
 \description{
 Get Vi inverse

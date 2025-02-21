@@ -4,10 +4,13 @@
 \alias{get_Yi_minus_mui}
 \title{Get the Yi minus mui term of the gradient}
 \usage{
-get_Yi_minus_mui(i, Y, mis, beta, Z, B, K)
+get_Yi_minus_mui(i, Y, mi_vec, beta, Z, B, K)
 }
 \arguments{
-\item{K}{}
+\item{mi_vec}{}
+}
+\value{
+Vector of length Kmi
 }
 \description{
 Get the Yi minus mui term of the gradient

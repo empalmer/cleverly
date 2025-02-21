@@ -10,7 +10,7 @@ format_Z(Z)
 \item{Z}{A matrix or data frame with columns of external variables for each subject/time}
 }
 \value{
-A matrix with a column of 1s representing L = 0, and values for the other extenral variables
+A matrix with a column of 1s representing L = 0, and values for the other external variables
 }
 \description{
 Format Z

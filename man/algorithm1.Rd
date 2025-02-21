@@ -4,20 +4,33 @@
 \alias{algorithm1}
 \title{Algorithm 1}
 \usage{
-algorithm1(Y, Z, subject_ids, time, lp, gamma, d, nknots, order, tol, smax)
+algorithm1(
+  Y,
+  Z,
+  time,
+  mi_vec,
+  lp,
+  gammas,
+  psi,
+  phi,
+  tau,
+  theta,
+  d,
+  nknots,
+  order,
+  tol,
+  max_outer_iter,
+  max_admm_iter
+)
 }
 \arguments{
 \item{Y}{Matrix of counts Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
 
 \item{Z}{matrix that starts with a column of 1s. Of dimension M x L + 1}
 
-\item{subject_ids}{vector of numeric ids for each subject}
-
-\item{time}{vector of numeric ids}
+\item{mi_vec}{count vector of length n for the number of time points for each i}
 
 \item{lp}{clustering index}
-
-\item{gamma}{Vector of length (L + 1) of penalization hyper parameters}
 
 \item{d}{Order for the difference matrix}
 
@@ -27,7 +40,7 @@ algorithm1(Y, Z, subject_ids, time, lp, gamma, d, nknots, order, tol, smax)
 
 \item{tol}{Tolerance for convergence}
 
-\item{smax}{Maximum number of iterations}
+\item{max_admm_iter}{}
 }
 \description{
 Algorithm 1

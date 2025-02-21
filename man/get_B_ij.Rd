@@ -4,7 +4,7 @@
 \alias{get_B_ij}
 \title{Get \eqn{B_ij}}
 \usage{
-get_B_ij(i, j, B, mis)
+get_B_ij(i, j, B, mi_vec)
 }
 \arguments{
 \item{i}{subject index}
@@ -13,7 +13,7 @@ get_B_ij(i, j, B, mis)
 
 \item{B}{B-spline basis matrix of dimension N x P}
 
-\item{mis}{vector of the number of timepoints for each sample. Of length n}
+\item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
 }
 \value{
 A vector of length P

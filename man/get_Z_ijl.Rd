@@ -4,7 +4,7 @@
 \alias{get_Z_ijl}
 \title{Get \eqn{Z_{ijl}}}
 \usage{
-get_Z_ijl(i, j, l, Z, mis)
+get_Z_ijl(i, j, l, Z, mi_vec)
 }
 \arguments{
 \item{i}{subject index}

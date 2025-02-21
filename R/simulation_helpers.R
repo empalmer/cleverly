@@ -2,24 +2,24 @@
 
 sim_timepoints <- function(n, maxt = 9, max_mi = 4){
   # generate timepoints: ----
-  mis <- sample(3:max_mi, n, replace = TRUE)
+  mi_vec <- sample(3:max_mi, n, replace = TRUE)
 
   sample_ids <- numeric()
   timepoints <- numeric()
 
   for (i in 1:n) {
-    timepoints <- c(timepoints, sort(sample(1:maxt, mis[i])))
-    sample_ids <- c(sample_ids, rep(paste0("ID", i), mis[i]))
+    timepoints <- c(timepoints, sort(sample(1:maxt, mi_vec[i])))
+    sample_ids <- c(sample_ids, rep(paste0("ID", i), mi_vec[i]))
   }
   return(list(X = data.frame(id = sample_ids, time = timepoints),
-              mis = mis))
+              mi_vec = mi_vec))
 }
 
 
 
-sim_Z <- function(mis){
+sim_Z <- function(mi_vec){
   # External variables: ------
-  M <- sum(mis)
+  M <- sum(mi_vec)
 
 
   Z0 <- rep(1, M)
@@ -49,7 +49,7 @@ sim_Z <- function(mis){
 # # Simulate Y ----------------------------------------------------
 #
 #
-sim_Y_ij <- function(i, j, beta, Z, B, Y_ij0, K, mis){
+sim_Y_ij <- function(i, j, beta, Z, B, Y_ij0, K, mi_vec){
   Y_ij <- MGLM::rdirmn(n = 1,
                        size = Y_ij0,
                        alpha = get_alpha_ij(i = i,
@@ -58,35 +58,35 @@ sim_Y_ij <- function(i, j, beta, Z, B, Y_ij0, K, mis){
                                             Z = Z,
                                             B = B,
                                             K = K,
-                                            mis = mis))
+                                            mi_vec = mi_vec))
   return(Y_ij) # Returns a 1xK matrix
 }
 
 # Simulate Y for all i, j, k
-sim_Yi <- function(i, beta, Z, B, K, mis){
-  mi <- mis[i]
+sim_Yi <- function(i, beta, Z, B, K, mi_vec){
+  mi <- mi_vec[i]
   Y_i <- matrix(nrow = mi, ncol = K)
   for (j in 1:mi) {
     Y_ij0 <- sample(50:150, 1)
-    Y_i[j,] <- sim_Y_ij(i, j, beta, Z, B, Y_ij0, K, mis)
+    Y_i[j,] <- sim_Y_ij(i, j, beta, Z, B, Y_ij0, K, mi_vec)
   }
   return(Y_i)
 }
 
 
-sim_Y <- function(beta, Z, B, K, mis){
-  #Y <- matrix(nrow = sum(mis), ncol = K)
+sim_Y <- function(beta, Z, B, K, mi_vec){
+  #Y <- matrix(nrow = sum(mi_vec), ncol = K)
   Y <- matrix(nrow = 0, ncol = K)
-  n <- length(mis)
+  n <- length(mi_vec)
   for (i in 1:n) {
-    #Y[((i - 1)*mis[i] + 1):(i*mis[i]), ] <- sim_Yi(i, beta, Z, B)
+    #Y[((i - 1)*mi_vec[i] + 1):(i*mi_vec[i]), ] <- sim_Yi(i, beta, Z, B)
     Y <- rbind(Y,
                sim_Yi(i,
                       beta,
                       Z,
                       B,
                       K,
-                      mis))
+                      mi_vec))
   }
   return(Y)
 }
@@ -95,11 +95,11 @@ base_sim <- function(seed = 124){
   set.seed(seed)
   time_list <- sim_timepoints(n = 5)
   time <- time_list$X$time
-  mis <- time_list$mis
-  is <- rep(1:5, mis)
-  M <- sum(mis)
+  mi_vec <- time_list$mi_vec
+  is <- rep(1:5, mi_vec)
+  M <- sum(mi_vec)
   K <- 4
-  Z <- sim_Z(mis)
+  Z <- sim_Z(mi_vec)
   B <- get_B(time, order = 3, nknots = 3)
   P <- 6
 
@@ -114,14 +114,14 @@ base_sim <- function(seed = 124){
              Z = Z,
              B = B,
              K = K,
-             mis = mis)
+             mi_vec = mi_vec)
 
   return(list(Y = Y,
               Z = Z,
               B = B,
               is = is,
               beta = beta,
-              mis = mis,
+              mi_vec = mi_vec,
               time = time,
               K = K,
               P = P))

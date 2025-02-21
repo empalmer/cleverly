@@ -4,10 +4,13 @@
 \alias{get_partials_il}
 \title{Get full partials matrix for a given i, l}
 \usage{
-get_partials_il(i, l, Y, Z, B, beta, mis)
+get_partials_il(i, l, Y, Z, B, beta, mi_vec)
 }
 \arguments{
-\item{P}{}
+\item{beta}{}
+}
+\value{
+Matrix of dimension KP x Kmi
 }
 \description{
 Get full partials matrix for a given i, l
