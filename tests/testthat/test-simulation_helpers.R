@@ -55,3 +55,100 @@ test_that("Test sim Y works", {
              K = K,
              mi_vec = mi_vec)
 })
+
+
+test_that("No Z - Chenyangs code", {
+
+  sim <- sim_noZ()
+
+  time <- sim$time
+  id <- sim$individual
+  time_id <- sim$Capture.Number
+  Yij0 <- sim$total_n
+
+  Y <- dplyr::select(sim, -c(
+                        "individual",
+                        "time",
+                        "total_n",
+                        "Capture.Number"))
+  Y <- as.matrix(Y)
+
+  res <- cleverly(Y = Y,
+                  subject_ids = id,
+                  time = time,
+                  gammas = 1,
+                  psi = 800,
+                  phi = 1,
+                  max_admm_iter = 3,
+                  max_outer_iter = 1)
+
+  est_beta <- res$result$beta
+
+  # View the betas to see if they are clustered.
+  data.frame(est_beta) %>%
+    dplyr::mutate(K = rep(LETTERS[1:12],each = 6),
+                  id = rep(1:6, 12)) %>%
+    tidyr::pivot_wider(names_from = K,
+                       values_from = est_beta)
+
+  # Truth:
+  Y_df %>%
+    tidyr::separate(name, into = c("Taxa","num"),
+                    sep = "\\.",
+                    remove = FALSE) %>%
+    dplyr::mutate(fxn = dplyr::case_when(num %in% 1:4 ~ exp(cos(2 * pi * time)),
+                                         num %in% 5:8 ~ exp(1 - 2 * exp(-6 * time)),
+                                         num %in% 9:12 ~ exp(-1.5 * time))) %>%
+    ggplot2::ggplot() +
+    ggplot2::geom_line(ggplot2::aes(x = time, y = y_hat),
+                       linewidth = 2, color = "blue") +
+    ggplot2::geom_line(ggplot2::aes(x = time, y = fxn),
+                       linewidth = 2, color = "black") +
+    ggplot2::facet_wrap(~name)
+
+
+  #Un-normalize?
+  y_ra <- Y/rowSums(Y)
+  colnames(y_ra) <- c("Taxa.1","Taxa.2",
+                       "Taxa.3","Taxa.4",
+                       "Taxa.5","Taxa.6",
+                       "Taxa.7","Taxa.8",
+                       "Taxa.9","Taxa.10",
+                       "Taxa.11","Taxa.12")
+  y_ra <- data.frame(y_ra) %>%
+    dplyr::mutate(time = time) %>%
+    tidyr::pivot_longer(-time)
+
+  y_hat <- res$result$y_hat
+  colnames(y_hat) <- c("Taxa.1","Taxa.2",
+                      "Taxa.3","Taxa.4",
+                      "Taxa.5","Taxa.6",
+                      "Taxa.7","Taxa.8",
+                      "Taxa.9","Taxa.10",
+                      "Taxa.11","Taxa.12")
+
+  y_hat_ra <- data.frame(y_hat) %>%
+    dplyr::mutate(time = time) %>%
+    tidyr::pivot_longer(-time)
+
+
+  # Y-hats
+  Y_ra_df <- data.frame(y_ra,
+                        y_hat = y_hat_ra$value) %>%
+    dplyr::mutate(name = factor(name,
+                                levels = c("Taxa.1","Taxa.2",
+                                           "Taxa.3","Taxa.4",
+                                           "Taxa.5","Taxa.6",
+                                           "Taxa.7","Taxa.8",
+                                           "Taxa.9","Taxa.10",
+                                           "Taxa.11","Taxa.12")))
+  Y_ra_df %>%
+    ggplot2::ggplot() +
+    ggplot2::geom_point(ggplot2::aes(x = time, y = value),
+                        size = 1, color = "black") +
+    ggplot2::geom_line(ggplot2::aes(x = time, y = y_hat),
+                       linewidth = 2, color = "blue") +
+    ggplot2::facet_wrap(~name)
+
+
+})

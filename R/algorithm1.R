@@ -32,6 +32,7 @@ algorithm1 <- function(Y,
                        phi,
                        tau,
                        theta,
+                       C,
                        d,
                        nknots,
                        order,
@@ -43,6 +44,8 @@ algorithm1 <- function(Y,
   P <- nknots + order
   L <- ncol(Z) - 1
   K <- ncol(Y)
+  M <- nrow(Y)
+
 
   # Get indices for the non-cluster responses
   lp_minus <- setdiff(0:L , lp)
@@ -69,51 +72,101 @@ algorithm1 <- function(Y,
   loop_list_diff <- list()
   diff <- 100
   s <- 1
-  while ((diff > tol) & (s < max_outer_iter)) {
-    # Solution for l_p minus, with l_p fixed
-    beta_lp_minus <- algorithm2(Y = Y,
-                                Z = Z,
-                                mi_vec = mi_vec,
-                                lp = lp,
-                                B = B,
-                                beta = beta,
-                                D = D,
-                                gammas = gammas,
-                                phi = phi,
-                                C = C)
+
+  while ((diff > tol) & (s <= max_outer_iter)) {
+
+    # Go straight to ADMM code if there is no external variables
+    if (L > 0) {
+      # Solution for l_p minus, with l_p fixed
+      beta_lp_minus <- algorithm2(Y = Y,
+                                  Z = Z,
+                                  mi_vec = mi_vec,
+                                  lp = lp,
+                                  B = B,
+                                  beta = beta,
+                                  D = D,
+                                  gammas = gammas,
+                                  phi = phi,
+                                  C = C)
+    } else {
+      beta_lp_minus <- beta
+    }
+
     # Solution for l p (ADMM) with beta l_p minus fixed
-    beta_lp <- algorithm3(Y = Y,
+    alg3 <- algorithm3(Y = Y,
                           Z = Z,
                           lp = lp,
                           B = B,
                           beta = beta_lp_minus,
                           A = A,
                           P = P,
+                          C = C,
+                          D = D,
                           Kappa = Kappa,
+                          mi_vec = mi_vec,
                           gammas = gammas,
                           tau = tau,
                           theta = theta,
                           psi = psi,
+                          phi = phi,
                           max_admm_iter = max_admm_iter)
-
+    # phi <- estimate_phi()
+    beta_lp <- alg3$beta
+    admm_beta_list <- alg3$beta_admm_track
 
     # Difference in betas between this loop and the last
     diff <- sum(abs(beta_lp - beta)) # matrix difference
     beta <- beta_lp
 
-    loop_list_beta[s] <- beta
-    loop_list_diff[s] <- diff
+    loop_list_beta[[s]] <- beta
+    loop_list_diff[[s]] <- diff
 
     # Increment loop
     s <- s + 1
   }
 
-  return(list(beta = beta))
+
+  y_hat <- estimate_y(beta, B, Z, K)
+  clusters <- get_clusters(beta)
+
+  return(list(beta = beta,
+              y_hat = y_hat,
+              admm_beta_list = admm_beta_list,
+              loop_list_beta = loop_list_beta,
+              loop_list_diff = loop_list_diff))
 }
 
 
 
 
 
+estimate_y <- function(beta, B, Z, K){
+  P <- ncol(B)
+  L <- ncol(Z) - 1
+  M <- nrow(Z)
+  yhat <- matrix(nrow = M, ncol = K)
+  for (k in 1:K) {
+    y_k <- numeric(M)
+    for (l in 0:L) {
+      beta_k <- beta[((k - 1)*P + 1):(k*P), l + 1]
+      Z_l <- diag(Z[,l + 1])
+      y_k <- y_k + Z_l %*% B %*% beta_k
+    }
+    yhat[,k] <- y_k
+
+  }
+  # Turn into RA version:
+  yhat_ra <- exp(yhat)/rowSums(exp(yhat))
+  return(yhat_ra)
+}
 
 
+get_clusters <- function(beta){
+  L <- ncol(beta)/ncol(beta)
+  clusters <- list()
+  for (l in 1:L) {
+    beta_l <- beta[,l]
+    clusters[[l]] <- which(beta_l != 0)
+  }
+  return(clusters)
+}

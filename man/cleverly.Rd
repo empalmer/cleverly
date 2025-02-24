@@ -16,10 +16,11 @@ cleverly(
   phi,
   tau = 8/100,
   theta = 300,
+  C = 10,
   d = 2,
   nknots = 3,
   order = 3,
-  tol = 1e+06,
+  tol = 1e-06,
   max_outer_iter = 10,
   max_admm_iter = 100
 )

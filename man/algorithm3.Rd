@@ -12,6 +12,8 @@ algorithm3(
   beta,
   A,
   P,
+  C,
+  D,
   Kappa,
   mi_vec,
   gammas,

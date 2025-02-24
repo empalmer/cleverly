@@ -8,7 +8,6 @@ test_that("Algorithm 2", {
              nknots = 3)
   beta_step <- algorithm2(Y = sim$Y,
                         Z = sim$Z,
-                        is = sim$is,
                         mi_vec = sim$mi_vec,
                         lp = lp,
                         B = sim$B,

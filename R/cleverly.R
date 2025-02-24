@@ -6,12 +6,18 @@
 #' @param time either a vector of length(Y) or a column reference if Y is a data frame. Must be numeric
 #' @param lp either a numeric index of which external variable to cluster on, or the name of the column of Z that contains the clustering variable. Specify numeric 0 to cluster via baseline.
 #' @param response_type
-#' @param gamma Vector of length (L + 1) of penalization hyper parameters
 #' @param d Order for the difference matrix
 #' @param nknots Number of knots for the B-spline basis
 #' @param order Order of the B-spline basis
-#' @param tol Tolerance for convergence
-#' @param smax Maximum number of iterations
+#' @param gammas Vector of dimension L + 1 for penalizing the D matrix
+#' @param psi MCP hyper parameter
+#' @param phi Dirichlet Multinomial overdispersion parameter. Should be changed to be estimated.
+#' @param tau MCP hyper parameter. Default is 8/100.
+#' @param theta MCP hyper parameter. Default is 300.
+#' @param C Constant for determining the hessian change. Default is 10.
+#' @param max_outer_iter Number of iterations for the outer loop (Algorithm 1)
+#' @param max_admm_iter Number of iterations for the clustering step (Algorithm 3)
+#' @param tol Tolerance for convergence for the outer loop AND admm loop
 #'
 #' @returns
 #' @export
@@ -28,12 +34,15 @@ cleverly <- function(Y,
                      phi,
                      tau = 8/100,
                      theta = 300,
+                     C = 10,
                      d = 2,
                      nknots = 3,
                      order = 3,
-                     tol = 1e6,
+                     tol = 1e-6,
                      max_outer_iter = 10,
                      max_admm_iter = 100) {
+
+
 
   # Format Y
   Y_user <- Y
@@ -47,8 +56,10 @@ cleverly <- function(Y,
   is <- subject_ids
 
   # Get m_is
-  mi_vec <- get_mi_vec(Y_user, subject_ids, time)
-  js <- sequence(mi_vec$mi)
+  # Currently a data frame with subject id and mi
+  mi_vec <- get_mi_vec(Y_user, subject_ids, time)$mi
+  js <- sequence(mi_vec)
+
 
   # Format Z
   if (!missing(Z)) {
@@ -68,7 +79,6 @@ cleverly <- function(Y,
   if (response_type == "counts") {
     result <- algorithm1(Y = Y,
                          Z = Z,
-                         is = is,
                          time = time,
                          mi_vec = mi_vec,
                          lp = lp,
@@ -77,6 +87,7 @@ cleverly <- function(Y,
                          phi = phi,
                          tau = tau,
                          theta = theta,
+                         C = C,
                          d = d,
                          nknots = nknots,
                          order = order,
@@ -86,6 +97,7 @@ cleverly <- function(Y,
   } else {
     stop("Invalid response type or type not yet implemented.")
   }
+
 
   # Return what is inputted and the result
   # Change eventually

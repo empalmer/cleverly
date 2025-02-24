@@ -15,6 +15,7 @@ algorithm1(
   phi,
   tau,
   theta,
+  C,
   d,
   nknots,
   order,

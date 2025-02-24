@@ -107,9 +107,12 @@ update_beta_admm <- function(Y,
   first_term <- -H + gamma * D + theta * t(A) %*% A
   second_term <- Q - H %*% beta_lp + theta * t(A) %*% v_tilde
 
+
   beta_lp_new <- MASS::ginv(first_term) %*% second_term
 
-  return(beta_lp_new)
+  # All other beta elements are fixed, only the lp column is updated.
+  beta[,lp + 1] <- beta_lp_new
+  return(beta)
 }
 
 #' Update lambda step of the admm algorithm
@@ -156,6 +159,8 @@ algorithm3 <- function(Y,
                        beta,
                        A,
                        P,
+                       C,
+                       D,
                        Kappa,
                        mi_vec,
                        gammas,
@@ -164,11 +169,16 @@ algorithm3 <- function(Y,
                        psi,
                        phi,
                        max_admm_iter = 100) {
-  lambda <- numeric(nrow(Kappa))
+  lambda <- numeric(nrow(Kappa)*P)
 
-  s <- 1
+  t <- 1
 
-  while (s < max_admm_iter) {
+
+  beta_admm_track <- list()
+  v_admm_track <- list()
+  lambda_admm_track <- list()
+
+  while (t <= max_admm_iter) {
     v_new <- update_v(beta = beta,
                       lp = lp,
                       lambda = lambda,
@@ -178,20 +188,20 @@ algorithm3 <- function(Y,
                       tau = tau,
                       theta = theta,
                       psi = psi)
-    beta_new <- update_beta_admm(Y,
-                                 beta,
-                                 lp,
+    beta_new <- update_beta_admm(Y = Y,
+                                 beta = beta,
+                                 lp = lp,
                                  v = v_new,
-                                 lambda,
-                                 theta,
-                                 gammas,
-                                 D,
-                                 A,
-                                 Z,
-                                 B,
-                                 phi,
-                                 C,
-                                 mi_vec)
+                                 lambda = lambda,
+                                 theta = theta,
+                                 gammas = gammas,
+                                 D = D,
+                                 A = A,
+                                 Z = Z,
+                                 B = B,
+                                 phi = phi,
+                                 C = C,
+                                 mi_vec = mi_vec)
     lambda_new <- update_lambda(beta_lp = beta_new[,lp + 1],
                                 v = v_new,
                                 lambda = lambda,
@@ -199,6 +209,9 @@ algorithm3 <- function(Y,
                                 theta = theta)
 
 
+    beta_admm_track[[t]] <- beta_new
+    v_admm_track[[t]] <- v_new
+    lambda_admm_track[[t]] <- lambda_new
     # Check for convergence
     converged <- FALSE
     if (converged) {
@@ -208,9 +221,13 @@ algorithm3 <- function(Y,
     v <- v_new
     beta <- beta_new
     lambda <- lambda_new
-    s <- s + 1
+    t <- t + 1
   }
 
-  # STAND IN!!1
-  return(beta)
+  return(list(beta = beta,
+              lambda = lambda,
+              v = v,
+              beta_admm_track = beta_admm_track,
+              lambda_admm_track = lambda_admm_track,
+              v_admm_track = v_admm_track))
 }
