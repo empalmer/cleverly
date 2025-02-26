@@ -56,6 +56,7 @@ get_Hessian_il <- function(i, l, Y, mi_vec, beta, Z, B, phi){
 get_Hessian_l <- function(l, Y, mi_vec, beta, Z, B, phi, C) {
   n <- length(mi_vec)
 
+
   hessian_l <- matrix(0, nrow = nrow(beta), ncol = nrow(beta))
   for (i in 1:n) {
     hessian_il <- get_Hessian_il(i = i,
@@ -70,9 +71,12 @@ get_Hessian_l <- function(l, Y, mi_vec, beta, Z, B, phi, C) {
 
   }
 
+
   # Diagonalize hessian:
-  diag_hessian <- -pmax(-diag(hessian_l), C)
+  diag_hessian <- -pmax(diag(-hessian_l), C)
 
+  C_hessian <- diag(diag_hessian)
 
-  return(hessian_l)
+  return(C_hessian)
+  #return(hessian_l)
 }

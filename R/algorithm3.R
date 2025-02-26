@@ -42,10 +42,11 @@ algorithm3 <- function(Y,
 
   t <- 1
 
-
+  # Initialize all return lists
   beta_admm_track <- list()
   v_admm_track <- list()
   lambda_admm_track <- list()
+  diff_admm <- c()
   phi_track <- c()
 
   while (t <= max_admm_iter) {
@@ -79,7 +80,6 @@ algorithm3 <- function(Y,
                                 theta = theta)
 
     # Update dispersion parameter
-
     phi <- get_phi(Y = Y,
                    phi_old = phi,
                    beta = beta_new,
@@ -94,11 +94,16 @@ algorithm3 <- function(Y,
     beta_admm_track[[t]] <- beta_new
     v_admm_track[[t]] <- v_new
     lambda_admm_track[[t]] <- lambda_new
+
+
     # Check for convergence
+    diff <- sum(abs(beta_new - beta))
+    diff_admm <- c(diff_admm, diff)
     converged <- FALSE
     if (converged) {
       break
     }
+
     # Prepare for next iteration
     v <- v_new
     beta <- beta_new
@@ -106,14 +111,14 @@ algorithm3 <- function(Y,
     t <- t + 1
   }
 
-
   return(list(beta = beta,
               lambda = lambda,
               v = v,
               beta_admm_track = beta_admm_track,
               lambda_admm_track = lambda_admm_track,
               v_admm_track = v_admm_track,
-              phi_track = phi_track))
+              phi_track = phi_track,
+              diff_admm = diff_admm))
 }
 
 
@@ -152,14 +157,18 @@ update_v <- function(beta,
   v <- numeric(nrow(Kappa) * P)
 
   for (kappa in 1:nrow(Kappa)) {
+    # Get the pairwise betas
     k1 <- Kappa[kappa, 1]
     k2 <- Kappa[kappa, 2]
     beta_k1 <- beta[(P * (k1 - 1) + 1):(P * k1), lp + 1]
     beta_k2 <- beta[(P * (k2 - 1) + 1):(P * k2), lp + 1]
+    # Get corresponding lambdas
     lambda_kappa <- lambda[(P * (kappa - 1) + 1):(P * kappa)]
-    u <- beta_k1 - beta_k2 - lambda_kappa/theta
+    # BIG CHANGE HERE! ITS PLUS NOT MINUS TO MATCH SIGN
+    u <- beta_k1 - beta_k2 + lambda_kappa/theta
 
     norm_u <- sum(u^2) # or norm(u, type = "2")
+    # Also check if the norm is 0 to avoid dividing by zero
     if (norm_u >= tau * psi | norm_u == 0) {
       v[((kappa - 1) * P + 1):(kappa * P)] <- u
     } else {
@@ -206,6 +215,7 @@ update_beta_admm <- function(Y,
                              C,
                              mi_vec){
 
+
   gamma <- gammas[lp + 1]
   H <- get_Hessian_l(l = lp,
                      Y = Y,
@@ -228,8 +238,6 @@ update_beta_admm <- function(Y,
 
   first_term <- -H + gamma * D + theta * t(A) %*% A
   second_term <- Q - H %*% beta_lp + theta * t(A) %*% v_tilde
-
-
   beta_lp_new <- MASS::ginv(first_term) %*% second_term
 
   # All other beta elements are fixed, only the lp column is updated.

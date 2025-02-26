@@ -71,6 +71,7 @@ algorithm1 <- function(Y,
   loop_list_beta <- list()
   loop_list_diff <- list()
   admm_beta_list <- list()
+  admm_diffs <- list()
   phis_list <- list()
   diff <- 100
   s <- 1
@@ -124,6 +125,7 @@ algorithm1 <- function(Y,
 
     loop_list_beta[[s]] <- beta
     loop_list_diff[[s]] <- diff
+    admm_diffs[[s]] <- alg3$diff_admm
     phis_list[[s]] <- alg3$phi_track
 
 
@@ -138,6 +140,7 @@ algorithm1 <- function(Y,
   return(list(beta = beta,
               y_hat = y_hat,
               v = v,
+              admm_diffs = admm_diffs,
               admm_beta_list = admm_beta_list,
               loop_list_beta = loop_list_beta,
               loop_list_diff = loop_list_diff,
@@ -156,6 +159,7 @@ estimate_y <- function(beta, B, Z, K){
   for (k in 1:K) {
     y_k <- numeric(M)
     for (l in 0:L) {
+
       beta_k <- beta[((k - 1)*P + 1):(k*P), l + 1]
       Z_l <- diag(Z[,l + 1])
       y_k <- y_k + Z_l %*% B %*% beta_k

@@ -311,7 +311,7 @@ get_pearson_residual_i <- function(Y,
     alpha_ij0 <- sum(alpha_ij)
     # Should be of length K.
     rij <- Yij_minus_muij /
-      sqrt(phi * Y_ij0 *
+      sqrt( Y_ij0 *
              (Y_ij0 + alpha_ij0) / (1 + alpha_ij0) *
              alpha_ij/alpha_ij0 * (1 - alpha_ij/alpha_ij0))
     ri[((j - 1)*K + 1):(K*j)] <- rij

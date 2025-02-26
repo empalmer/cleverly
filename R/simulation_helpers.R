@@ -79,7 +79,7 @@ sim_Yi <- function(i, beta, Z, B, K, mi_vec){
   mi <- mi_vec[i]
   Y_i <- matrix(nrow = mi, ncol = K)
   for (j in 1:mi) {
-    Y_ij0 <- sample(50:150, 1)
+    Y_ij0 <- sample(100:500, 1)
     Y_i[j,] <- sim_Y_ij(i, j, beta, Z, B, Y_ij0, K, mi_vec)
   }
   return(Y_i)
@@ -101,6 +101,7 @@ sim_Yi <- function(i, beta, Z, B, K, mi_vec){
 sim_Y <- function(beta, Z, B, K, mi_vec){
   Y <- matrix(nrow = 0, ncol = K)
   n <- length(mi_vec)
+
   for (i in 1:n) {
     Y <- rbind(Y,
                sim_Yi(i,
