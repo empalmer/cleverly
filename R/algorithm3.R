@@ -1,3 +1,125 @@
+# Algorithm 3 -------------------------------------------------------------
+
+#' ADMM algorithm for updating the clustering beta
+#'
+#' Iterates between updating v, beta, and lambda
+#'
+#' @param Y
+#' @param Z
+#' @param lp
+#' @param B
+#' @param beta
+#' @param A
+#' @param kappa
+#' @param gamma
+#' @param tau
+#' @param theta
+#' @param psi
+#' @param max_admm_iter
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+algorithm3 <- function(Y,
+                       Z,
+                       lp,
+                       B,
+                       beta,
+                       A,
+                       P,
+                       C,
+                       D,
+                       Kappa,
+                       mi_vec,
+                       gammas,
+                       tau,
+                       theta,
+                       psi,
+                       phi,
+                       max_admm_iter = 100) {
+  lambda <- numeric(nrow(Kappa)*P)
+
+  t <- 1
+
+
+  beta_admm_track <- list()
+  v_admm_track <- list()
+  lambda_admm_track <- list()
+  phi_track <- c()
+
+  while (t <= max_admm_iter) {
+    v_new <- update_v(beta = beta,
+                      lp = lp,
+                      lambda = lambda,
+                      Kappa = Kappa,
+                      P = P,
+                      gammas = gammas,
+                      tau = tau,
+                      theta = theta,
+                      psi = psi)
+    beta_new <- update_beta_admm(Y = Y,
+                                 beta = beta,
+                                 lp = lp,
+                                 v = v_new,
+                                 lambda = lambda,
+                                 theta = theta,
+                                 gammas = gammas,
+                                 D = D,
+                                 A = A,
+                                 Z = Z,
+                                 B = B,
+                                 phi = phi,
+                                 C = C,
+                                 mi_vec = mi_vec)
+    lambda_new <- update_lambda(beta_lp = beta_new[,lp + 1],
+                                v = v_new,
+                                lambda = lambda,
+                                A = A,
+                                theta = theta)
+
+    # Update dispersion parameter
+
+    phi <- get_phi(Y = Y,
+                   phi_old = phi,
+                   beta = beta_new,
+                   Z = Z,
+                   B = B,
+                   K = ncol(Y),
+                   mi_vec = mi_vec)
+
+
+    # Keep track of loop
+    phi_track <- c(phi_track, phi)
+    beta_admm_track[[t]] <- beta_new
+    v_admm_track[[t]] <- v_new
+    lambda_admm_track[[t]] <- lambda_new
+    # Check for convergence
+    converged <- FALSE
+    if (converged) {
+      break
+    }
+    # Prepare for next iteration
+    v <- v_new
+    beta <- beta_new
+    lambda <- lambda_new
+    t <- t + 1
+  }
+
+
+  return(list(beta = beta,
+              lambda = lambda,
+              v = v,
+              beta_admm_track = beta_admm_track,
+              lambda_admm_track = lambda_admm_track,
+              v_admm_track = v_admm_track,
+              phi_track = phi_track))
+}
+
+
+
+# Get v, beta, lambda -----------------------------------------------------
+
 #' Update v
 #'
 #' Update v step of ADMM algorithm. V is the pairwise differences vector of dimension |Kappa|P
@@ -133,101 +255,5 @@ update_lambda <- function(beta_lp, v, lambda, A, theta){
 }
 
 
-#' ADMM algorithm for updating the clustering beta
-#'
-#' @param Y
-#' @param Z
-#' @param lp
-#' @param B
-#' @param beta
-#' @param A
-#' @param kappa
-#' @param gamma
-#' @param tau
-#' @param theta
-#' @param psi
-#' @param max_admm_iter
-#'
-#' @returns
-#' @export
-#'
-#' @examples
-algorithm3 <- function(Y,
-                       Z,
-                       lp,
-                       B,
-                       beta,
-                       A,
-                       P,
-                       C,
-                       D,
-                       Kappa,
-                       mi_vec,
-                       gammas,
-                       tau,
-                       theta,
-                       psi,
-                       phi,
-                       max_admm_iter = 100) {
-  lambda <- numeric(nrow(Kappa)*P)
-
-  t <- 1
 
 
-  beta_admm_track <- list()
-  v_admm_track <- list()
-  lambda_admm_track <- list()
-
-  while (t <= max_admm_iter) {
-    v_new <- update_v(beta = beta,
-                      lp = lp,
-                      lambda = lambda,
-                      Kappa = Kappa,
-                      P = P,
-                      gammas = gammas,
-                      tau = tau,
-                      theta = theta,
-                      psi = psi)
-    beta_new <- update_beta_admm(Y = Y,
-                                 beta = beta,
-                                 lp = lp,
-                                 v = v_new,
-                                 lambda = lambda,
-                                 theta = theta,
-                                 gammas = gammas,
-                                 D = D,
-                                 A = A,
-                                 Z = Z,
-                                 B = B,
-                                 phi = phi,
-                                 C = C,
-                                 mi_vec = mi_vec)
-    lambda_new <- update_lambda(beta_lp = beta_new[,lp + 1],
-                                v = v_new,
-                                lambda = lambda,
-                                A = A,
-                                theta = theta)
-
-
-    beta_admm_track[[t]] <- beta_new
-    v_admm_track[[t]] <- v_new
-    lambda_admm_track[[t]] <- lambda_new
-    # Check for convergence
-    converged <- FALSE
-    if (converged) {
-      break
-    }
-    # Prepare for next iteration
-    v <- v_new
-    beta <- beta_new
-    lambda <- lambda_new
-    t <- t + 1
-  }
-
-  return(list(beta = beta,
-              lambda = lambda,
-              v = v,
-              beta_admm_track = beta_admm_track,
-              lambda_admm_track = lambda_admm_track,
-              v_admm_track = v_admm_track))
-}

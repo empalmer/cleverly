@@ -1,7 +1,6 @@
-
-# Hessian -----------------------------------------------------------------
-
-#' Title
+#' Get hessian elements
+#'
+#' Get for for the ith subject deriving with respect to the lth external variable
 #'
 #' @param i
 #' @param l
@@ -40,7 +39,7 @@ get_Hessian_il <- function(i, l, Y, mi_vec, beta, Z, B, phi){
 }
 
 
-#' Title
+#' Get hessian with respect to the lth external variable
 #'
 #' @param l
 #' @param Y

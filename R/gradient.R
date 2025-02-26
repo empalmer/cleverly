@@ -216,15 +216,6 @@ get_gradient_l <- function(Y, mi_vec, l, phi, beta, Z, B){
   P <- ncol(B)
   K <- ncol(Y)
   gradient_sum <- numeric(P*K)
-  # Y_values <- get_Y_wrapper(Y = Y,
-  #                           subject_ids = subject_ids,
-  #                           time_ids = time_ids)
-  # Y_use <- Y_values$Y
-  # subject_ids_use <- Y_values$subject_id_values
-  #
-  #
-  # mi_vec <- get_mi_vec(Y, subject_ids, time_ids)$mi
-
   for (i in 1:length(mi_vec)) {
     gradient_il <- get_gradient_il(
       i = i,
@@ -244,4 +235,87 @@ get_gradient_l <- function(Y, mi_vec, l, phi, beta, Z, B){
 
 get_gradient <- function(){
   NULL
+}
+
+
+# Nuisance parameters ----------------------------------------------------
+
+get_phi <- function(Y, phi_old, beta, Z, B, K, mi_vec){
+
+  r <- get_pearson_residuals(Y = Y,
+                             phi = phi_old,
+                             beta = beta,
+                             Z = Z,
+                             B = B,
+                             K = K,
+                             mi_vec = mi_vec)
+  M <- sum(mi_vec)
+  phi <- sum(r^2) / (K*M - 1)
+
+  return(phi)
+}
+
+
+get_pearson_residuals <- function(Y, phi, beta, Z, B, K, mi_vec){
+  r <- c()
+  for (i in 1:length(mi_vec)) {
+    ri <- get_pearson_residual_i(Y, phi, i, beta, Z, B, K, mi_vec)
+    r <- c(r, ri)
+  }
+  return(r)
+}
+
+#' Get the pearson residual for a given i
+#'
+#' @param Y
+#' @param phi
+#' @param i
+#' @param beta
+#' @param Z
+#' @param B
+#' @param K
+#' @param mi_vec
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+get_pearson_residual_i <- function(Y,
+                                    phi,
+                                    i,
+                                    beta,
+                                    Z,
+                                    B, K, mi_vec){
+
+  Yi_minus_mui <- get_Yi_minus_mui(i = i,
+                                   Y = Y,
+                                   mi_vec = mi_vec,
+                                   beta = beta,
+                                   Z = Z,
+                                   B = B,
+                                   K = K)
+  ri <- numeric(mi_vec[i]*K)
+  for (j in 1:mi_vec[i]) {
+    Yij_minus_muij <- Yi_minus_mui[((j - 1)*K + 1):(K*j)]
+    alpha_ij <- get_alpha_ij(beta = beta,
+                             i = i,
+                             j = j,
+                             Z = Z,
+                             B = B,
+                             K = K,
+                             mi_vec = mi_vec)
+    Y_ij0 <- get_Y_ij0(i = i,
+                       j = j,
+                       Y = Y,
+                       mi_vec = mi_vec)
+    alpha_ij0 <- sum(alpha_ij)
+    # Should be of length K.
+    rij <- Yij_minus_muij /
+      sqrt(phi * Y_ij0 *
+             (Y_ij0 + alpha_ij0) / (1 + alpha_ij0) *
+             alpha_ij/alpha_ij0 * (1 - alpha_ij/alpha_ij0))
+    ri[((j - 1)*K + 1):(K*j)] <- rij
+  }
+
+  return(ri)
 }

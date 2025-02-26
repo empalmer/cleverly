@@ -1,5 +1,10 @@
 #' cleverly
 #'
+#' Overall user interface for this algorithm
+#' Formats data and calls `algorithm1()` to run the algorithm
+#'
+#'
+#'
 #' @param Y either a data frame or matrix of numeric response variables. Each response should be a separate column. Each row should be a separate subject/time combination. There should be M total rows. Must be ordered in time.
 #' @param Z Matrix or data frame containing a column for each external variable. There should be M rows and L columns.
 #' @param subject_ids either a vector of length(Y) or a column reference if Y is a data frame
@@ -11,7 +16,7 @@
 #' @param order Order of the B-spline basis
 #' @param gammas Vector of dimension L + 1 for penalizing the D matrix
 #' @param psi MCP hyper parameter
-#' @param phi Dirichlet Multinomial overdispersion parameter. Should be changed to be estimated.
+#' @param phi Dirichlet Multinomial over dispersion parameter. Should be changed to be estimated.
 #' @param tau MCP hyper parameter. Default is 8/100.
 #' @param theta MCP hyper parameter. Default is 300.
 #' @param C Constant for determining the hessian change. Default is 10.

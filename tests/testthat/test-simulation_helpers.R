@@ -73,16 +73,22 @@ test_that("No Z - Chenyangs code", {
                         "Capture.Number"))
   Y <- as.matrix(Y)
 
+
+
+
+
   res <- cleverly(Y = Y,
                   subject_ids = id,
                   time = time,
                   gammas = 1,
                   psi = 800,
                   phi = 1,
-                  max_admm_iter = 3,
+                  max_admm_iter = 5,
                   max_outer_iter = 1)
 
   est_beta <- res$result$beta
+  phis <- res$result$phis_list[[1]]
+  v <- res$result$v
 
   # View the betas to see if they are clustered.
   data.frame(est_beta) %>%
@@ -91,21 +97,13 @@ test_that("No Z - Chenyangs code", {
     tidyr::pivot_wider(names_from = K,
                        values_from = est_beta)
 
-  # Truth:
-  Y_df %>%
-    tidyr::separate(name, into = c("Taxa","num"),
-                    sep = "\\.",
-                    remove = FALSE) %>%
-    dplyr::mutate(fxn = dplyr::case_when(num %in% 1:4 ~ exp(cos(2 * pi * time)),
-                                         num %in% 5:8 ~ exp(1 - 2 * exp(-6 * time)),
-                                         num %in% 9:12 ~ exp(-1.5 * time))) %>%
-    ggplot2::ggplot() +
-    ggplot2::geom_line(ggplot2::aes(x = time, y = y_hat),
-                       linewidth = 2, color = "blue") +
-    ggplot2::geom_line(ggplot2::aes(x = time, y = fxn),
-                       linewidth = 2, color = "black") +
-    ggplot2::facet_wrap(~name)
-
+  y_hat <- res$result$y_hat
+  colnames(y_hat) <- c("Taxa.1","Taxa.2",
+                       "Taxa.3","Taxa.4",
+                       "Taxa.5","Taxa.6",
+                       "Taxa.7","Taxa.8",
+                       "Taxa.9","Taxa.10",
+                       "Taxa.11","Taxa.12")
 
   #Un-normalize?
   y_ra <- Y/rowSums(Y)
@@ -119,13 +117,7 @@ test_that("No Z - Chenyangs code", {
     dplyr::mutate(time = time) %>%
     tidyr::pivot_longer(-time)
 
-  y_hat <- res$result$y_hat
-  colnames(y_hat) <- c("Taxa.1","Taxa.2",
-                      "Taxa.3","Taxa.4",
-                      "Taxa.5","Taxa.6",
-                      "Taxa.7","Taxa.8",
-                      "Taxa.9","Taxa.10",
-                      "Taxa.11","Taxa.12")
+
 
   y_hat_ra <- data.frame(y_hat) %>%
     dplyr::mutate(time = time) %>%
@@ -148,7 +140,10 @@ test_that("No Z - Chenyangs code", {
                         size = 1, color = "black") +
     ggplot2::geom_line(ggplot2::aes(x = time, y = y_hat),
                        linewidth = 2, color = "blue") +
-    ggplot2::facet_wrap(~name)
+    ggplot2::facet_wrap(~name) +
+    ggplot2::labs(title = "After 2 iterations",
+                  x = "Time",
+                  y = "ra")
 
 
 })

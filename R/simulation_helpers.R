@@ -1,7 +1,16 @@
-
-
+#' Simulate timepoints
+#'
+#' Get a collection of timepoints along the same range
+#'
+#' @param n
+#' @param maxt
+#' @param max_mi
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 sim_timepoints <- function(n, maxt = 9, max_mi = 4){
-  # generate timepoints: ----
   mi_vec <- sample(3:max_mi, n, replace = TRUE)
 
   sample_ids <- numeric()
@@ -16,39 +25,42 @@ sim_timepoints <- function(n, maxt = 9, max_mi = 4){
 }
 
 
-
+#' Simulate 2 external variables, one continuous and one binary
+#'
+#' @param mi_vec
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 sim_Z <- function(mi_vec){
-  # External variables: ------
+
   M <- sum(mi_vec)
-
-
   Z0 <- rep(1, M)
   Z1 <- rnorm(M)
   Z2 <- rbinom(M, 1, 0.5)
-
-  #Z_df <- data.frame(id = sample_ids, time = timepoints_i, Z0, Z1, Z2)
   Z <- matrix(c(Z0, Z1, Z2), ncol = 3)
-
   return(Z)
 }
 
 
-
-# # Set beta
-# # For cluster 1 (k = 1, 2)
-# betaC1 <- matrix(c(rep(c(1, 1, 1, 1, 1, 1), 2),     #l = 0
-#                    rep(c(-2, -2, -2, -2, -2, -2),2),  #l = 1
-#                    rep(c(1, 2, 3, 4, 5, 6), 2)), ncol = 3)  #l = 2
-#
-# betaC2 <- -betaC1
-#
-# beta <- rbind(betaC1, betaC2)
-#
-#
-#
-# # Simulate Y ----------------------------------------------------
-#
-#
+#' Simulate Yij counts
+#'
+#' Use Dirichlet Multinomial distribution to simulate counts
+#'
+#' @param i
+#' @param j
+#' @param beta
+#' @param Z
+#' @param B
+#' @param Y_ij0
+#' @param K
+#' @param mi_vec
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 sim_Y_ij <- function(i, j, beta, Z, B, Y_ij0, K, mi_vec){
   Y_ij <- MGLM::rdirmn(n = 1,
                        size = Y_ij0,
@@ -74,12 +86,22 @@ sim_Yi <- function(i, beta, Z, B, K, mi_vec){
 }
 
 
+#' Simulate all Y counts
+#'
+#' @param beta
+#' @param Z
+#' @param B
+#' @param K
+#' @param mi_vec
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 sim_Y <- function(beta, Z, B, K, mi_vec){
-  #Y <- matrix(nrow = sum(mi_vec), ncol = K)
   Y <- matrix(nrow = 0, ncol = K)
   n <- length(mi_vec)
   for (i in 1:n) {
-    #Y[((i - 1)*mi_vec[i] + 1):(i*mi_vec[i]), ] <- sim_Yi(i, beta, Z, B)
     Y <- rbind(Y,
                sim_Yi(i,
                       beta,
@@ -91,6 +113,16 @@ sim_Y <- function(beta, Z, B, K, mi_vec){
   return(Y)
 }
 
+#' Simulation from B-spline
+#'
+#' simulate counts and external variables directly from b-spline coefficients
+#'
+#' @param seed
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 base_sim <- function(seed = 124){
   set.seed(seed)
   time_list <- sim_timepoints(n = 5)
@@ -220,6 +252,14 @@ combine_data <- function(generate.data, indiv_n){
   return(simulate_data)
 }
 
+#' Use Chenyangs setup to simulate count data wtih 3 clusters
+#'
+#' No external variables.
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 sim_noZ <- function(){
   time <- seq(0,1,0.05)
   indiv_n <- 20
@@ -262,9 +302,12 @@ sim_noZ <- function(){
 
   simulate_data_new <- combine_data(generate.data, indiv_n)
   names(simulate_data_new) <- c("time",
-                                "Taxa.1","Taxa.2","Taxa.3","Taxa.4",
-                                "Taxa.5","Taxa.6","Taxa.7","Taxa.8",
-                                "Taxa.9","Taxa.10","Taxa.11","Taxa.12",
+                                "Taxa.1","Taxa.2",
+                                "Taxa.3","Taxa.4",
+                                "Taxa.5","Taxa.6",
+                                "Taxa.7","Taxa.8",
+                                "Taxa.9","Taxa.10",
+                                "Taxa.11","Taxa.12",
                                 "total_n","individual")
   simulate_data_new$Capture.Number <- simulate_data_new$time * (length(unique(simulate_data_new$time)) - 1) + 1
   simulate_data_new$individual <- as.factor(simulate_data_new$individual)

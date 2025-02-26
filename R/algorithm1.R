@@ -70,6 +70,8 @@ algorithm1 <- function(Y,
   # loop initialization
   loop_list_beta <- list()
   loop_list_diff <- list()
+  admm_beta_list <- list()
+  phis_list <- list()
   diff <- 100
   s <- 1
 
@@ -112,7 +114,9 @@ algorithm1 <- function(Y,
                           max_admm_iter = max_admm_iter)
     # phi <- estimate_phi()
     beta_lp <- alg3$beta
-    admm_beta_list <- alg3$beta_admm_track
+    admm_beta_list[[s]] <- alg3$beta_admm_track
+    v <- alg3$v
+
 
     # Difference in betas between this loop and the last
     diff <- sum(abs(beta_lp - beta)) # matrix difference
@@ -120,6 +124,8 @@ algorithm1 <- function(Y,
 
     loop_list_beta[[s]] <- beta
     loop_list_diff[[s]] <- diff
+    phis_list[[s]] <- alg3$phi_track
+
 
     # Increment loop
     s <- s + 1
@@ -131,9 +137,11 @@ algorithm1 <- function(Y,
 
   return(list(beta = beta,
               y_hat = y_hat,
+              v = v,
               admm_beta_list = admm_beta_list,
               loop_list_beta = loop_list_beta,
-              loop_list_diff = loop_list_diff))
+              loop_list_diff = loop_list_diff,
+              phis_list = phis_list))
 }
 
 
@@ -169,4 +177,18 @@ get_clusters <- function(beta){
     clusters[[l]] <- which(beta_l != 0)
   }
   return(clusters)
+}
+
+
+create_adjacency <- function(v, K) {
+  differences <- apply(v, 2, FUN = function(x) {
+    norm(as.matrix(x), "f")
+  })
+  connected_ix <- which(differences == 0)
+  index <- t(combn(K, 2))
+  i <- index[connected_ix, 1]
+  j <- index[connected_ix, 2]
+  A <- matrix(0, nrow = K, ncol = K)
+  A[(j - 1) * K + i] <- 1
+  return(A)
 }

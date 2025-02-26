@@ -278,6 +278,10 @@ get_alpha_ijk <- function(i, j, k, beta, Z, B, mi_vec) {
   }
   alpha_ijk <- exp(sum(lsum))
   names(alpha_ijk) <- paste0("i=", i, ",j=", j, ",k=", k)
+
+  if (sum(alpha_ijk < 0) != 0) {
+    stop("Negative alpha")
+  }
   return(alpha_ijk)
 }
 
