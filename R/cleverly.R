@@ -16,7 +16,6 @@
 #' @param order Order of the B-spline basis
 #' @param gammas Vector of dimension L + 1 for penalizing the D matrix
 #' @param psi MCP hyper parameter
-#' @param phi Dirichlet Multinomial over dispersion parameter. Should be changed to be estimated.
 #' @param tau MCP hyper parameter. Default is 8/100.
 #' @param theta MCP hyper parameter. Default is 300.
 #' @param C Constant for determining the hessian change. Default is 10.
@@ -36,18 +35,22 @@ cleverly <- function(Y,
                      response_type = "counts",
                      gammas,
                      psi,
-                     phi,
                      tau = 8/100,
                      theta = 300,
                      C = 10,
                      d = 2,
                      nknots = 3,
                      order = 3,
-                     tol = 1e-6,
+                     epsilon_b = 1e-6,
+                     epsilon_r = 1e-6,
+                     epsilon_d = 1e-6,
                      max_outer_iter = 10,
                      max_admm_iter = 100) {
 
 
+  if (tau * theta - 1 == 0) {
+    stop("Tau and theta will cause MCP to be INF")
+  }
 
   # Format Y
   Y_user <- Y
@@ -89,14 +92,15 @@ cleverly <- function(Y,
                          lp = lp,
                          gammas = gammas,
                          psi = psi,
-                         phi = phi,
                          tau = tau,
                          theta = theta,
                          C = C,
                          d = d,
                          nknots = nknots,
                          order = order,
-                         tol = tol,
+                         epsilon_b = epsilon_b,
+                         epsilon_r = epsilon_r,
+                         epsilon_d = epsilon_d,
                          max_outer_iter = max_outer_iter,
                          max_admm_iter = max_admm_iter)
   } else {

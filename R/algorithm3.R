@@ -37,17 +37,21 @@ algorithm3 <- function(Y,
                        theta,
                        psi,
                        phi,
-                       max_admm_iter = 100) {
-  lambda <- numeric(nrow(Kappa)*P)
+                       max_admm_iter,
+                       epsilon_r,
+                       epsilon_d) {
 
+  # Iterations for admm loop
   t <- 1
-
   # Initialize all return lists
   beta_admm_track <- list()
   v_admm_track <- list()
   lambda_admm_track <- list()
   diff_admm <- c()
   phi_track <- c()
+
+  # Initialize lambda to all 0
+  lambda <- numeric(nrow(Kappa)*P)
 
   while (t <= max_admm_iter) {
     v_new <- update_v(beta = beta,
@@ -88,13 +92,11 @@ algorithm3 <- function(Y,
                    K = ncol(Y),
                    mi_vec = mi_vec)
 
-
     # Keep track of loop
     phi_track <- c(phi_track, phi)
     beta_admm_track[[t]] <- beta_new
     v_admm_track[[t]] <- v_new
     lambda_admm_track[[t]] <- lambda_new
-
 
     # Check for convergence
     diff <- sum(abs(beta_new - beta))
@@ -175,6 +177,11 @@ update_v <- function(beta,
       v[((kappa - 1) * P + 1):(kappa * P)] <- mcp * max(0, ( 1 - sigma/norm_u)) * u
     }
   }
+
+  if (any(is.nan(v))) {
+    stop("v is NaN")
+  }
+
   return(v)
 }
 
@@ -242,6 +249,12 @@ update_beta_admm <- function(Y,
 
   # All other beta elements are fixed, only the lp column is updated.
   beta[,lp + 1] <- beta_lp_new
+
+
+  if (any(is.nan(beta_lp_new))) {
+    stop("Beta ADMM is NaN")
+  }
+
   return(beta)
 }
 
@@ -259,9 +272,17 @@ update_beta_admm <- function(Y,
 #' @examples
 update_lambda <- function(beta_lp, v, lambda, A, theta){
   lambda_new <- lambda + theta * (A %*% beta_lp - v)
+
+  if (any(is.nan(lambda_new))) {
+    browser()
+    stop("Lambda is NaN")
+  }
   return(lambda_new)
 }
 
 
+
+
+# Convergence criteria ----------------------------------------------------
 
 

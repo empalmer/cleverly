@@ -8,13 +8,15 @@ test_that("Algorithm 1", {
                         lp = 0,
                         gammas = rep(.001, 3),
                         psi = .01,
-                        phi = 1,
                         tau = 8/1000,
                         theta = 300,
+                        C = 10,
                         d = 2,
                         nknots = 3,
                         order = 3,
-                        tol = 1e6,
+                        epsilon_b = 1e-6,
+                        epsilon_r = 1e-6,
+                        epsilon_d = 1e-6,
                         max_outer_iter = 2,
                         max_admm_iter = 2)
 

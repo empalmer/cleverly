@@ -15,13 +15,14 @@ test_that("cleverly wrapper works", {
                      lp = 1,
                      gammas = rep(1, 3),
                      psi = 1,
-                     phi = 1,
-                     tau = 1,
+                     tau = 8/100,
                      theta = 1,
                      d = 2,
                      nknots = 3,
                      order = 3,
-                     tol = 1e6,
+                     epsilon_b = 1e-6,
+                     epsilon_r = 1e-6,
+                     epsilon_d = 1e-6,
                      max_outer_iter = 2,
                      max_admm_iter = 2)
 

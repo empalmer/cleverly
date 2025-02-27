@@ -7,13 +7,12 @@
 #' @param lp clustering index
 #' @param gammas
 #' @param psi
-#' @param phi
 #' @param tau
 #' @param theta
 #' @param d Order for the difference matrix
 #' @param nknots Number of knots for the B-spline basis
 #' @param order Order of the B-spline basis
-#' @param tol Tolerance for convergence
+#' @param epsilon_b Tolerance for alg 1 convergence
 #' @param max_outer_iter
 #' @param max_admm_iter
 
@@ -29,14 +28,15 @@ algorithm1 <- function(Y,
                        lp,
                        gammas,
                        psi,
-                       phi,
                        tau,
                        theta,
                        C,
                        d,
                        nknots,
                        order,
-                       tol,
+                       epsilon_b,
+                       epsilon_r,
+                       epsilon_d,
                        max_outer_iter,
                        max_admm_iter) {
 
@@ -45,7 +45,6 @@ algorithm1 <- function(Y,
   L <- ncol(Z) - 1
   K <- ncol(Y)
   M <- nrow(Y)
-
 
   # Get indices for the non-cluster responses
   lp_minus <- setdiff(0:L , lp)
@@ -67,6 +66,11 @@ algorithm1 <- function(Y,
 
   # Initialize beta vector to 0s.
   beta <- initialize_beta(K = K, L = L, P = P)
+  # Initialize phi to be 1
+  #Dirichlet Multinomial over dispersion parameter.
+  phi <- 1
+
+
   # loop initialization
   loop_list_beta <- list()
   loop_list_diff <- list()
@@ -76,7 +80,7 @@ algorithm1 <- function(Y,
   diff <- 100
   s <- 1
 
-  while ((diff > tol) & (s <= max_outer_iter)) {
+  while ((diff > epsilon_b) & (s <= max_outer_iter)) {
 
     # Go straight to ADMM code if there is no external variables
     if (L > 0) {
@@ -97,26 +101,29 @@ algorithm1 <- function(Y,
 
     # Solution for l p (ADMM) with beta l_p minus fixed
     alg3 <- algorithm3(Y = Y,
-                          Z = Z,
-                          lp = lp,
-                          B = B,
-                          beta = beta_lp_minus,
-                          A = A,
-                          P = P,
-                          C = C,
-                          D = D,
-                          Kappa = Kappa,
-                          mi_vec = mi_vec,
-                          gammas = gammas,
-                          tau = tau,
-                          theta = theta,
-                          psi = psi,
-                          phi = phi,
-                          max_admm_iter = max_admm_iter)
+                       Z = Z,
+                       lp = lp,
+                       B = B,
+                       beta = beta_lp_minus,
+                       A = A,
+                       P = P,
+                       C = C,
+                       D = D,
+                       Kappa = Kappa,
+                       mi_vec = mi_vec,
+                       gammas = gammas,
+                       tau = tau,
+                       theta = theta,
+                       psi = psi,
+                       phi = phi,
+                       epsilon_r = epsilon_r,
+                       epsilon_d = epsilon_d,
+                       max_admm_iter = max_admm_iter)
     # phi <- estimate_phi()
     beta_lp <- alg3$beta
     admm_beta_list[[s]] <- alg3$beta_admm_track
     v <- alg3$v
+
 
 
     # Difference in betas between this loop and the last
@@ -151,6 +158,18 @@ algorithm1 <- function(Y,
 
 
 
+# Helpers for Algorithm 1 -------------------------------------------------
+#' Estimate y-hat given beta
+#'
+#' @param beta
+#' @param B
+#' @param Z
+#' @param K
+#'
+#' @returns Vector of RA values for y
+#' @export
+#'
+#' @examples
 estimate_y <- function(beta, B, Z, K){
   P <- ncol(B)
   L <- ncol(Z) - 1
@@ -171,6 +190,12 @@ estimate_y <- function(beta, B, Z, K){
   yhat_ra <- exp(yhat)/rowSums(exp(yhat))
   return(yhat_ra)
 }
+
+
+
+
+# Return clusters ---------------------------------------------------------
+
 
 
 get_clusters <- function(beta){

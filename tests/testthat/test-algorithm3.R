@@ -143,8 +143,7 @@ test_that("ADMM algorithm 3", {
   beta_lp$beta_admm_track[[2]][,3]
   beta_lp$beta_admm_track[[4]][,3]
 
-  beta_lp$v_admm_track[[1]][,3]
-  beta_lp$v_admm_track[[2]][,3]
+
 
 })
 

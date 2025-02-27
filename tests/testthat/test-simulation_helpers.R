@@ -58,6 +58,7 @@ test_that("Test sim Y works", {
 
 
 test_that("No Z - Chenyangs code", {
+  testthat::skip("Debugging, not test")
   set.seed(123)
   sim <- sim_noZ()
 
@@ -206,19 +207,14 @@ test_that("No Z - Chenyangs code", {
                   x = "Iteration",
                   y = "Difference")
 
-
-
-
-
-
   visualize_curve(beta, B, Z, K, time)
-
 
 })
 
 
 
 test_that("Bspline sim no Z",{
+  testthat::skip("Debugging, not test")
   set.seed(123)
   n <- 100
   time_list <- sim_timepoints(n = n)
@@ -270,7 +266,6 @@ test_that("Bspline sim no Z",{
                   time = time,
                   gammas = .1,
                   psi = .01,
-                  phi = 1,
                   max_admm_iter = iter,
                   max_outer_iter = 1)
 
@@ -279,31 +274,7 @@ test_that("Bspline sim no Z",{
 
   betas <- res$result$admm_beta_list[[1]]
 
-  yhats <- purrr::map(betas, ~estimate_y(beta = .x,
-                                         B = B,
-                                         Z = Z,
-                                         K = K)) %>%
-    purrr::imap_dfr(~data.frame(time = time, run = .y, .x))
-  colnames(yhats) <- c("time", "run",
-                       paste0("Taxa.", 1:K))
-
-
-  yhats <- yhats %>%
-    tidyr::pivot_longer(-c(time, run)) %>%
-    dplyr::mutate(name = factor(name,
-                                levels = paste0("Taxa.", 1:K)))
-
-  yhats %>%
-    ggplot2::ggplot() +
-    ggplot2::geom_line(ggplot2::aes(x = time,
-                                    y = value,
-                                    group = run,
-                                    alpha = run),
-                       linewidth = .5) +
-    ggplot2::facet_wrap(~name) +
-    ggplot2::labs(title = "Y hats progression new",
-                  x = "Time",
-                  y = "ra")
+  plot <- beta_path(betas)
 
 
 })
