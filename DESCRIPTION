@@ -1,5 +1,5 @@
 Package: cleverly
-Title:  (Cl)ustering with (E)xternal (V)ariables in (R) with (L)ongitudinal (Y)s
+Title: (Cl)ustering with (E)xternal (V)ariables in (R) with (L)ongitudinal (Y)s
 Version: 0.0.0.9000
 Authors@R: 
     person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
@@ -14,8 +14,18 @@ Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Imports: 
+    dirmult,
     dplyr,
     fda,
+    ggplot2,
+    igraph,
+    magrittr,
     MASS,
     Matrix,
-    rlang
+    MGLM,
+    pracma,
+    purrr,
+    rlang,
+    stats,
+    tidyr,
+    utils

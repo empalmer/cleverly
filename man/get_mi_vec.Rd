@@ -7,7 +7,14 @@
 get_mi_vec(Y, subject_ids, time_ids)
 }
 \arguments{
-\item{time_ids}{}
+\item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
+
+\item{subject_ids}{either a vector of length(Y) or a column reference if Y is a data frame}
+
+\item{time_ids}{either a vector of length(Y) or a column reference if Y is a data frame. Must be numeric}
+}
+\value{
+data frame of mi and subject id
 }
 \description{
 Get data frame of mi values for each i

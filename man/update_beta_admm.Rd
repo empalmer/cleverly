@@ -22,7 +22,36 @@ update_beta_admm(
 )
 }
 \arguments{
-\item{mi_vec}{}
+\item{Y}{Matrix of counts Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
+
+\item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
+
+\item{lp}{clustering index (integer between 0 and L)}
+
+\item{v}{differences for each pair of betas of dimension (P*|Kappa|) x1}
+
+\item{lambda}{ADMM vector of dimension (P*|Kappa|) x1}
+
+\item{theta}{ADMM hyper parameter.}
+
+\item{gammas}{Vector of dimension L + 1 for penalizing the D matrix}
+
+\item{D}{Matrix of dth order weighted difference operator}
+
+\item{A}{Matrix keeping track of pairs of responses to calculate pairwise differences}
+
+\item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
+
+\item{B}{B spline basis matrix of dimension (N x P)}
+
+\item{phi}{Current value of overdispersion parameter}
+
+\item{C}{Constant for determining the hessian change.}
+
+\item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
+}
+\value{
+matrix of updated betas
 }
 \description{
 Update beta_lp in the ADMM algorithm

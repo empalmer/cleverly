@@ -21,12 +21,53 @@ algorithm3(
   theta,
   psi,
   phi,
-  max_admm_iter = 100
+  max_admm_iter,
+  epsilon_r,
+  epsilon_d
 )
 }
 \arguments{
-\item{max_admm_iter}{}
+\item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
+
+\item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
+
+\item{lp}{clustering index (integer between 0 and L)}
+
+\item{B}{B spline basis matrix of dimension (N x P)}
+
+\item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
+
+\item{A}{Matrix keeping track of pairs of responses to calculate pairwise differences}
+
+\item{P}{Number of B-spline coefficients (order + nknots)}
+
+\item{C}{Constant for determining the hessian change.}
+
+\item{D}{Matrix of dth order weighted difference operator}
+
+\item{Kappa}{keeps track of each possible response pair}
+
+\item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
+
+\item{gammas}{Vector of dimension L + 1 for penalizing the D matrix}
+
+\item{tau}{MCP hyper parameter.}
+
+\item{theta}{ADMM hyper parameter.}
+
+\item{psi}{Hyperparameter for clustering penalty (larger drives pairwise differences to zero)}
+
+\item{phi}{Current value of overdispersion parameter}
+
+\item{max_admm_iter}{Max number of iterations for the ADMM loop}
+
+\item{epsilon_r}{Tolerance for ADMM convergence}
+
+\item{epsilon_d}{Tolerance for ADMM convergence}
+}
+\value{
+List with the updated betas, updated vs, and lists tracking the betas, vs, and lambdas for each iteration
 }
 \description{
-ADMM algorithm for updating the clustering beta
+Iterates between updating v, beta, and lambda
 }

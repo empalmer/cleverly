@@ -3,13 +3,13 @@
 
 #' Get the Yi minus mui term of the gradient
 #'
-#' @param i
-#' @param Y
-#' @param beta
-#' @param Z
-#' @param B
-#' @param K
-#' @param mi_vec
+#' @param i subject index
+#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
+#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param B B spline basis matrix of dimension (N x P)
+#' @param K Number of responses
+#' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #'
 #' @returns Vector of length Kmi
 #' @export
@@ -33,14 +33,14 @@ get_Yi_minus_mui <- function(i, Y, mi_vec, beta, Z, B, K){
 
 #' Get Vi inverse
 #'
-#' @param i
-#' @param Y
-#' @param mi_vec
-#' @param phi
-#' @param beta
-#' @param Z
-#' @param B
-#' @param K
+#' @param i subject index
+#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
+#' @param mi_vec vector of the number of timepoints for each sample. Of length n
+#' @param phi Current value of overdispersion parameter
+#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param B B spline basis matrix of dimension (N x P)
+#' @param K Number of responses
 #' @param V_i
 #'
 #' @returns Matrix of dimension Kmi x Kmi
@@ -68,15 +68,15 @@ get_Vi_inv <- function(V_i, i, Y, mi_vec, phi, beta, Z, B, K){
 
 #' Get partials matrix for i, j, l
 #'
-#' @param i
-#' @param j
-#' @param l
-#' @param K
-#' @param Y
-#' @param Z
-#' @param B
-#' @param beta
-#' @param mi_vec
+#' @param i subject index
+#' @param j time index
+#' @param l external variable index
+#' @param K Number of responses
+#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param B B spline basis matrix of dimension (N x P)
+#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
+#' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #'
 #' @returns Matrix of dimension PK x K
 #' @export
@@ -115,13 +115,13 @@ get_partials_ijl <- function(i, j, l, mi_vec, K, Y, Z, B, beta){
 
 #' Get full partials matrix for a given i, l
 #'
-#' @param i
-#' @param l
-#' @param Y
-#' @param Z
-#' @param B
-#' @param mi_vec
-#' @param beta
+#' @param i subject index
+#' @param l external variable index
+#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param B B spline basis matrix of dimension (N x P)
+#' @param mi_vec vector of the number of timepoints for each sample. Of length n
+#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
 #'
 #' @returns Matrix of dimension KP x Kmi
 #' @export
@@ -153,14 +153,14 @@ get_partials_il <- function(i, l, Y, Z, B, beta, mi_vec){
 
 #' Title
 #'
-#' @param i
-#' @param Y
-#' @param phi
-#' @param beta
-#' @param Z
-#' @param l
-#' @param mi_vec
-#' @param B
+#' @param i subject index
+#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
+#' @param phi Current value of overdispersion parameter
+#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param l external variable index
+#' @param mi_vec vector of the number of timepoints for each sample. Of length n
+#' @param B B spline basis matrix of dimension (N x P)
 #'
 #' @returns Vector of length PK
 #' @export
@@ -199,15 +199,13 @@ get_gradient_il <- function(i, l, Y, mi_vec, phi, beta, Z, B){
 
 #' Get the gradient for a given l
 #'
-#' @param Y Matrix of dimension M x K
-#' @param is numeric of length M
-#' @param mi_vec counts of length n
+#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
+#' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #' @param l external variable index
-#' @param phi variance parameter
-#' @param beta
-#' @param Z
-#' @param B
-#' @param K
+#' @param phi Current value of overdispersion parameter
+#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param B B spline basis matrix of dimension (N x P)
 #'
 #' @returns vector of length PK x 1
 #' @export
@@ -240,10 +238,20 @@ get_gradient <- function(){
 
 # Nuisance parameters ----------------------------------------------------
 
-get_phi <- function(Y, phi_old, beta, Z, B, K, mi_vec){
+#' Title
+#'
+#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
+#' @param beta beta matrix of beta (or beta hat) of dimension (P*K) x L
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param B B spline basis matrix of dimension (N x P)
+#' @param K Number of responses
+#' @param mi_vec vector of the number of timepoints for each sample. Of length n
+#'
+#' @returns scalar phi
+#' @export
+get_phi <- function(Y, beta, Z, B, K, mi_vec){
 
   r <- get_pearson_residuals(Y = Y,
-                             phi = phi_old,
                              beta = beta,
                              Z = Z,
                              B = B,
@@ -256,10 +264,21 @@ get_phi <- function(Y, phi_old, beta, Z, B, K, mi_vec){
 }
 
 
-get_pearson_residuals <- function(Y, phi, beta, Z, B, K, mi_vec){
+#' Get pearson residuals
+#'
+#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
+#' @param beta beta matrix of beta (or beta hat) of dimension (P*K) x L
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param B B spline basis matrix of dimension (N x P)
+#' @param K Number of responses
+#' @param mi_vec vector of the number of timepoints for each sample. Of length n
+#'
+#' @returns Pearson residuals vector for all i, j, k
+#' @export
+get_pearson_residuals <- function(Y, beta, Z, B, K, mi_vec){
   r <- c()
   for (i in 1:length(mi_vec)) {
-    ri <- get_pearson_residual_i(Y, phi, i, beta, Z, B, K, mi_vec)
+    ri <- get_pearson_residual_i(Y, i, beta, Z, B, K, mi_vec)
     r <- c(r, ri)
   }
   return(r)
@@ -267,25 +286,24 @@ get_pearson_residuals <- function(Y, phi, beta, Z, B, K, mi_vec){
 
 #' Get the pearson residual for a given i
 #'
-#' @param Y
-#' @param phi
-#' @param i
-#' @param beta
-#' @param Z
-#' @param B
-#' @param K
-#' @param mi_vec
+#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
+#' @param phi Current value of overdispersion parameter
+#' @param i subject index
+#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param B B spline basis matrix of dimension (N x P)
+#' @param K Number of responses
+#' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #'
-#' @returns
+#' @returns pearson residual vector for each i
 #' @export
-#'
-#' @examples
 get_pearson_residual_i <- function(Y,
-                                    phi,
-                                    i,
-                                    beta,
-                                    Z,
-                                    B, K, mi_vec){
+                                   i,
+                                   beta,
+                                   Z,
+                                   B,
+                                   K,
+                                   mi_vec){
 
   Yi_minus_mui <- get_Yi_minus_mui(i = i,
                                    Y = Y,

@@ -1,26 +1,26 @@
 #' Algorithm 1
 #'
 #' @param Y Matrix of counts Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
-#' @param Z matrix that starts with a column of 1s. Of dimension M x L + 1
-#' @param time
-#' @param mi_vec count vector of length n for the number of time points for each i
-#' @param lp clustering index
-#' @param gammas
-#' @param psi
-#' @param tau
-#' @param theta
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param time vector of time values for each subject/time
+#' @param mi_vec vector of the number of timepoints for each sample. Of length n
+#' @param lp clustering index (integer between 0 and L)
+#' @param gammas Vector of dimension L + 1 for penalizing the D matrix
+#' @param psi Hyperparameter for clustering penalty (larger drives pairwise differences to zero)
+#' @param tau MCP hyper parameter.
+#' @param theta ADMM hyper parameter.
 #' @param d Order for the difference matrix
 #' @param nknots Number of knots for the B-spline basis
 #' @param order Order of the B-spline basis
 #' @param epsilon_b Tolerance for alg 1 convergence
-#' @param max_outer_iter
-#' @param max_admm_iter
-
+#' @param epsilon_r Tolerance for ADMM convergence
+#' @param epsilon_d Tolerance for ADMM convergence
+#' @param max_outer_iter Max number of iterations for the outer loop (Algorithm 1)
+#' @param max_admm_iter Max number of iterations for the ADMM loop
+#' @param C Constant for determining the hessian change.
 #'
-#' @returns
+#' @returns List of beta, clusters, y_hat, v, admm_diffs, admm_beta_list, loop_list_beta, loop_list_diff, phis_list
 #' @export
-#'
-#' @examples
 algorithm1 <- function(Y,
                        Z,
                        time,
@@ -59,7 +59,7 @@ algorithm1 <- function(Y,
              order = order,
              nknots = nknots)
   # Create the matrix keeping track of pairwise difference indices
-  Kappa <- t(combn(K, 2))
+  Kappa <- t(utils::combn(K, 2))
   A <- get_A(Kappa = Kappa,
              K = K,
              P = P)
@@ -124,8 +124,6 @@ algorithm1 <- function(Y,
     admm_beta_list[[s]] <- alg3$beta_admm_track
     v <- alg3$v
 
-
-
     # Difference in betas between this loop and the last
     diff <- sum(abs(beta_lp - beta)) # matrix difference
     beta <- beta_lp
@@ -140,11 +138,18 @@ algorithm1 <- function(Y,
     s <- s + 1
   }
 
-
-  y_hat <- estimate_y(beta, B, Z, K)
-  clusters <- get_clusters(beta)
+  # After loop:
+  # Calculte estimated ys and clusters
+  y_hat <- estimate_y(beta = beta,
+                      B = B,
+                      Z = Z,
+                      K = K)
+  clusters <- get_clusters(v = v,
+                           K = K,
+                           P = P)
 
   return(list(beta = beta,
+              clusters = clusters,
               y_hat = y_hat,
               v = v,
               admm_diffs = admm_diffs,
@@ -161,15 +166,13 @@ algorithm1 <- function(Y,
 # Helpers for Algorithm 1 -------------------------------------------------
 #' Estimate y-hat given beta
 #'
-#' @param beta
-#' @param B
-#' @param Z
-#' @param K
+#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
+#' @param B B spline basis matrix of dimension (N x P)
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param K Number of responses
 #'
 #' @returns Vector of RA values for y
 #' @export
-#'
-#' @examples
 estimate_y <- function(beta, B, Z, K){
   P <- ncol(B)
   L <- ncol(Z) - 1
@@ -195,29 +198,34 @@ estimate_y <- function(beta, B, Z, K){
 
 
 # Return clusters ---------------------------------------------------------
+#' Get cluster membership
+#'
+#' @param v final v (pairwise differences) from algorithm 1
+#' @param K Number of responses
+#' @param P Number of B-spline coefficients (order + nknots)
+#'
+#' @returns Cluster list information, indeces and number of clusters
+#' @export
+get_clusters <- function(v, K, P) {
 
-
-
-get_clusters <- function(beta){
-  L <- ncol(beta)/ncol(beta)
-  clusters <- list()
-  for (l in 1:L) {
-    beta_l <- beta[,l]
-    clusters[[l]] <- which(beta_l != 0)
-  }
-  return(clusters)
-}
-
-
-create_adjacency <- function(v, K) {
-  differences <- apply(v, 2, FUN = function(x) {
+  # Convert v into a matrix of P x length
+  v_mat <- matrix(v, nrow = P)
+  differences <- apply(v_mat, 2, FUN = function(x) {
     norm(as.matrix(x), "f")
   })
   connected_ix <- which(differences == 0)
-  index <- t(combn(K, 2))
+  index <- t(utils::combn(K, 2))
   i <- index[connected_ix, 1]
   j <- index[connected_ix, 2]
   A <- matrix(0, nrow = K, ncol = K)
   A[(j - 1) * K + i] <- 1
-  return(A)
+
+
+  # Make graph from adjacency matrix
+  graph <- igraph::graph_from_adjacency_matrix(
+    A,
+    mode = 'upper')
+  #clustering membership
+  clusters <- igraph::components(graph)
+  return(clusters)
 }

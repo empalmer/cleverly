@@ -13,14 +13,15 @@ cleverly(
   response_type = "counts",
   gammas,
   psi,
-  phi,
   tau = 8/100,
   theta = 300,
   C = 10,
   d = 2,
   nknots = 3,
   order = 3,
-  tol = 1e-06,
+  epsilon_b = 1e-06,
+  epsilon_r = 1e-06,
+  epsilon_d = 1e-06,
   max_outer_iter = 10,
   max_admm_iter = 100
 )
@@ -36,18 +37,29 @@ cleverly(
 
 \item{lp}{either a numeric index of which external variable to cluster on, or the name of the column of Z that contains the clustering variable. Specify numeric 0 to cluster via baseline.}
 
+\item{response_type}{Counts or continuous response?}
+
+\item{gammas}{Vector of dimension L + 1 for penalizing the D matrix}
+
+\item{psi}{Hyperparameter for clustering penalty (larger drives pairwise differences to zero)}
+
+\item{tau}{MCP hyper parameter. Default is 8/100.}
+
+\item{theta}{ADMM hyper parameter. Default is 300.}
+
+\item{C}{Constant for determining the hessian change. Default is 10.}
+
 \item{d}{Order for the difference matrix}
 
 \item{nknots}{Number of knots for the B-spline basis}
 
 \item{order}{Order of the B-spline basis}
 
-\item{tol}{Tolerance for convergence}
+\item{max_outer_iter}{Number of iterations for the outer loop (Algorithm 1)}
 
-\item{gamma}{Vector of length (L + 1) of penalization hyper parameters}
-
-\item{smax}{Maximum number of iterations}
+\item{max_admm_iter}{Number of iterations for the clustering step (Algorithm 3)}
 }
 \description{
-cleverly
+Overall user interface for this algorithm
+Formats data and calls \code{algorithm1()} to run the algorithm
 }

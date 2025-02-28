@@ -13,6 +13,9 @@ get_knots(t, k, m)
 
 \item{m}{number of knots}
 }
+\value{
+vector of knot values
+}
 \description{
 Get breaks for B-spline basis
 }

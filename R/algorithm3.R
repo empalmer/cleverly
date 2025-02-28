@@ -4,23 +4,28 @@
 #'
 #' Iterates between updating v, beta, and lambda
 #'
-#' @param Y
-#' @param Z
-#' @param lp
-#' @param B
-#' @param beta
-#' @param A
-#' @param kappa
-#' @param gamma
-#' @param tau
-#' @param theta
-#' @param psi
-#' @param max_admm_iter
+#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param lp clustering index (integer between 0 and L)
+#' @param B B spline basis matrix of dimension (N x P)
+#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
+#' @param A Matrix keeping track of pairs of responses to calculate pairwise differences
+#' @param tau MCP hyper parameter.
+#' @param theta ADMM hyper parameter.
+#' @param psi Hyperparameter for clustering penalty (larger drives pairwise differences to zero)
+#' @param max_admm_iter Max number of iterations for the ADMM loop
+#' @param P Number of B-spline coefficients (order + nknots)
+#' @param C Constant for determining the hessian change.
+#' @param D Matrix of dth order weighted difference operator
+#' @param Kappa keeps track of each possible response pair
+#' @param mi_vec vector of the number of timepoints for each sample. Of length n
+#' @param gammas Vector of dimension L + 1 for penalizing the D matrix
+#' @param phi Current value of overdispersion parameter
+#' @param epsilon_r Tolerance for ADMM convergence
+#' @param epsilon_d Tolerance for ADMM convergence
 #'
-#' @returns
+#' @returns List with the updated betas, updated vs, and lists tracking the betas, vs, and lambdas for each iteration
 #' @export
-#'
-#' @examples
 algorithm3 <- function(Y,
                        Z,
                        lp,
@@ -85,7 +90,6 @@ algorithm3 <- function(Y,
 
     # Update dispersion parameter
     phi <- get_phi(Y = Y,
-                   phi_old = phi,
                    beta = beta_new,
                    Z = Z,
                    B = B,
@@ -131,19 +135,18 @@ algorithm3 <- function(Y,
 #'
 #' Update v step of ADMM algorithm. V is the pairwise differences vector of dimension |Kappa|P
 #'
-#' @param beta
-#' @param lp
-#' @param lambda
-#' @param Kappa
-#' @param gammas
-#' @param tau
-#' @param theta
-#' @param psi
+#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
+#' @param lp clustering index (integer between 0 and L)
+#' @param lambda ADMM vector of dimension (P*|Kappa|) x1
+#' @param Kappa keeps track of each possible response pair
+#' @param gammas Vector of dimension L + 1 for penalizing the D matrix
+#' @param tau MCP hyper parameter.
+#' @param theta ADMM hyper parameter.
+#' @param psi Hyperparameter for clustering penalty (larger drives pairwise differences to zero)
+#' @param P Number of B-spline coefficients (order + nknots)
 #'
-#' @returns
+#' @returns Vector of updated vs for ADMM step
 #' @export
-#'
-#' @examples
 update_v <- function(beta,
                      lp,
                      lambda,
@@ -188,25 +191,23 @@ update_v <- function(beta,
 
 #' Update beta_lp in the ADMM algorithm
 #'
-#' @param Y
-#' @param beta
-#' @param lp
-#' @param v
-#' @param lambda
-#' @param theta
-#' @param gammas
-#' @param D
-#' @param A
-#' @param Z
-#' @param B
-#' @param phi
-#' @param C
-#' @param mi_vec
+#' @param Y Matrix of counts Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
+#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
+#' @param lp clustering index (integer between 0 and L)
+#' @param v differences for each pair of betas of dimension (P*|Kappa|) x1
+#' @param lambda ADMM vector of dimension (P*|Kappa|) x1
+#' @param theta ADMM hyper parameter.
+#' @param gammas Vector of dimension L + 1 for penalizing the D matrix
+#' @param D Matrix of dth order weighted difference operator
+#' @param A Matrix keeping track of pairs of responses to calculate pairwise differences
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param B B spline basis matrix of dimension (N x P)
+#' @param phi Current value of overdispersion parameter
+#' @param C Constant for determining the hessian change.
+#' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #'
-#' @returns
+#' @returns matrix of updated betas
 #' @export
-#'
-#' @examples
 update_beta_admm <- function(Y,
                              beta,
                              lp,
@@ -260,21 +261,19 @@ update_beta_admm <- function(Y,
 
 #' Update lambda step of the admm algorithm
 #'
-#' @param beta
-#' @param v
-#' @param lambda
-#' @param A
-#' @param theta
+#' @param beta_lp beta_lp is the lp column of beta
+#' @param v differences for each pair of betas of dimension (P*|Kappa|) x1
+#' @param lambda value of lambda from the previous iteration
+#' @param A Matrix keeping track of pairs of responses to calculate pairwise differences
+#' @param theta ADMM hyper parameter.
+
 #'
-#' @returns
+#' @returns vector of updated lambdas for the ADMM step
 #' @export
-#'
-#' @examples
 update_lambda <- function(beta_lp, v, lambda, A, theta){
   lambda_new <- lambda + theta * (A %*% beta_lp - v)
 
   if (any(is.nan(lambda_new))) {
-    browser()
     stop("Lambda is NaN")
   }
   return(lambda_new)

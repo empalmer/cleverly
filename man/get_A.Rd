@@ -7,7 +7,14 @@
 get_A(Kappa, K, P)
 }
 \arguments{
-\item{P}{}
+\item{Kappa}{keeps track of each possible response pair}
+
+\item{K}{Number of responses}
+
+\item{P}{Number of B-spline coefficients (order + nknots)}
+}
+\value{
+A matrix
 }
 \description{
 This is the matrix that keeps track of the pairwise differences,

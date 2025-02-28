@@ -7,7 +7,23 @@
 get_V_i(i, Y, Y_ij0, phi, beta, Z, B, K, mi_vec)
 }
 \arguments{
-\item{mi}{}
+\item{i}{subject index}
+
+\item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
+
+\item{Y_ij0}{Total sum of counts across all K}
+
+\item{phi}{Current value of overdispersion parameter}
+
+\item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
+
+\item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
+
+\item{B}{B spline basis matrix of dimension (N x P)}
+
+\item{K}{Number of responses}
+
+\item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
 }
 \value{
 Diagonal matrix of Kmi x Kmi Each block is for a single j of block size K x K

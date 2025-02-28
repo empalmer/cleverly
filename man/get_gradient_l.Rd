@@ -7,17 +7,19 @@
 get_gradient_l(Y, mi_vec, l, phi, beta, Z, B)
 }
 \arguments{
-\item{Y}{Matrix of dimension M x K}
+\item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
 
-\item{mi_vec}{counts of length n}
+\item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
 
 \item{l}{external variable index}
 
-\item{phi}{variance parameter}
+\item{phi}{Current value of overdispersion parameter}
 
-\item{is}{numeric of length M}
+\item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
 
-\item{K}{}
+\item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
+
+\item{B}{B spline basis matrix of dimension (N x P)}
 }
 \value{
 vector of length PK x 1

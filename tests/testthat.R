@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(GEEclevR)
+library(cleverly)
 
-test_check("GEEclevR")
+test_check("cleverly")

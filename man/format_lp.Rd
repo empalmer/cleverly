@@ -7,7 +7,12 @@
 format_lp(lp, Z)
 }
 \arguments{
-\item{Z}{}
+\item{lp}{either a numeric index of which external variable to cluster on, or the name of the column of Z that contains the clustering variable. Specify numeric 0 to cluster via baseline.}
+
+\item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
+}
+\value{
+lp index
 }
 \description{
 Title

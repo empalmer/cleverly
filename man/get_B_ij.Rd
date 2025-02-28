@@ -11,7 +11,7 @@ get_B_ij(i, j, B, mi_vec)
 
 \item{j}{time index}
 
-\item{B}{B-spline basis matrix of dimension N x P}
+\item{B}{B spline basis matrix of dimension (N x P)}
 
 \item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
 }

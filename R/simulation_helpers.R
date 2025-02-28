@@ -1,15 +1,207 @@
+#  Functional Simulation: ---------
+#' Simulate Dirichlet multinomial counts.
+#'
+#' @param Y0 Total sum of counts in DM
+#' @param alpha
+#'
+#' @returns DM counts
+#' @export
+Dirichlet.multinomial <- function(Y0, alpha) {
+  if (missing(Y0) || missing(alpha)) {
+    stop("Total sum Y0 and/or alpha missing.")
+  }
+
+  # Create the data from the rmultinom
+  dmData <- matrix(0, length(Y0), length(alpha))
+  for (i in 1:length(Y0)) {
+    # This is what I don't get... Why is it rmultinom + dirichlet?
+    dmData[i, ] <- stats::rmultinom(1,
+                                    Y0[i],
+                                    dirmult::rdirichlet(1, alpha))
+  }
+  # Label the created data
+  colnames(dmData) <- paste("Taxa", 1:ncol(dmData))
+
+  return(dmData)
+}
+
+
+
+
+#' User defined correlation structure
+#'
+#' @param mi number of timepoints for ith sample
+#' @param user_var ??
+#' @param structure Type of correlation 1 for (?) 2 for (?)
+#' @param al ??
+#'
+#' @returns User defined correlation matrix.
+#' @export
+cor_user <- function(mi, user_var, structure, al) {
+  if (structure == 1) {
+    cor <- user_var * ((pracma::ones(mi, mi) - diag(rep(1, mi))) * al + diag(rep(1, mi)))
+  }
+  if (structure == 2) {
+    need1 <- matrix(rep(1:mi, each = mi), nrow = mi)
+    need2 <- matrix(rep(1:mi, each = mi), ncol = mi, byrow = TRUE)
+    cor <- al^abs(need1 - need2) * user_var
+  }
+  return(cor)
+}
+
+
+#' Generating data simulation function
+#'
+#' @param n n constant of number of individuals
+#' @param time vector of time values for each subject/time
+#' @param miss_n missingness
+#' @param cor_matrix correlation matrix
+#' @param ranges ranges
+#' @param curveparamenter alphas for the Dirichlet multinomial
+#'
+#' @returns Simulated data frame
+#' @export
+generate_data_longitudinal_compositional <- function(n,
+                              time,
+                              miss_n,
+                              cor_matrix,
+                              ranges,
+                              curveparamenter) {
+  simulate_data_new <- list()
+  for (i in 1:n) {
+    Get_alpha <- curveparamenter
+    simulate_data <- NULL
+    var_yij_final <- NULL
+    # Set missingness
+    miss_rate <- sample(miss_n, 1)
+    newtime <- sort(sample(1:length(time), ceiling(miss_rate * length(time))))
+
+    # Get the error matrix representing the longitudinal correlation
+    error_matrix <- t(MASS::mvrnorm(n = ncol(curveparamenter),
+                                    mu = rep(0, length(time)),
+                                    Sigma = cor_matrix,
+                                    tol = 1e-6,
+                                    empirical = FALSE,
+                                    EISPACK = FALSE))
+
+    for (j in 1:length(time)) {
+      if (length(ranges) == 1) {
+        Y0 <- ranges
+      } else {
+        Y0 <- sample(ranges, 1)
+      }
+      # Generate the compositional correlation
+      dm <- Dirichlet.multinomial(Y0, as.numeric(Get_alpha[j, ]))
+
+      # Add the longitudinal correlation to the compositional correlation
+      # Round it to be a count
+      dm_witherror <- round(dm + error_matrix[j, ], 0)
+
+      # Make sure no zeros.
+      dm_witherror[dm_witherror < 0] <- 0
+
+      # Define the
+      total_n <- rowSums(dm_witherror)
+
+      # Return data with the total n and id.
+      dm_new <- c(dm_witherror, total_n, i)
+      simulate_data <- rbind(simulate_data, dm_new)
+    }
+
+    # Include missingness.
+    simulate_data_new[[i]] <- data.frame(time, simulate_data)[newtime, ]
+
+    rownames(simulate_data_new[[i]]) <- NULL
+  }
+  return(simulate_data_new)
+}
+
+
+
+#' Use Chenyangs setup to simulate count data wtih 3 clusters
+#'
+#' No external variables.
+#'
+#' @returns data Matrix with columns time, individual, capture number, totaln, counts
+#' @export
+sim_noZ <- function(n = 20,
+                    range_start = 5000,
+                    range_end = 20000,
+                    nknots = 3,
+                    order = 3,
+                    user_var = 1000,
+                    structure = 1,
+                    al = 0.4
+                    ){
+  # Time points are a sequence between 0 and 1
+  time <- seq(0, 1, 0.05)
+
+  # Three possible clusters with given
+  fxn1 <- exp(cos(2 * pi * time))
+  fxn2 <- exp(1 - 2 * exp(-6 * time))
+  fxn3 <-  exp(-1.5 * time)
+
+  curve_paramenter <- data.frame(a1 = fxn1,
+                                a2 = fxn1,
+                                a3 = fxn1,
+                                a4 = fxn1,
+                                a5 = fxn2,
+                                a6 = fxn2,
+                                a7 = fxn2,
+                                a8 = fxn2,
+                                a9 = fxn3,
+                                a10 = fxn3,
+                                a11 = fxn3,
+                                a12 = fxn3)
+
+  # Simulation parameters.
+  ranges <- range_start:range_end
+  K <- ncol(curve_paramenter)
+
+  # How many missing times?
+  miss_n <- seq(0.6, 1, by = 0.1)
+
+  # Set up the longitudinal correlation structure
+  # What are these numbers?
+  cor_matrix <- cor_user(length(time),
+                         user_var = user_var,
+                         structure = structure,
+                         al = al)
+
+  # Simulate data.
+  generate.data <- generate_data_longitudinal_compositional(n,
+                                                            time,
+                                                            miss_n,
+                                                            cor_matrix,
+                                                            ranges,
+                                                            curve_paramenter)
+  # Organize data.
+  data <- dplyr::bind_rows(generate.data)
+  names(data) <- c("time",
+                   paste0("Taxa.", 1:K),
+                   "total_n",
+                   "individual")
+
+  data$Capture.Number <- data$time * (length(unique(data$time)) - 1) + 1
+  data$individual <- as.factor(data$individual)
+  return(data)
+}
+
+
+
+# Simulate from B-spline --------------------------------------------------
+
+
 #' Simulate timepoints
 #'
 #' Get a collection of timepoints along the same range
 #'
-#' @param n
-#' @param maxt
-#' @param max_mi
+#' @param n number of subjects
+#' @param maxt maximum time
+#' @param max_mi maximum number of timepoints for each subject
 #'
-#' @returns
+#' @returns list
 #' @export
-#'
-#' @examples
 sim_timepoints <- function(n, maxt = 9, max_mi = 4){
   mi_vec <- sample(3:max_mi, n, replace = TRUE)
 
@@ -27,18 +219,16 @@ sim_timepoints <- function(n, maxt = 9, max_mi = 4){
 
 #' Simulate 2 external variables, one continuous and one binary
 #'
-#' @param mi_vec
+#' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #'
-#' @returns
+#' @returns Formatted Z matrix
 #' @export
-#'
-#' @examples
 sim_Z <- function(mi_vec){
 
   M <- sum(mi_vec)
   Z0 <- rep(1, M)
-  Z1 <- rnorm(M)
-  Z2 <- rbinom(M, 1, 0.5)
+  Z1 <- stats::rnorm(M)
+  Z2 <- stats::rbinom(M, 1, 0.5)
   Z <- matrix(c(Z0, Z1, Z2), ncol = 3)
   return(Z)
 }
@@ -48,19 +238,17 @@ sim_Z <- function(mi_vec){
 #'
 #' Use Dirichlet Multinomial distribution to simulate counts
 #'
-#' @param i
-#' @param j
-#' @param beta
-#' @param Z
-#' @param B
-#' @param Y_ij0
-#' @param K
-#' @param mi_vec
+#' @param i subject index
+#' @param j time index
+#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param B B spline basis matrix of dimension (N x P)
+#' @param Y_ij0 Total sum of counts across all K
+#' @param K Number of responses
+#' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #'
-#' @returns
+#' @returns Y_i
 #' @export
-#'
-#' @examples
 sim_Y_ij <- function(i, j, beta, Z, B, Y_ij0, K, mi_vec){
   Y_ij <- MGLM::rdirmn(n = 1,
                        size = Y_ij0,
@@ -88,16 +276,14 @@ sim_Yi <- function(i, beta, Z, B, K, mi_vec){
 
 #' Simulate all Y counts
 #'
-#' @param beta
-#' @param Z
-#' @param B
-#' @param K
-#' @param mi_vec
+#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param B B spline basis matrix of dimension (N x P)
+#' @param K Number of responses
+#' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #'
-#' @returns
+#' @returns Y
 #' @export
-#'
-#' @examples
 sim_Y <- function(beta, Z, B, K, mi_vec){
   Y <- matrix(nrow = 0, ncol = K)
   n <- length(mi_vec)
@@ -114,16 +300,13 @@ sim_Y <- function(beta, Z, B, K, mi_vec){
   return(Y)
 }
 
-#' Simulation from B-spline
+
+#' Title
 #'
-#' simulate counts and external variables directly from b-spline coefficients
+#' @param seed Seed for the random number generator
 #'
-#' @param seed
-#'
-#' @returns
+#' @returns list
 #' @export
-#'
-#' @examples
 base_sim <- function(seed = 124){
   set.seed(seed)
   time_list <- sim_timepoints(n = 5)
@@ -158,161 +341,4 @@ base_sim <- function(seed = 124){
               time = time,
               K = K,
               P = P))
-}
-
-# Chenyang's data simulation functions: ---------
-Dirichlet.multinomial <- function(Nrs, shape) {
-  if (missing(Nrs) || missing(shape)) {
-    stop("Nrs and/or shape missing.")
-  }
-
-  # Create the data from the rmultinom
-  dmData <- matrix(0, length(Nrs), length(shape))
-  for (i in 1:length(Nrs)) {
-    dmData[i, ] <- stats::rmultinom(1, Nrs[i], dirmult::rdirichlet(1, shape))
-  }
-
-  # Label the created data
-  colnames(dmData) <- paste("Taxa", 1:ncol(dmData))
-
-  return(dmData)
-}
-
-
-rep.row <- function(x, n) {
-  matrix(rep(x, each = n), nrow = n)
-}
-
-rep.col <- function(x, n) {
-  matrix(rep(x, each = n), ncol = n, byrow = TRUE)
-}
-
-
-combine_data <- function(generate.data, indiv_n) {
-  simulate_data <- NULL
-  for (i in 1:indiv_n) {
-    simulate_data <- rbind(simulate_data, generate.data[[i]])
-  }
-  return(simulate_data)
-}
-
-cor_user <- function(mi, user_var, structure, al) {
-  if (structure == 1) {
-    return(user_var * ((pracma::ones(mi, mi) - diag(rep(1, mi))) * al + diag(rep(1, mi))))
-  }
-  if (structure == 2) {
-    return(al^abs(rep.col(1:mi, mi) - rep.row(1:mi, mi)) * user_var)
-  }
-}
-
-
-generate_data_new <- function(indiv_n, time, miss_n, cor_matrix, ranges, curveparamenter) {
-  simulate_data_new <- list()
-  for (i in 1:indiv_n) {
-    Get_alpha <- curveparamenter
-    simulate_data <- NULL
-    var_yij_final <- NULL
-    miss_rate <- sample(miss_n, 1)
-    newtime <- sort(sample(1:length(time), ceiling(miss_rate * length(time))))
-    error_matrix <- t(MASS::mvrnorm(n = ncol(curveparamenter),
-                                    mu = rep(0, length(time)),
-                                    Sigma = cor_matrix,
-                                    tol = 1e-6,
-                                    empirical = FALSE,
-                                    EISPACK = FALSE))
-
-    for (j in 1:length(time)) {
-      if (length(ranges) == 1) {
-        total_n_old <- ranges
-      } else {
-        total_n_old <- sample(ranges, 1)
-      }
-      dm <- Dirichlet.multinomial(total_n_old, as.numeric(Get_alpha[j, ]))
-      dm_witherror <- round(dm + error_matrix[j, ], 0)
-      dm_witherror[dm_witherror < 0] <- 0
-      total_n <- rowSums(dm_witherror)
-      dm_new <- c(dm_witherror, total_n, i)
-      simulate_data <- rbind(simulate_data, dm_new)
-    }
-
-
-    simulate_data_new[[i]] <- data.frame(time, simulate_data)[newtime, ]
-
-    rownames(simulate_data_new[[i]]) <- NULL
-  }
-  return(simulate_data_new)
-}
-
-
-
-combine_data <- function(generate.data, indiv_n){
-  simulate_data <- NULL
-  for (i in 1:indiv_n) {
-    simulate_data <- rbind(simulate_data,generate.data[[i]])
-  }
-  return(simulate_data)
-}
-
-#' Use Chenyangs setup to simulate count data wtih 3 clusters
-#'
-#' No external variables.
-#'
-#' @returns
-#' @export
-#'
-#' @examples
-sim_noZ <- function(){
-  time <- seq(0,1,0.05)
-  indiv_n <- 20
-  a1 <- exp(cos(2 * pi * time))
-  a2 <- exp(cos(2 * pi * time))
-  a3 <- exp(cos(2 * pi * time))
-  a4 <- exp(cos(2 * pi * time))
-
-  a5 <- exp(1 - 2 * exp(-6 * time))
-  a6 <- exp(1 - 2 * exp(-6 * time))
-  a7 <- exp(1 - 2 * exp(-6 * time))
-  a8 <- exp(1 - 2 * exp(-6 * time))
-
-  a9  <- exp(-1.5 * time)
-  a10 <- exp(-1.5 * time)
-  a11 <- exp(-1.5 * time)
-  a12 <- exp(-1.5 * time)
-
-  curveparamenter <- data.frame(a1, a2,  a3,  a4,
-                                a5, a6,  a7,  a8,
-                                a9, a10, a11, a12)
-
-  ranges <- 5000:20000
-  nknots <- 3
-  order <- 3
-  n <- 12
-  gamma1 <- 1/300
-
-  miss_n <- seq(0.6, 1, by = 0.1)
-  cor_matrix <- cor_user(length(time),
-                         user_var = 1000,
-                         structure = 1,
-                         al = 0.4)
-  generate.data <- generate_data_new(indiv_n,
-                                     time,
-                                     miss_n,
-                                     cor_matrix,
-                                     ranges,
-                                     curveparamenter)
-
-  simulate_data_new <- combine_data(generate.data, indiv_n)
-  names(simulate_data_new) <- c("time",
-                                "Taxa.1","Taxa.2",
-                                "Taxa.3","Taxa.4",
-                                "Taxa.5","Taxa.6",
-                                "Taxa.7","Taxa.8",
-                                "Taxa.9","Taxa.10",
-                                "Taxa.11","Taxa.12",
-                                "total_n","individual")
-  simulate_data_new$Capture.Number <- simulate_data_new$time * (length(unique(simulate_data_new$time)) - 1) + 1
-  simulate_data_new$individual <- as.factor(simulate_data_new$individual)
-  data <- simulate_data_new
-
-  return(data)
 }

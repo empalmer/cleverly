@@ -11,7 +11,7 @@ get_Y_i_vec(i, mi_vec, Y, Y_mat)
 
 \item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
 
-\item{Y}{response matrix of dimension N x K}
+\item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
 
 \item{Y_mat}{(optional) pre-calculated Yi-matrix from Y}
 }

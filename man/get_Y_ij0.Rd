@@ -7,11 +7,11 @@
 get_Y_ij0(i, j, Y, mi_vec)
 }
 \arguments{
-\item{i}{subject}
+\item{i}{subject index}
 
 \item{j}{time index}
 
-\item{Y}{response matrix of dimension N x K}
+\item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
 
 \item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
 }

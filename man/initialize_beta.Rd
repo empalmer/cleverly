@@ -11,7 +11,7 @@ initialize_beta(K, L, P)
 
 \item{L}{Number of external variables}
 
-\item{P}{Number of b-spline coefficients}
+\item{P}{Number of B-spline coefficients (order + nknots)}
 }
 \value{
 0 matrix of dimension KP x (L + 1)

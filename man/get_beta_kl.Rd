@@ -13,7 +13,7 @@ get_beta_kl(k, l, beta, P)
 
 \item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
 
-\item{P}{number of B-spline coefficients}
+\item{P}{Number of B-spline coefficients (order + nknots)}
 }
 \value{
 Vector of length P

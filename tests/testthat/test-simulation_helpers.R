@@ -57,157 +57,62 @@ test_that("Test sim Y works", {
 })
 
 
-test_that("No Z - Chenyangs code", {
+test_that("No Z - Functional simulation", {
   testthat::skip("Debugging, not test")
+
+  # Generate simulation data
   set.seed(123)
   sim <- sim_noZ()
-
   time <- sim$time
   id <- sim$individual
   time_id <- sim$Capture.Number
   Yij0 <- sim$total_n
-
   Y <- dplyr::select(sim, -c(
                         "individual",
                         "time",
                         "total_n",
                         "Capture.Number"))
   Y <- as.matrix(Y)
+  K <- ncol(Y)
 
-# Run code
-  iter <- 10
+  # Run algorithm
+  iter <- 25
   res <- cleverly(Y = Y,
                   subject_ids = id,
                   time = time,
-                  gammas = 1/300,
-                  psi = 10,
-                  phi = 1,
+                  gammas = 1000, # controls smoothness
+                  tau = 1/2,
+                  theta = 300,
+                  psi = 8000, # controls clustering
+                  C = 100,
                   max_admm_iter = iter,
                   max_outer_iter = 1)
-  set.seed(123)
-  sim <- sim_noZ()
-  time <- sim$time
-  visualize_curve(beta_new, B, Z, K = 12, time)
 
 
-
-  est_beta <- res$result$beta
+  # Diagnostics:
   phis <- res$result$phis_list[[1]]
   v <- res$result$v
+  v
   v_mat <- matrix(v, nrow = 6)
 
-  # View the betas to see if they are clustered.
-  data.frame(est_beta) %>%
-    dplyr::mutate(K = rep(LETTERS[1:12],each = 6),
-                  id = rep(1:6, 12)) %>%
-    tidyr::pivot_wider(names_from = K,
-                       values_from = est_beta)
-
-  y_hat <- res$result$y_hat
-  colnames(y_hat) <- c("Taxa.1","Taxa.2",
-                       "Taxa.3","Taxa.4",
-                       "Taxa.5","Taxa.6",
-                       "Taxa.7","Taxa.8",
-                       "Taxa.9","Taxa.10",
-                       "Taxa.11","Taxa.12")
-
-  #Un-normalize?
-  y_ra <- Y/rowSums(Y)
-  colnames(y_ra) <- c("Taxa.1","Taxa.2",
-                       "Taxa.3","Taxa.4",
-                       "Taxa.5","Taxa.6",
-                       "Taxa.7","Taxa.8",
-                       "Taxa.9","Taxa.10",
-                       "Taxa.11","Taxa.12")
-  y_ra <- data.frame(y_ra) %>%
-    dplyr::mutate(time = time) %>%
-    tidyr::pivot_longer(-time)
-
-
-  y_hat_ra <- data.frame(y_hat) %>%
-    dplyr::mutate(time = time) %>%
-    tidyr::pivot_longer(-time)
-
-
-  # Y-hats
-  Y_ra_df <- data.frame(y_ra,
-                        y_hat = y_hat_ra$value) %>%
-    dplyr::mutate(name = factor(name,
-                                levels = c("Taxa.1","Taxa.2",
-                                           "Taxa.3","Taxa.4",
-                                           "Taxa.5","Taxa.6",
-                                           "Taxa.7","Taxa.8",
-                                           "Taxa.9","Taxa.10",
-                                           "Taxa.11","Taxa.12")))
-  Y_ra_df %>%
-    ggplot2::ggplot() +
-    ggplot2::geom_point(ggplot2::aes(x = time, y = value),
-                        size = 1, color = "black") +
-    ggplot2::geom_line(ggplot2::aes(x = time, y = y_hat),
-                       linewidth = 2, color = "blue") +
-    ggplot2::facet_wrap(~name) +
-    ggplot2::labs(title = "After 2 iterations",
-                  x = "Time",
-                  y = "ra")
-
-
+  # See the final fit
+  visualize_final_fit(Y = Y,
+                      res = res)
 
   # View how curves change over iterations.
-
   betas <- res$result$admm_beta_list[[1]]
-  B <- get_B(time = time,
-             order = 3,
-             nknots = 3)
-  Z <- matrix(1, nrow = 354)
-  yhats <- purrr::map(betas, ~estimate_y(beta = .x,
-                                         B = B,
-                                         Z = Z,
-                                         K = 12)) %>%
-    purrr::imap_dfr(~data.frame(time = time, run = .y, .x))
-  colnames(yhats) <- c("time", "run",
-                       "Taxa.1","Taxa.2",
-                      "Taxa.3","Taxa.4",
-                      "Taxa.5","Taxa.6",
-                      "Taxa.7","Taxa.8",
-                      "Taxa.9","Taxa.10",
-                      "Taxa.11","Taxa.12")
-
-
-  yhats <- yhats %>%
-    tidyr::pivot_longer(-c(time, run)) %>%
-    dplyr::mutate(name = factor(name,
-                  levels = c("Taxa.1","Taxa.2",
-                             "Taxa.3","Taxa.4",
-                             "Taxa.5","Taxa.6",
-                             "Taxa.7","Taxa.8",
-                             "Taxa.9","Taxa.10",
-                             "Taxa.11","Taxa.12")))
-
-  yhats %>%
-    ggplot2::ggplot() +
-    ggplot2::geom_line(ggplot2::aes(x = time,
-                                    y = value,
-                                    group = run,
-                                    alpha = run),
-                       linewidth = .5) +
-    ggplot2::facet_wrap(~name) +
-    ggplot2::labs(title = "Y hats progression",
-                  x = "Time",
-                  y = "ra")
-    #ggplot2::scale_color_continuous(low = "grey", high = "black")
-
-
+  beta_path(betas,
+            K = K,
+            time = time)
 
   # Examine differences:
+  # Differences in the ADMM iterations
   diffs <- res$result$admm_diffs[[1]]
-  data.frame(diffs, id = 1:length(diffs)) %>%
-    ggplot2::ggplot() +
-    ggplot2::geom_line(ggplot2::aes(x = id, y = diffs)) +
-    ggplot2::labs(title = "Differences",
-                  x = "Iteration",
-                  y = "Difference")
+  plot_differneces(diffs)
+  diffs
 
-  visualize_curve(beta, B, Z, K, time)
+  # Examine clusters:
+  A <- res$result$clusters
 
 })
 
@@ -258,7 +163,6 @@ test_that("Bspline sim no Z",{
     ggplot2::facet_wrap(~name)
 
 
-
   # Run code
   iter <- 25
   res <- cleverly(Y = Y,
@@ -271,10 +175,8 @@ test_that("Bspline sim no Z",{
 
   visualize_curve(beta_new, B, Z, K = 4, time)
 
-
   betas <- res$result$admm_beta_list[[1]]
-
-  plot <- beta_path(betas)
+  plot <- beta_path(betas, K)
 
 
 })

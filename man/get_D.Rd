@@ -7,7 +7,16 @@
 get_D(K, d, order, nknots)
 }
 \arguments{
-\item{nknots}{}
+\item{K}{Number of responses}
+
+\item{d}{Order of the difference operator}
+
+\item{order}{Order of the B-spline basis}
+
+\item{nknots}{Number of knots for the B-spline basis}
+}
+\value{
+D matrix
 }
 \description{
 Note that this only works for d = 2

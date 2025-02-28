@@ -65,8 +65,8 @@ test_that("Y and mu indexing match", {
   mi <- 3
   mi_vec <- rep(3, 5)
 
-  Y_i <- get_Y_i_vec(i = 1, mi = mi_vec, Y = Y)
-  mu_i <- get_mu_i(i = 1, mi = mi_vec, Y = Y, beta, Z, B, K)
+  Y_i <- get_Y_i_vec(i = 1, mi_vec = mi_vec, Y = Y)
+  mu_i <- get_mu_i(i = 1, mi_vec = mi_vec, Y = Y, beta, Z, B, K)
 
   expect_equal(names(Y_i), names(mu_i))
 })

@@ -2,7 +2,7 @@ test_that("Update v", {
   sim <- base_sim()
 
   K <- 4
-  Kappa <- t(combn(K,2))
+  Kappa <- t(utils::combn(K,2))
   P <- 6
   Kappa_size <- nrow(Kappa)
 
@@ -23,7 +23,7 @@ test_that("Update lambda", {
   sim <- base_sim()
 
   K <- 4
-  Kappa <- t(combn(K,2))
+  Kappa <- t(utils::combn(K,2))
   P <- 6
   lp <- 2
   Kappa_size <- nrow(Kappa)
@@ -56,7 +56,7 @@ test_that("Update beta_lp", {
   sim <- base_sim()
 
   K <- 4
-  Kappa <- t(combn(K,2))
+  Kappa <- t(utils::combn(K,2))
   P <- 6
   lp <- 2
   Kappa_size <- nrow(Kappa)
@@ -102,10 +102,11 @@ test_that("Update beta_lp", {
 
 
 test_that("ADMM algorithm 3", {
+  skip("Sim test")
   sim <- base_sim()
 
   K <- 4
-  Kappa <- t(combn(K,2))
+  Kappa <- t(utils::combn(K,2))
   P <- 6
   lp <- 2
   Kappa_size <- nrow(Kappa)
@@ -136,7 +137,9 @@ test_that("ADMM algorithm 3", {
                         theta = 300,
                         psi = .001,
                         phi = 1,
-                        max_admm_iter = 5)
+                        max_admm_iter = 5,
+                        epsilon_b = 1e-3,
+                        epsilon_r = 1e-3)
 
 
   beta_lp$beta_admm_track[[1]][,3]

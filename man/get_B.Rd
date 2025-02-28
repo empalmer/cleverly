@@ -7,7 +7,14 @@
 get_B(time, order, nknots)
 }
 \arguments{
-\item{nknots}{}
+\item{time}{vector of time values for each subject/time}
+
+\item{order}{Order of the B-spline basis}
+
+\item{nknots}{Number of knots for the B-spline basis}
+}
+\value{
+B spline basic matrix of dimension (M x P)
 }
 \description{
 Title

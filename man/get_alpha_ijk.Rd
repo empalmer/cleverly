@@ -13,13 +13,13 @@ get_alpha_ijk(i, j, k, beta, Z, B, mi_vec)
 
 \item{k}{response index}
 
-\item{beta}{matrix of dimension (P*K) x L}
+\item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
 
-\item{Z}{matrix of external variables of dimension N x L}
+\item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
 
 \item{B}{B spline basis matrix of dimension (N x P)}
 
-\item{mi}{Number of timepoints for subject i}
+\item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
 }
 \value{
 Numeric (1x1)
