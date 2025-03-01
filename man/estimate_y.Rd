@@ -4,7 +4,7 @@
 \alias{estimate_y}
 \title{Estimate y-hat given beta}
 \usage{
-estimate_y(beta, B, Z, K)
+estimate_y(beta, B, Z, K, Y, time)
 }
 \arguments{
 \item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
@@ -14,6 +14,8 @@ estimate_y(beta, B, Z, K)
 \item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
 
 \item{K}{Number of responses}
+
+\item{time}{}
 }
 \value{
 Vector of RA values for y

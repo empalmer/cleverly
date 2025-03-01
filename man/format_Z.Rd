@@ -13,5 +13,5 @@ format_Z(Z)
 A matrix with a column of 1s representing L = 0, and values for the other external variables
 }
 \description{
-Format Z
+Add a column of 1s to Z if it doesn't already exist
 }

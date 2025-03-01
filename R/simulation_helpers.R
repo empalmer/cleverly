@@ -57,27 +57,27 @@ cor_user <- function(mi, user_var, structure, al) {
 #' @param miss_n missingness
 #' @param cor_matrix correlation matrix
 #' @param ranges ranges
-#' @param curveparamenter alphas for the Dirichlet multinomial
+#' @param alpha alphas for the Dirichlet multinomial
+#' @param Z
 #'
 #' @returns Simulated data frame
 #' @export
 generate_data_longitudinal_compositional <- function(n,
-                              time,
-                              miss_n,
-                              cor_matrix,
-                              ranges,
-                              curveparamenter) {
+                                                     time,
+                                                     miss_n,
+                                                     cor_matrix,
+                                                     ranges,
+                                                     alpha,
+                                                     Z) {
   simulate_data_new <- list()
   for (i in 1:n) {
-    Get_alpha <- curveparamenter
     simulate_data <- NULL
-    var_yij_final <- NULL
     # Set missingness
     miss_rate <- sample(miss_n, 1)
     newtime <- sort(sample(1:length(time), ceiling(miss_rate * length(time))))
 
     # Get the error matrix representing the longitudinal correlation
-    error_matrix <- t(MASS::mvrnorm(n = ncol(curveparamenter),
+    error_matrix <- t(MASS::mvrnorm(n = ncol(alpha),
                                     mu = rep(0, length(time)),
                                     Sigma = cor_matrix,
                                     tol = 1e-6,
@@ -91,7 +91,7 @@ generate_data_longitudinal_compositional <- function(n,
         Y0 <- sample(ranges, 1)
       }
       # Generate the compositional correlation
-      dm <- Dirichlet.multinomial(Y0, as.numeric(Get_alpha[j, ]))
+      dm <- Dirichlet.multinomial(Y0, as.numeric(alpha[j, ]))
 
       # Add the longitudinal correlation to the compositional correlation
       # Round it to be a count
@@ -116,7 +116,91 @@ generate_data_longitudinal_compositional <- function(n,
   return(simulate_data_new)
 }
 
+#' Generating data simulation function
+#'
+#' @param n n constant of number of individuals
+#' @param time vector of time values for each subject/time
+#' @param miss_n missingness
+#' @param cor_matrix correlation matrix
+#' @param ranges ranges
+#' @param Z
+#'
+#' @returns Simulated data frame
+#' @export
+generate_data_longitudinal_compositionalZ <- function(n,
+                                                      time,
+                                                      miss_n,
+                                                      cor_matrix,
+                                                      ranges) {
+  simulate_data_new <- list()
+  for (i in 1:n) {
+    simulate_data <- NULL
 
+    # Three possible clusters with given
+    fxn1 <- exp(cos(2 * pi * time))
+    fxn2 <- exp(1 - 2 * exp(-6 * time))
+    fxn3 <-  exp(-1.5 * time)
+
+    Z <- stats::rbinom(n = length(time),
+                       size = 1,
+                       prob = 0.6)
+
+
+    alpha <- data.frame(a1 = fxn1 - Z*fxn1,
+                        a2 = fxn1 - Z*fxn1,
+                        a3 = fxn1 - Z*fxn1,
+                        a4 = fxn1 - Z*fxn1,
+                        a5 = fxn2 - Z*(fxn2 - 1),
+                        a6 = fxn2 - Z*(fxn2 - 1),
+                        a7 = fxn2 - Z*(fxn2 - 1),
+                        a8 = fxn2 - Z*(fxn2 - 1),
+                        a9 =  fxn3 + Z*fxn1,
+                        a10 = fxn3 + Z*fxn1,
+                        a11 = fxn3 + Z*fxn1,
+                        a12 = fxn3 + Z*fxn1)
+
+    # Get the error matrix representing the longitudinal correlation
+    error_matrix <- t(MASS::mvrnorm(n = ncol(alpha),
+                                    mu = rep(0, length(time)),
+                                    Sigma = cor_matrix,
+                                    tol = 1e-6,
+                                    empirical = FALSE,
+                                    EISPACK = FALSE))
+
+    for (j in 1:length(time)) {
+      if (length(ranges) == 1) {
+        Y0 <- ranges
+      } else {
+        Y0 <- sample(ranges, 1)
+      }
+      # Generate the compositional correlation
+      dm <- Dirichlet.multinomial(Y0, as.numeric(alpha[j, ]))
+
+      # Add the longitudinal correlation to the compositional correlation
+      # Round it to be a count
+      dm_witherror <- round(dm + error_matrix[j, ], 0)
+
+      # Make sure no zeros.
+      dm_witherror[dm_witherror < 0] <- 0
+
+      # Define the
+      total_n <- rowSums(dm_witherror)
+
+      # Return data with the total n and id.
+      dm_new <- c(dm_witherror, total_n, i, Z[j])
+      simulate_data <- rbind(simulate_data, dm_new)
+    }
+
+    # Include missingness.
+    # Set missingness
+    miss_rate <- sample(miss_n, 1)
+    newtime <- sort(sample(1:length(time), ceiling(miss_rate * length(time))))
+    simulate_data_new[[i]] <- data.frame(time, simulate_data)[newtime, ]
+
+    rownames(simulate_data_new[[i]]) <- NULL
+  }
+  return(simulate_data_new)
+}
 
 #' Use Chenyangs setup to simulate count data wtih 3 clusters
 #'
@@ -186,6 +270,61 @@ sim_noZ <- function(n = 20,
   data$individual <- as.factor(data$individual)
   return(data)
 }
+
+
+
+#' Use Chenyangs setup to simulate count data wtih 3 clusters
+#'
+#' No external variables.
+#'
+#' @returns data Matrix with columns time, individual, capture number, totaln, counts
+#' @export
+sim_Z_longitudinal <- function(n = 20,
+                               range_start = 5000,
+                               range_end = 20000,
+                               nknots = 3,
+                               K = 12,
+                               order = 3,
+                               user_var = 1000,
+                               structure = 1,
+                               al = 0.4
+){
+  # Time points are a sequence between 0 and 1
+  time <- seq(0, 1, 0.05)
+
+  # Simulation parameters for setting Y0
+  ranges <- range_start:range_end
+
+  # How many missing times?
+  miss_n <- seq(0.6, 1, by = 0.1)
+
+  # Set up the longitudinal correlation structure
+  # What are these numbers?
+  cor_matrix <- cor_user(length(time),
+                         user_var = user_var,
+                         structure = structure,
+                         al = al)
+
+  # Simulate data.
+  generate.data <- generate_data_longitudinal_compositionalZ(n,
+                                                            time,
+                                                            miss_n,
+                                                            cor_matrix,
+                                                            ranges)
+  # Organize data.
+  data <- dplyr::bind_rows(generate.data)
+  names(data) <- c("time",
+                   paste0("Taxa.", 1:K),
+                   "total_n",
+                   "individual",
+                   "Z")
+
+  data$Capture.Number <- data$time * (length(unique(data$time)) - 1) + 1
+  data$individual <- as.factor(data$individual)
+
+  return(data)
+}
+
 
 
 

@@ -17,6 +17,7 @@ Imports:
     dirmult,
     dplyr,
     fda,
+    ggnewscale,
     ggplot2,
     igraph,
     magrittr,
@@ -28,4 +29,5 @@ Imports:
     rlang,
     stats,
     tidyr,
-    utils
+    utils,
+    viridis

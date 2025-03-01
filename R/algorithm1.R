@@ -81,7 +81,6 @@ algorithm1 <- function(Y,
   s <- 1
 
   while ((diff > epsilon_b) & (s <= max_outer_iter)) {
-
     # Go straight to ADMM code if there is no external variables
     if (L > 0) {
       # Solution for l_p minus, with l_p fixed
@@ -140,13 +139,16 @@ algorithm1 <- function(Y,
 
   # After loop:
   # Calculte estimated ys and clusters
-  y_hat <- estimate_y(beta = beta,
-                      B = B,
-                      Z = Z,
-                      K = K)
   clusters <- get_clusters(v = v,
                            K = K,
                            P = P)
+  y_hat <- estimate_y(beta = beta,
+                      B = B,
+                      Z = Z,
+                      K = K,
+                      Y = Y,
+                      time = time)
+
 
   return(list(beta = beta,
               clusters = clusters,
@@ -170,10 +172,12 @@ algorithm1 <- function(Y,
 #' @param B B spline basis matrix of dimension (N x P)
 #' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
 #' @param K Number of responses
+#' @param Y
+#' @param time
 #'
 #' @returns Vector of RA values for y
 #' @export
-estimate_y <- function(beta, B, Z, K){
+estimate_y <- function(beta, B, Z, K, Y, time){
   P <- ncol(B)
   L <- ncol(Z) - 1
   M <- nrow(Z)
@@ -191,7 +195,38 @@ estimate_y <- function(beta, B, Z, K){
   }
   # Turn into RA version:
   yhat_ra <- exp(yhat)/rowSums(exp(yhat))
-  return(yhat_ra)
+
+  y_ra <- Y/rowSums(Y)
+
+
+  Ys <- data.frame(time = time,
+                         Z = Z[,2],
+                         yhat_ra,
+                         y_ra)
+
+  colnames(Ys) <- c("time",
+                    "Z",
+                    paste0("yhat_", 1:K),
+                    paste0("y_", 1:K))
+
+
+  Ys %>%
+    tidyr::pivot_longer(cols = -c(Z, time),
+                        names_to = c("type", "response"),
+                        names_sep = "_",
+                        values_to = "value")
+
+
+  Ys <- Ys %>%
+    tidyr::pivot_longer(
+      cols = tidyr::matches("yhat|y"),  # Selects both yhat and y columns
+      names_to = c(".value", "response"),
+      names_pattern = "(yhat|y)_(\\d+)"  # Splits into two parts: yhat/y and the number
+    ) %>%
+    dplyr::mutate(response = factor(response, levels = 1:K))
+
+
+  return(Ys)
 }
 
 

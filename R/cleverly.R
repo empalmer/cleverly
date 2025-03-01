@@ -50,14 +50,52 @@ cleverly <- function(Y,
   if (tau * theta - 1 == 0) {
     stop("Tau and theta will cause MCP to be INF")
   }
-
   # Format Y
   Y_user <- Y
-  Y_list <- get_Y_wrapper(Y_user, subject_ids, time)
-  Y <- Y_list$Y
-  # After this check time should be a numeric, and
-  time <- Y_list$time
-  subject_ids <- Y_list$subject_id_values
+
+  id_quo <- rlang::enquo(subject_ids)
+  time_quo <- rlang::enquo(time)
+
+  if (is.data.frame(Y)) {
+    # For ID:
+    if (rlang::quo_name(id_quo) %in% colnames(Y)) {
+      subject_ids <- dplyr::pull(Y, !!id_quo) # Extract the column
+      Y <- dplyr::select(Y, -!!id_quo) # Remove the column
+    } else if (length(subject_ids) == nrow(Y)) {
+      subject_ids <- subject_ids # Assume it's an external vector
+    } else {
+      stop("Invalid subject: must be a column name in Y or a vector of length nrow(Y)")
+    }
+
+    # For time:
+    if (rlang::quo_name(time_quo) %in% colnames(Y)) {
+      time <- dplyr::pull(Y, !!time_quo) # Extract the column
+      Y <- dplyr::select(Y, -!!time_quo) # Remove the column
+    } else if (length(time) == nrow(Y)) {
+      time <- time # Assume it's an external vector
+    } else {
+      stop("Invalid time: must be a column name in Y or a vector of length nrow(Y)")
+    }
+    # Convert Y into a matrix
+    Y <- as.matrix(Y)
+    dimnames(Y) <- NULL # To make the tests pass
+  } else if (is.matrix(Y)) {
+    if (length(subject_ids) != nrow(Y) || length(time) != nrow(Y)) {
+      stop("For matrices, ID and Time must be external vectors of length nrow(Y)")
+    }
+  } else {
+    stop("Y must be either a data frame or a matrix")
+  }
+
+
+
+  # Y_list <- get_Y_wrapper(Y = Y_user,
+  #                         subject_ids = subject_ids,
+  #                         time = time)
+  # #Y <- Y_list$Y
+  # # After this check time should be a numeric, and
+  # time <- Y_list$time
+  # subject_ids <- Y_list$subject_id_values
   # Get is and js
   # Time needs to be changed to indexes
   is <- subject_ids
@@ -66,7 +104,6 @@ cleverly <- function(Y,
   # Currently a data frame with subject id and mi
   mi_vec <- get_mi_vec(Y_user, subject_ids, time)$mi
   js <- sequence(mi_vec)
-
 
   # Format Z
   if (!missing(Z)) {
@@ -79,6 +116,10 @@ cleverly <- function(Y,
   # Format l_p
   if (lp != 0) {
     lp <- format_lp(lp = lp, Z = Z)
+  }
+
+  if (length(gammas) != ncol(Z)) {
+    stop("Length of gammas must be equal to the number of columns in Z + 1")
   }
 
   # Run algorithm 1 using correct formatting

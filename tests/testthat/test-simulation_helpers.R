@@ -180,3 +180,74 @@ test_that("Bspline sim no Z",{
 
 
 })
+
+
+
+test_that("With Z", {
+
+  skip("Skip")
+  # Generate simulation data
+  set.seed(123)
+  sim <- sim_Z_longitudinal()
+  sim %>%
+    tidyr::pivot_longer(-c(individual,
+                           time,
+                           Capture.Number,
+                           total_n, Z)) %>%
+    dplyr::mutate(name = factor(name,
+                         levels = paste0("Taxa.", 1:12) )) %>%
+    ggplot2::ggplot(ggplot2::aes(x = time,
+                                 y = value,
+                                 color = factor(Z))) +
+    ggplot2::geom_point(size = 1) +
+    ggplot2::facet_wrap(~name)
+
+  Y <- dplyr::select(sim, -c(
+                        "total_n",
+                        "Capture.Number",
+                        "Z"))
+  Z <- sim$Z
+
+  res <- cleverly(Y = Y,
+                  Z = Z,
+                  subject_ids = individual,
+                  lp = 0,
+                  time = time,
+                  gammas = c(1000,1000), # controls smoothness
+                  tau = 1/2,
+                  theta = 300,
+                  psi = 8000, # controls clustering
+                  C = 100,
+                  max_admm_iter = 10,
+                  max_outer_iter = 10)
+
+  y_hat <- res$result$y_hat
+
+  cluster_df <- data.frame(
+    K = factor(1:12, levels = 1:12),
+    cluster = factor(res$result$clusters$membership))
+
+  y_hat %>%
+    dplyr::mutate(response = factor(response, levels = 1:12)) %>%
+    dplyr::left_join(cluster_df, by = c("response" = "K")) %>%
+    dplyr::mutate(clusterZ = ifelse(Z == 1, "EV", cluster)) %>%
+    ggplot2::ggplot(ggplot2::aes(x = time)) +
+    ggplot2::geom_point(ggplot2::aes(y = y,
+                                     color = factor(Z)),
+                        size = .5, alpha = .5) +
+    ggnewscale::new_scale_color() +
+    ggplot2::geom_line(ggplot2::aes(y = yhat,
+                                    color = clusterZ,
+                                    group = factor(Z)),
+                       linewidth = 1) +
+    ggplot2::facet_wrap(~response) +
+    ggplot2::scale_color_manual(
+      values = c(viridis::viridis(length(unique(cluster_df$cluster))), "grey50"),
+      name = "Cluster"
+    )
+
+
+
+
+
+})

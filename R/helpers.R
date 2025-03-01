@@ -64,7 +64,10 @@ get_mi_vec <- function(Y, subject_ids, time_ids) {
 #'
 #' @returns Matrix of dimension mi x K
 #' @export
-get_Y_wrapper <- function(Y, subject_ids, time_ids) {
+get_Y_wrapper <- function(Y,
+                          subject_ids,
+                          time_ids) {
+
   id_quo <- rlang::enquo(subject_ids)
   time_quo <- rlang::enquo(time_ids)
 
@@ -481,14 +484,23 @@ initialize_beta <- function(K, L, P) {
 
 #' Format Z
 #'
+#' Add a column of 1s to Z if it doesn't already exist
+#'
 #' @param Z A matrix or data frame with columns of external variables for each subject/time
 #'
 #' @returns A matrix with a column of 1s representing L = 0, and values for the other external variables
 #' @export
 format_Z <- function(Z) {
-  M <- nrow(Z)
-  if (!identical(Z[, 1], rep(1, M))) {
-    Z <- cbind(1, Z)
+  if (is.data.frame(Z) | is.matrix(Z)) {
+    M <- nrow(Z)
+    if (!identical(Z[, 1], rep(1, M))) {
+      Z <- cbind(1, Z)
+    }
+    Z <- as.matrix(Z)
+  } else if (is.vector(Z)) {
+    if (!all(Z == 1)) {
+      Z <- cbind(1, Z)
+    }
   }
   return(Z)
 }
