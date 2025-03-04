@@ -58,6 +58,9 @@ get_Vi_inv <- function(V_i, i, Y, mi_vec, phi, beta, Z, B, K){
                    mi_vec = mi_vec)
   }
   #V_i_inv <- solve(V_i)
+  if (any(is.nan(V_i))) {
+    browser()
+  }
   V_i_inv <- MASS::ginv(V_i)
   return(V_i_inv)
 }

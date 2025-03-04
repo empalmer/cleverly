@@ -260,6 +260,9 @@ get_alpha_ijk <- function(i, j, k, beta, Z, B, mi_vec) {
     lsum[l + 1] <- Z_ijl * t(B_ij) %*% beta_lk
   }
   alpha_ijk <- exp(sum(lsum))
+  if (any(is.infinite(alpha_ijk))) {
+    return("Infinite alpha")
+  }
   names(alpha_ijk) <- paste0("i=", i, ",j=", j, ",k=", k)
 
   if (sum(alpha_ijk < 0) != 0) {
@@ -460,6 +463,9 @@ get_V_i <- function(i, Y, Y_ij0, phi, beta, Z, B, K, mi_vec) {
   }
   V_i_bdiag <- Matrix::bdiag(V_ij_list)
   V_i <- as.matrix(V_i_bdiag)
+  if (any(is.nan(V_i))) {
+    browser()
+  }
   return(V_i)
 }
 

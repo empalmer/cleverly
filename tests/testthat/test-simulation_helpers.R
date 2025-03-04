@@ -216,9 +216,9 @@ test_that("With Z", {
                   gammas = c(1000,1000), # controls smoothness
                   tau = 1/2,
                   theta = 300,
-                  psi = 8000, # controls clustering
+                  psi = 2000, # controls clustering
                   C = 100,
-                  max_admm_iter = 10,
+                  max_admm_iter = 5,
                   max_outer_iter = 10)
 
   y_hat <- res$result$y_hat
@@ -233,8 +233,9 @@ test_that("With Z", {
     dplyr::mutate(clusterZ = ifelse(Z == 1, "EV", cluster)) %>%
     ggplot2::ggplot(ggplot2::aes(x = time)) +
     ggplot2::geom_point(ggplot2::aes(y = y,
-                                     color = factor(Z)),
-                        size = .5, alpha = .5) +
+                                     color = factor(Z),
+                                     shape = factor(Z)),
+                        size = .6, alpha = .8) +
     ggnewscale::new_scale_color() +
     ggplot2::geom_line(ggplot2::aes(y = yhat,
                                     color = clusterZ,
@@ -245,6 +246,7 @@ test_that("With Z", {
       values = c(viridis::viridis(length(unique(cluster_df$cluster))), "grey50"),
       name = "Cluster"
     )
+
 
 
 
