@@ -150,7 +150,19 @@ cleverly <- function(Y,
 
   # Return what is inputted and the result
   # Change eventually
-  return(list(result = result,
+  return(list(beta = result$beta,
+              clusters = result$clusters,
+              y_hat = result$y_hat,
+              v = result$v,
+              admm_diffs = result$admm_diffs,
+              admm_beta_list = result$admm_beta_list,
+              phis_list = result$phis_list,
+              admm_beta_list = result$admm_beta_list,
+              loop_list_beta = result$loop_list_beta,
+              loop_list_diff = result$loop_list_diff,
+              r_list = result$r_list,
+              d_list = result$d_list,
+              # Input values
               Y = Y,
               mi_vec = mi_vec,
               time = time,

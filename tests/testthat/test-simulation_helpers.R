@@ -183,7 +183,7 @@ test_that("Bspline sim no Z",{
 
 
 
-test_that("With Z", {
+test_that("Simulation With Z", {
 
   skip("Skip")
   # Generate simulation data
@@ -208,6 +208,7 @@ test_that("With Z", {
                         "Z"))
   Z <- sim$Z
 
+  start <- Sys.time()
   res <- cleverly(Y = Y,
                   Z = Z,
                   subject_ids = individual,
@@ -218,15 +219,35 @@ test_that("With Z", {
                   theta = 300,
                   psi = 2000, # controls clustering
                   C = 100,
-                  max_admm_iter = 5,
-                  max_outer_iter = 10)
+                  max_admm_iter = 50,
+                  max_outer_iter = 5,
+                  epsilon_r = 1,
+                  epsilon_d = 1,
+                  epsilon_b = 1)
+  end <- Sys.time()
+  end - start
 
-  y_hat <- res$result$y_hat
+  y_hat <- res$y_hat
 
+  # Examine convergence:
+  # Algorithm 1 iterations
+  s <- length(res$admm_beta_list)
+  # Algorithm 3 admm iterations
+  t <- purrr::map_dbl(res$admm_beta_list, length)
+
+  # admm parts:
+  purrr::map(res$r_list, unlist)
+  purrr::map(res$d_list, unlist)
+  # backfitting parts:
+  unlist(res$loop_list_diff)
+
+
+  # Get cluster membership
   cluster_df <- data.frame(
     K = factor(1:12, levels = 1:12),
-    cluster = factor(res$result$clusters$membership))
+    cluster = factor(res$clusters$membership))
 
+  # plot clusters
   y_hat %>%
     dplyr::mutate(response = factor(response, levels = 1:12)) %>%
     dplyr::left_join(cluster_df, by = c("response" = "K")) %>%
@@ -243,7 +264,13 @@ test_that("With Z", {
                        linewidth = 1) +
     ggplot2::facet_wrap(~response) +
     ggplot2::scale_color_manual(
-      values = c(viridis::viridis(length(unique(cluster_df$cluster))), "grey50"),
+      values = c(RColorBrewer::brewer.pal(n = length(unique(cluster_df$cluster)),
+                            name = "Set1"),
+                 "grey50"),
+      #values = c(rcartocolor::carto_pal(length(unique(cluster_df$cluster)),
+      #                                  "Safe"),
+      #           "grey50"),
+      #values = c(viridis::viridis(length(unique(cluster_df$cluster))), "grey50"),
       name = "Cluster"
     )
 

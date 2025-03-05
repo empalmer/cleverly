@@ -52,11 +52,16 @@ algorithm3 <- function(Y,
   beta_admm_track <- list()
   v_admm_track <- list()
   lambda_admm_track <- list()
+  r_list <- list()
+  d_list <- list()
   diff_admm <- c()
   phi_track <- c()
 
   # Initialize lambda to all 0
   lambda <- numeric(nrow(Kappa)*P)
+  # Initialize v to be zero just for checking the difference
+  # The first v will be based on the current beta.
+  v <- numeric(nrow(Kappa)*P)
 
   while (t <= max_admm_iter) {
     v_new <- update_v(beta = beta,
@@ -105,8 +110,26 @@ algorithm3 <- function(Y,
     # Check for convergence
     diff <- sum(abs(beta_new - beta))
     diff_admm <- c(diff_admm, diff)
-    converged <- FALSE
-    if (converged) {
+    r_norm <- get_r_norm(
+      beta = beta_new,
+      v = v_new,
+      Kappa = Kappa,
+      P = P,
+      lp = lp)
+
+    d_norm <- get_d_norm(v_new = v_new,
+                         v = v,
+                         theta = theta,
+                         Kappa = Kappa,
+                         K = ncol(beta),
+                         P = P)
+
+
+    r_list[[t]] <- r_norm
+    d_list[[t]] <- d_norm
+
+    if (r_norm <= epsilon_r & d_norm <= epsilon_d) {
+      # exit the loop
       break
     }
 
@@ -124,7 +147,9 @@ algorithm3 <- function(Y,
               lambda_admm_track = lambda_admm_track,
               v_admm_track = v_admm_track,
               phi_track = phi_track,
-              diff_admm = diff_admm))
+              diff_admm = diff_admm,
+              r_list = r_list,
+              d_list = d_list))
 }
 
 
@@ -285,3 +310,57 @@ update_lambda <- function(beta_lp, v, lambda, A, theta){
 # Convergence criteria ----------------------------------------------------
 
 
+get_r_norm <- function(beta, v, Kappa, P, lp){
+  r_kappa <- c()
+  for (kappa in 1:nrow(Kappa)) {
+    k1 <- Kappa[kappa,1]
+    k2 <- Kappa[kappa,2]
+
+    beta_k1 <- beta[(P * (k1 - 1) + 1):(P * k1), lp + 1]
+    beta_k2 <- beta[(P * (k2 - 1) + 1):(P * k2), lp + 1]
+    v_kappa <- v[((kappa - 1)*P + 1):(kappa*P)]
+
+    diff <- beta_k1 - beta_k2 - v_kappa
+
+    r_kappa <- c(r_kappa, diff)
+  }
+  norm <- sum(r_kappa^2)
+
+  return(norm)
+}
+
+get_d_norm <- function(v_new, v, theta, Kappa, K, P){
+  v_diff <- v_new - v
+  diff_mat <- matrix(v_diff, nrow = P)
+  s <- 0
+
+  # for (k in K) {
+  #   id_k1 <- which(Kappa[,1] == k)
+  #   id_k2 <- which(Kappa[,2] == k)
+  # }
+  for (i in 1:K) {
+    v1 <- rep(0, P)
+    v2 <- rep(0, P)
+    for (ix in 1:nrow(Kappa)) {
+      l1 <- Kappa[ix, 1]
+      l2 <- Kappa[ix, 2]
+      if (l1 == i) {
+        v1 <- v1 + diff_mat[, ix]
+      } else {
+        v1 <- v1
+      }
+      if (l2 == i) {
+        v2 <- v2 + diff_mat[, ix]
+      } else {
+        v2 <- v2
+      }
+    }
+    v <- (v1 - v2)^2
+    s <- s + sum(v)
+  }
+
+  residual <- theta * sqrt(s)
+  return(residual)
+
+  #return(norm)
+}

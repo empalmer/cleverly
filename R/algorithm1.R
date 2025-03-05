@@ -77,10 +77,13 @@ algorithm1 <- function(Y,
   admm_beta_list <- list()
   admm_diffs <- list()
   phis_list <- list()
-  diff <- 100
+  r_list <- list()
+  d_list <- list()
+  diff <- Inf
   s <- 1
 
   while ((diff > epsilon_b) & (s <= max_outer_iter)) {
+    print(paste0("Backfitting algorithm iteration: ", s))
     # Go straight to ADMM code if there is no external variables
     if (L > 0) {
       # Solution for l_p minus, with l_p fixed
@@ -131,6 +134,8 @@ algorithm1 <- function(Y,
     loop_list_diff[[s]] <- diff
     admm_diffs[[s]] <- alg3$diff_admm
     phis_list[[s]] <- alg3$phi_track
+    r_list[[s]] <- alg3$r_list
+    d_list[[s]] <- alg3$d_list
 
 
     # Increment loop
@@ -158,7 +163,9 @@ algorithm1 <- function(Y,
               admm_beta_list = admm_beta_list,
               loop_list_beta = loop_list_beta,
               loop_list_diff = loop_list_diff,
-              phis_list = phis_list))
+              phis_list = phis_list,
+              r_list = r_list,
+              d_list = d_list))
 }
 
 
