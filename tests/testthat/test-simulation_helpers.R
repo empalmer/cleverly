@@ -208,44 +208,110 @@ test_that("Simulation With Z", {
                         "Z"))
   Z <- sim$Z
 
+
+  psi <- 200
+  tau <- 1/2
+  theta <- 300
+  max_admm_iter = 20
+  max_outer_iter = 2
   start <- Sys.time()
+  Rprof("test.out")
   res <- cleverly(Y = Y,
                   Z = Z,
                   subject_ids = individual,
                   lp = 0,
                   time = time,
-                  gammas = c(1000,1000), # controls smoothness
-                  tau = 1/2,
-                  theta = 300,
-                  psi = 2000, # controls clustering
+                  gammas = c(100,100), # controls smoothness
+                  tau = tau, # Controls cuttoff for highest shrinkage
+                  theta = theta, # for lambda, but also for d
+                  psi = psi, # controls clustering
                   C = 100,
-                  max_admm_iter = 50,
-                  max_outer_iter = 5,
+                  max_admm_iter = max_admm_iter,
+                  max_outer_iter = max_outer_iter,
                   epsilon_r = 1,
                   epsilon_d = 1,
                   epsilon_b = 1)
   end <- Sys.time()
-  end - start
+  Rprof(NULL)
+  summaryRprof("test.out")$by.self[1:10,]
+  duration <- end - start
 
   y_hat <- res$y_hat
 
   # Examine convergence:
   # Algorithm 1 iterations
-  s <- length(res$admm_beta_list)
+  (s <- length(res$admm_beta_list))
   # Algorithm 3 admm iterations
-  t <- purrr::map_dbl(res$admm_beta_list, length)
+  (t <- purrr::map_dbl(res$admm_beta_list, length))
 
   # admm parts:
-  purrr::map(res$r_list, unlist)
-  purrr::map(res$d_list, unlist)
+  purrr::map(res$r_list, unlist) # beta - beta - v
+  purrr::map(res$d_list, unlist) # sum of vs
   # backfitting parts:
   unlist(res$loop_list_diff)
 
+  # D convergence
+  purrr::imap_dfr(res$d_list,
+                  ~data.frame(cluster = unlist(.x),
+                              run = .y)) %>%
+    dplyr::mutate(row = dplyr::row_number()) %>%
+    ggplot2::ggplot(ggplot2::aes(x = row, y = cluster, color = factor(run))) +
+    ggplot2::geom_line() +
+    ggplot2::geom_hline(yintercept = 3, linetype = 2) +
+    ggplot2::labs(x = "Overall Iteration",
+                  y = "Number of Clusters",
+                  title = "d",
+                  subtitle = paste("psi:",psi,
+                                   ",tau:",round(tau,2),
+                                   "theta:",theta,
+                                   ",admm_iter:",max_admm_iter,
+                                   "outer_iter:",max_outer_iter,
+                                   "time:", duration),
+                  color = "Outer iteration")
+  # r convergence
+  purrr::imap_dfr(res$r_list,
+                  ~data.frame(cluster = unlist(.x),
+                              run = .y)) %>%
+    dplyr::mutate(row = dplyr::row_number()) %>%
+    ggplot2::ggplot(ggplot2::aes(x = row, y = cluster, color = factor(run))) +
+    ggplot2::geom_line() +
+    ggplot2::geom_hline(yintercept = 3, linetype = 2) +
+    ggplot2::labs(x = "Overall Iteration",
+                  y = "Number of Clusters",
+                  title = "r = beta_k - beta_k' - v_kappa",
+                  subtitle = paste("psi:",psi,
+                                   ",tau:",round(tau,2),
+                                   "theta:",theta,
+                                   ",admm_iter:",max_admm_iter,
+                                   "outer_iter:",max_outer_iter,
+                                   "time:", duration),
+                  color = "Outer iteration")
+
+  # Cluster progress:
+  cluster_track <- res$cluster_list
+  purrr::imap_dfr(cluster_track,
+                           ~data.frame(cluster = purrr::map_dbl(.x, ~.x$no),
+                                       run = .y)) %>%
+    dplyr::mutate(row = dplyr::row_number()) %>%
+    ggplot2::ggplot(ggplot2::aes(x = row, y = cluster, color = factor(run))) +
+    ggplot2::geom_point() +
+    ggplot2::geom_hline(yintercept = 3, linetype = 2) +
+    ggplot2::labs(x = "Overall Iteration",
+                  y = "Number of Clusters",
+                  title = "Cluster Progress",
+                  subtitle = paste("psi:",psi,
+                                   ",tau:",round(tau,2),
+                                   "theta:",theta,
+                                   ",admm_iter:",max_admm_iter,
+                                   "outer_iter:",max_outer_iter,
+                                   "time:", duration),
+                  color = "Outer iteration")
 
   # Get cluster membership
   cluster_df <- data.frame(
     K = factor(1:12, levels = 1:12),
     cluster = factor(res$clusters$membership))
+  knitr::kable(table(cluster_df$cluster, rep(1:3, each = 4)))
 
   # plot clusters
   y_hat %>%
@@ -264,15 +330,20 @@ test_that("Simulation With Z", {
                        linewidth = 1) +
     ggplot2::facet_wrap(~response) +
     ggplot2::scale_color_manual(
-      values = c(RColorBrewer::brewer.pal(n = length(unique(cluster_df$cluster)),
-                            name = "Set1"),
-                 "grey50"),
+      # values = c(RColorBrewer::brewer.pal(n = length(unique(cluster_df$cluster)),
+      #                       name = "Set1"),
+      #            "grey50"),
       #values = c(rcartocolor::carto_pal(length(unique(cluster_df$cluster)),
       #                                  "Safe"),
       #           "grey50"),
-      #values = c(viridis::viridis(length(unique(cluster_df$cluster))), "grey50"),
+      values = c(viridis::viridis(length(unique(cluster_df$cluster))), "grey50"),
       name = "Cluster"
-    )
+    ) +
+    ggplot2::labs(subtitle   = paste0("psi:",psi,
+                                     ", tau:",round(tau,2),
+                                     ", theta:",theta,
+                                     ", admm_iter:",max_admm_iter,
+                                     ", outer_iter:",max_outer_iter))
 
 
 

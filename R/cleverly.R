@@ -125,6 +125,7 @@ cleverly <- function(Y,
   # Run algorithm 1 using correct formatting
   # Eventually this would change to a different algorithm for different response types
   if (response_type == "counts") {
+
     result <- algorithm1(Y = Y,
                          Z = Z,
                          time = time,
@@ -147,7 +148,6 @@ cleverly <- function(Y,
     stop("Invalid response type or type not yet implemented.")
   }
 
-
   # Return what is inputted and the result
   # Change eventually
   return(list(beta = result$beta,
@@ -160,9 +160,12 @@ cleverly <- function(Y,
               admm_beta_list = result$admm_beta_list,
               loop_list_beta = result$loop_list_beta,
               loop_list_diff = result$loop_list_diff,
+              cluster_list = result$cluster_list,
               r_list = result$r_list,
               d_list = result$d_list,
+              error = result$error,
               # Input values
+              B = result$B,
               Y = Y,
               mi_vec = mi_vec,
               time = time,

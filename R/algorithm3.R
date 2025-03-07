@@ -31,6 +31,7 @@ algorithm3 <- function(Y,
                        lp,
                        B,
                        beta,
+                       lambda,
                        A,
                        P,
                        C,
@@ -45,25 +46,37 @@ algorithm3 <- function(Y,
                        max_admm_iter,
                        epsilon_r,
                        epsilon_d) {
-
+  #print("Starting Algorithm 3")
   # Iterations for admm loop
   t <- 1
+  K <- ncol(Y)
   # Initialize all return lists
   beta_admm_track <- list()
   v_admm_track <- list()
   lambda_admm_track <- list()
+  cluster_list <- list()
   r_list <- list()
   d_list <- list()
   diff_admm <- c()
   phi_track <- c()
 
+    pb_admm <- utils::txtProgressBar(min = 0,
+                              max = max_admm_iter,
+                              style = 3)
+
   # Initialize lambda to all 0
-  lambda <- numeric(nrow(Kappa)*P)
+  #lambda <- numeric(nrow(Kappa)*P)
   # Initialize v to be zero just for checking the difference
   # The first v will be based on the current beta.
   v <- numeric(nrow(Kappa)*P)
-
+  pb <- utils::txtProgressBar(min = 0,
+                              max = max_admm_iter,
+                              style = 3)
   while (t <= max_admm_iter) {
+    # if (t == 1 | t %% 5 == 0) {
+    #   print(paste("ADMM Iteration: ", t))
+    # }
+
     v_new <- update_v(beta = beta,
                       lp = lp,
                       lambda = lambda,
@@ -73,6 +86,7 @@ algorithm3 <- function(Y,
                       tau = tau,
                       theta = theta,
                       psi = psi)
+
     beta_new <- update_beta_admm(Y = Y,
                                  beta = beta,
                                  lp = lp,
@@ -106,6 +120,7 @@ algorithm3 <- function(Y,
     beta_admm_track[[t]] <- beta_new
     v_admm_track[[t]] <- v_new
     lambda_admm_track[[t]] <- lambda_new
+    cluster_list[[t]] <- get_clusters(v_new, K, P)
 
     # Check for convergence
     diff <- sum(abs(beta_new - beta))
@@ -116,6 +131,7 @@ algorithm3 <- function(Y,
       Kappa = Kappa,
       P = P,
       lp = lp)
+
 
     d_norm <- get_d_norm(v_new = v_new,
                          v = v,
@@ -133,19 +149,28 @@ algorithm3 <- function(Y,
       break
     }
 
+    if (t == 20) {
+      #browser()
+    }
     # Prepare for next iteration
     v <- v_new
     beta <- beta_new
     lambda <- lambda_new
     t <- t + 1
-  }
+    utils::setTxtProgressBar(pb_admm, t)
+    # pb_admm$tick()
 
+
+  }
+  utils::setTxtProgressBar(pb_admm, max_admm_iter)
+  #print(paste("Last ADMM Iteration: ", t - 1))
   return(list(beta = beta,
               lambda = lambda,
               v = v,
               beta_admm_track = beta_admm_track,
               lambda_admm_track = lambda_admm_track,
               v_admm_track = v_admm_track,
+              cluster_list = cluster_list,
               phi_track = phi_track,
               diff_admm = diff_admm,
               r_list = r_list,

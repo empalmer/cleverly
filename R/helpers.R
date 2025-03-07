@@ -129,8 +129,9 @@ get_Y_i_mat <- function(i, mi_vec, Y) {
   indeces <- get_indeces(i, mi_vec)
   Y_i <- Y[indeces, ]
   # Y_i <- Y[((i - 1) * mi + 1):(i * mi), ]
-  rownames(Y_i) <- paste0("j=", 1:mi_vec[i])
-  colnames(Y_i) <- paste0("i=", i, "k=", 1:ncol(Y))
+  # removing rownames since that takes a long time!
+  #rownames(Y_i) <- paste0("j=", 1:mi_vec[i])
+  #colnames(Y_i) <- paste0("i=", i, "k=", 1:ncol(Y))
   return(Y_i)
 }
 
@@ -161,7 +162,8 @@ get_Y_i_vec <- function(i, mi_vec, Y, Y_mat) {
   Y_i_vec <- as.vector(t(Y_i_mat))
   js <- rep(1:mi_vec[i], each = ncol(Y))
   ks <- rep(1:ncol(Y), mi_vec[i])
-  names(Y_i_vec) <- paste0("i=", i, ",j=", js, ",k=", ks)
+  # removing rownames since that takes a long time!
+  # names(Y_i_vec) <- paste0("i=", i, ",j=", js, ",k=", ks)
   return(Y_i_vec)
 }
 
@@ -213,7 +215,8 @@ get_B_ij <- function(i, j, B, mi_vec) {
   i_start <- c(0, cumsum(mi_vec))[i] + 1
   i_start + j - 1
   B_ij <- B[i_start + j - 1, ]
-  names(B_ij) <- paste0("i=", i, ",j=", j, ",l=", 1:ncol(B))
+  # removing rownames since that takes a long time!
+  # names(B_ij) <- paste0("i=", i, ",j=", j, ",l=", 1:ncol(B))
   return(B_ij)
 }
 
@@ -261,9 +264,10 @@ get_alpha_ijk <- function(i, j, k, beta, Z, B, mi_vec) {
   }
   alpha_ijk <- exp(sum(lsum))
   if (any(is.infinite(alpha_ijk))) {
-    return("Infinite alpha")
+    stop("Infinite alpha")
   }
-  names(alpha_ijk) <- paste0("i=", i, ",j=", j, ",k=", k)
+  # removing rownames since that takes a long time!
+  # names(alpha_ijk) <- paste0("i=", i, ",j=", j, ",k=", k)
 
   if (sum(alpha_ijk < 0) != 0) {
     stop("Negative alpha")
@@ -324,7 +328,8 @@ get_mu_ij <- function(Y_ij0, alpha_ij, i, j, beta, Z, B, K, mi_vec) {
       mi_vec = mi_vec
     )
     mu_ij <- Y_ij0 / sum(alpha_ij) * alpha_ij
-    names(mu_ij) <- paste0("i=", i, ",j=", j, ",k=", 1:K)
+    # removing rownames since that takes a long time!
+    # names(mu_ij) <- paste0("i=", i, ",j=", j, ",k=", 1:K)
   } else {
     mu_ij <- Y_ij0 / sum(alpha_ij) * alpha_ij
     names(mu_ij) <- names(alpha_ij)
@@ -469,133 +474,3 @@ get_V_i <- function(i, Y, Y_ij0, phi, beta, Z, B, K, mi_vec) {
   return(V_i)
 }
 
-
-# Initializing algorithm 1 ------------------------------------------------
-
-
-#' Initialize beta
-#'
-#' @param K Number of responses
-#' @param L Number of external variables
-#' @param P Number of B-spline coefficients (order + nknots)
-#'
-#' @returns 0 matrix of dimension KP x (L + 1)
-#' @export
-initialize_beta <- function(K, L, P) {
-  beta_init <- matrix(0, nrow = K * P, ncol = L + 1)
-}
-
-
-
-
-#' Format Z
-#'
-#' Add a column of 1s to Z if it doesn't already exist
-#'
-#' @param Z A matrix or data frame with columns of external variables for each subject/time
-#'
-#' @returns A matrix with a column of 1s representing L = 0, and values for the other external variables
-#' @export
-format_Z <- function(Z) {
-  if (is.data.frame(Z) | is.matrix(Z)) {
-    M <- nrow(Z)
-    if (!identical(Z[, 1], rep(1, M))) {
-      Z <- cbind(1, Z)
-    }
-    Z <- as.matrix(Z)
-  } else if (is.vector(Z)) {
-    if (!all(Z == 1)) {
-      Z <- cbind(1, Z)
-    }
-  }
-  return(Z)
-}
-
-
-
-#' Title
-#'
-#' @param lp either a numeric index of which external variable to cluster on, or the name of the column of Z that contains the clustering variable. Specify numeric 0 to cluster via baseline.
-#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
-#'
-#' @returns lp index
-#' @export
-format_lp <- function(lp, Z) {
-  return(lp)
-}
-
-
-#' Get breaks for B-spline basis
-#'
-#' @param t timepoints
-#' @param k order of B-spline
-#' @param m number of knots
-#'
-#' @returns vector of knot values
-#' @export
-get_knots <- function(t, k, m) {
-  # external knots are on boundary
-  # return boundary with internal knots only
-  breaks <- c(min(t), seq(from = min(t), to = max(t), length.out = m + 2)[-c(1, m + 2)], max(t))
-  return(breaks)
-}
-
-
-
-#' Return dth order differnece operator matrix
-#'
-#' Note that this only works for d = 2
-#'
-#' @param K Number of responses
-#' @param d Order of the difference operator
-#' @param order Order of the B-spline basis
-#' @param nknots Number of knots for the B-spline basis
-#'
-#' @returns D matrix
-#' @export
-get_D <- function(K, d, order, nknots) {
-  # P <- order + nknots
-  C <- matrix(0, nrow = nknots + order - d, ncol = nknots + order)
-  # dth order weighted difference operator
-  for (j in 1:(nknots + order - 2)) {
-    d_j <- c(rep(0, j - 1), 1, -2, 1, rep(0, (nknots + order) - 3 - (j - 1)))
-    e_j <- c(rep(0, j - 1), 1, rep(0, (nknots + order) - 3 - (j - 1)))
-    C <- C + e_j %*% t(d_j)
-  }
-  D <- t(C) %*% C
-  diagD <- kronecker(diag(K), D)
-
-  return(diagD)
-}
-
-
-
-#' Get A matrix
-#'
-#' This is the matrix that keeps track of the pairwise differences,
-#'
-#' @param Kappa keeps track of each possible response pair
-#' @param K Number of responses
-#' @param P Number of B-spline coefficients (order + nknots)
-#'
-#' @returns A matrix
-#' @export
-get_A <- function(Kappa, K, P) {
-  I <- diag(P)
-  A <- matrix(ncol = K * P, nrow = P * nrow(Kappa))
-  for (kappa in 1:nrow(Kappa)) {
-    k1 <- Kappa[kappa, 1]
-    k2 <- Kappa[kappa, 2]
-
-    e_k1 <- rep(0, K)
-    e_k2 <- rep(0, K)
-    e_k1[k1] <- 1
-    e_k2[k2] <- 1
-
-    A_kappa <- kronecker(t(e_k1 - e_k2), I)
-
-    A[(P * (kappa - 1) + 1):(P * kappa), ] <- A_kappa
-  }
-
-  return(A)
-}
