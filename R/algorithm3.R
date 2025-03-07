@@ -33,6 +33,7 @@ algorithm3 <- function(Y,
                        beta,
                        lambda,
                        A,
+                       AtA,
                        P,
                        C,
                        D,
@@ -96,6 +97,7 @@ algorithm3 <- function(Y,
                                  gammas = gammas,
                                  D = D,
                                  A = A,
+                                 AtA = AtA,
                                  Z = Z,
                                  B = B,
                                  phi = phi,
@@ -267,6 +269,7 @@ update_beta_admm <- function(Y,
                              gammas,
                              D,
                              A,
+                             AtA,
                              Z,
                              B,
                              phi,
@@ -294,8 +297,10 @@ update_beta_admm <- function(Y,
   v_tilde <- v - lambda/theta
   beta_lp <- beta[,lp + 1]
 
-  first_term <- -H + gamma * D + theta * t(A) %*% A
-  second_term <- Q - H %*% beta_lp + theta * t(A) %*% v_tilde
+  #first_term <- -H + gamma * D + theta * t(A) %*% A
+  #second_term <- Q - H %*% beta_lp + theta * t(A) %*% v_tilde
+  first_term <- -H + gamma * D + theta * AtA
+  second_term <- Q - H %*% beta_lp + theta * crossprod(A, v_tilde)
   beta_lp_new <- MASS::ginv(first_term) %*% second_term
 
   # All other beta elements are fixed, only the lp column is updated.

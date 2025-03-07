@@ -63,6 +63,9 @@ algorithm1 <- function(Y,
   A <- get_A(Kappa = Kappa,
              K = K,
              P = P)
+  #pre-calculate for computation speed.
+  AtA <- crossprod(A)
+
   # Initialize phi to be 1
   #Dirichlet Multinomial over dispersion parameter.
   phi <- 1
@@ -162,6 +165,7 @@ algorithm1 <- function(Y,
                  beta = beta_lp_minus,
                  lambda = lambda,
                  A = A,
+                 AtA = AtA,
                  P = P,
                  C = C,
                  D = D,
@@ -457,9 +461,11 @@ get_D <- function(K, d, order, nknots) {
   for (j in 1:(nknots + order - 2)) {
     d_j <- c(rep(0, j - 1), 1, -2, 1, rep(0, (nknots + order) - 3 - (j - 1)))
     e_j <- c(rep(0, j - 1), 1, rep(0, (nknots + order) - 3 - (j - 1)))
-    C <- C + e_j %*% t(d_j)
+    #C <- C + e_j %*% t(d_j)
+    C <- C + tcrossprod(e_j, d_j)
   }
-  D <- t(C) %*% C
+  #D <- t(C) %*% C
+  D <- crossprod(C)
   diagD <- kronecker(diag(K), D)
 
   return(diagD)

@@ -260,7 +260,8 @@ get_alpha_ijk <- function(i, j, k, beta, Z, B, mi_vec) {
   for (l in 0:L) {
     Z_ijl <- get_Z_ijl(i, j, l, Z, mi_vec)
     beta_lk <- get_beta_kl(k, l, beta, P)
-    lsum[l + 1] <- Z_ijl * t(B_ij) %*% beta_lk
+    #lsum[l + 1] <- Z_ijl * t(B_ij) %*% beta_lk
+    lsum[l + 1] <- Z_ijl * crossprod(B_ij, beta_lk)
   }
   alpha_ijk <- exp(sum(lsum))
   if (any(is.infinite(alpha_ijk))) {
@@ -394,8 +395,8 @@ get_U_ij <- function(alpha_ij, i, j, beta, Z, B, K, mi_vec) {
   }
   alpha_ij0 <- sum(alpha_ij)
 
-  U_ij <- diag(alpha_ij / alpha_ij0) - alpha_ij %*% t(alpha_ij) / alpha_ij0^2
-
+  #U_ij <- diag(alpha_ij / alpha_ij0) - alpha_ij %*% t(alpha_ij) / alpha_ij0^2
+  U_ij <- diag(alpha_ij / alpha_ij0) - tcrossprod(alpha_ij) / alpha_ij0^2
   return(U_ij)
 }
 

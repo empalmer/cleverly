@@ -209,7 +209,7 @@ test_that("Simulation With Z", {
   Z <- sim$Z
 
 
-  psi <- 200
+  psi <- 2200
   tau <- 1/2
   theta <- 300
   max_admm_iter = 20
@@ -234,7 +234,7 @@ test_that("Simulation With Z", {
   end <- Sys.time()
   Rprof(NULL)
   summaryRprof("test.out")$by.self[1:10,]
-  duration <- end - start
+  (duration <- end - start)
 
   y_hat <- res$y_hat
 
@@ -294,7 +294,7 @@ test_that("Simulation With Z", {
                                        run = .y)) %>%
     dplyr::mutate(row = dplyr::row_number()) %>%
     ggplot2::ggplot(ggplot2::aes(x = row, y = cluster, color = factor(run))) +
-    ggplot2::geom_point() +
+    ggplot2::geom_line() +
     ggplot2::geom_hline(yintercept = 3, linetype = 2) +
     ggplot2::labs(x = "Overall Iteration",
                   y = "Number of Clusters",

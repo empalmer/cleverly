@@ -35,7 +35,8 @@ get_Hessian_il <- function(i, l, Y, mi_vec, beta, Z, B, phi){
                         K = K)
 
 
-  hessian_il <- -partials_il %*% Vi_inv %*% t(partials_il)
+  #hessian_il <- -partials_il %*% Vi_inv %*% t(partials_il)
+  hessian_il <- -partials_il %*% tcrossprod(Vi_inv, partials_il)
 
   return(hessian_il)
 }
