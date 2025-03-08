@@ -191,7 +191,7 @@ test_that("Simulation With Z", {
 
   skip("Skip")
   # Generate simulation data
-  set.seed(123)
+  set.seed(124)
   sim <- sim_Z_longitudinal()
   sim %>%
     tidyr::pivot_longer(-c(individual,
@@ -220,8 +220,8 @@ test_that("Simulation With Z", {
   psi <- 2450
   tau <- 0.2
   theta <- 250
-  max_admm_iter = 40
-  max_outer_iter = 10
+  max_admm_iter = 20
+  max_outer_iter = 2
   start <- Sys.time()
   Rprof("test.out")
   res <- cleverly(Y = Y,
@@ -241,7 +241,7 @@ test_that("Simulation With Z", {
                   epsilon_b = 1)
   end <- Sys.time()
   Rprof(NULL)
-  summaryRprof("test.out")$by.self[1:10,]
+  summaryRprof("test.out")$by.self[1:10,1:2]
   (duration <- end - start)
 
   y_hat <- res$y_hat

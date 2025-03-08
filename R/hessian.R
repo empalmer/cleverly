@@ -11,12 +11,12 @@
 #' @param phi Current value of overdispersion parameter
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #' @param i_index
-#' @param V_inv (optional) List of V inverses for each i. If supplied is faster
+#' @param Vi_inv (optional) Vi inverse If supplied is faster
 #'
 #' @returns Matrix of dimension KP times KP
 #' @export
 #'
-get_Hessian_il <- function(i, l, Y, mi_vec, i_index, beta, Z, B, phi, V_inv){
+get_dHessian_il <- function(i, l, Y, mi_vec, i_index, beta, Z, B, phi, Vi_inv){
   # Third term:
   K <- ncol(Y)
   partials_il <- get_partials_il(i = i,
@@ -28,7 +28,7 @@ get_Hessian_il <- function(i, l, Y, mi_vec, i_index, beta, Z, B, phi, V_inv){
                                 Z = Z,
                                 B = B)
 
-  if (missing(V_inv)) {
+  if (missing(Vi_inv)) {
     Vi_inv <- get_Vi_inv(i = i,
                          Y = Y,
                          mi_vec = mi_vec,
@@ -38,17 +38,15 @@ get_Hessian_il <- function(i, l, Y, mi_vec, i_index, beta, Z, B, phi, V_inv){
                          Z = Z,
                          B = B,
                          K = K)
-  } else {
-    Vi_inv <- V_inv[[i]]
   }
-
   #slower
   #hessian_il <- -partials_il %*% Vi_inv %*% t(partials_il)
 
   #faster
   hessian_il <- -partials_il %*% tcrossprod(Vi_inv, partials_il)
 
-  return(hessian_il)
+  d_hessian_il <- diag(hessian_il)
+  return(d_hessian_il)
 }
 
 
@@ -70,46 +68,25 @@ get_Hessian_il <- function(i, l, Y, mi_vec, i_index, beta, Z, B, phi, V_inv){
 #'
 get_Hessian_l <- function(l, Y, mi_vec, i_index, beta, Z, B, phi, C, V_inv) {
   n <- length(mi_vec)
-
-
-  hessian_l <- matrix(0, nrow = nrow(beta), ncol = nrow(beta))
+  #hessian_l <- matrix(0, nrow = nrow(beta), ncol = nrow(beta))
+  d_hessian_l <- numeric(nrow(beta))
+  # Hessian will be diagonalized, so we can treat it as a vector
   for (i in 1:n) {
-    hessian_il <- get_Hessian_il(i = i,
-                                 l = l,
-                                 Y = Y,
-                                 mi_vec = mi_vec,
-                                 i_index = i_index,
-                                 beta = beta,
-                                 Z = Z,
-                                 B = B,
-                                 phi = phi,
-                                 V_inv = V_inv)
-    hessian_l <- hessian_l + hessian_il
+    dhessian_il <- get_dHessian_il(i = i,
+                                   l = l,
+                                   Y = Y,
+                                   mi_vec = mi_vec,
+                                   i_index = i_index,
+                                   beta = beta,
+                                   Z = Z,
+                                   B = B,
+                                   phi = phi,
+                                   Vi_inv = V_inv[[i]])
+    d_hessian_l <- d_hessian_l + dhessian_il
   }
-  browser()
-  # Use reduce instead:
-  hessian_i_list <- purrr::map(1:n, function(i) {
-    get_Hessian_il(i = i,
-                   l = l,
-                   Y = Y,
-                   mi_vec = mi_vec,
-                   i_index = i_index,
-                   beta = beta,
-                   Z = Z,
-                   B = B,
-                   phi = phi,
-                   V_inv = V_inv)
-  })
-  hessian_i <- purrr::reduce(hessian_i_list, `+`)
 
-
-
-
-  # Diagonalize hessian:
-  diag_hessian <- -pmax(diag(-hessian_l), C)
-
+  diag_hessian <- -pmax(-d_hessian_l, C)
   C_hessian <- diag(diag_hessian)
 
   return(C_hessian)
-  #return(hessian_l)
 }

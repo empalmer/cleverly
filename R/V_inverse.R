@@ -113,17 +113,17 @@ get_V_i <- function(i, Y, Y_ij0,
 #' @returns Matrix of dimension Kmi x Kmi
 #' @export
 #'
-get_Vi_inv <- function(V_i,
-                       i,
+get_Vi_inv <- function(i,
                        Y,
                        mi_vec,
                        i_index,
                        phi,
                        beta,
-                       Z, B, K){
+                       Z,
+                       B,
+                       K){
 
-  V_ij_inv_list <- list()
-
+  V_i_inv_list <- list()
   mi <- mi_vec[i]
   for (j in 1:mi) {
     Y_ij0 <- get_Y_ij0(i = i,
@@ -140,7 +140,7 @@ get_Vi_inv <- function(V_i,
     V_ijj <- get_V_ijj(Y_ij0 = Y_ij0,
                        phi = phi,
                        alpha_ij = alpha_ij)
-    V_ij_inv_list[[j]] <- MASS::ginv(V_ijj)
+    V_i_inv_list[[j]] <- MASS::ginv(V_ijj)
     #V_ij_inv_list[[j]] <- V_ijj
   }
 
@@ -163,4 +163,43 @@ get_Vi_inv <- function(V_i,
 
   return(V_i_inv)
 }
+
+#' Get overal V inverse
+#'
+#' @param Y
+#' @param mi_vec
+#' @param i_index
+#' @param phi
+#' @param beta
+#' @param Z
+#' @param B
+#' @param K
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+get_V_inv <- function(Y,
+                      mi_vec,
+                      i_index,
+                      phi,
+                      beta,
+                      Z,
+                      B,
+                      K){
+  V_inv <- list()
+  for (i in 1:length(mi_vec)) {
+    V_inv[[i]] <- get_Vi_inv(i = i,
+                             Y = Y,
+                             mi_vec = mi_vec,
+                             i_index = i_index,
+                             phi = phi,
+                             beta = beta,
+                             Z = Z,
+                             B = B,
+                             K = K)
+  }
+  return(V_inv)
+}
+
 

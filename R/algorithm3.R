@@ -287,7 +287,15 @@ update_beta_admm <- function(Y,
 
   gamma <- gammas[lp + 1]
 
-  # Get V inverse for each i
+  # Get V inverse for all is
+  V_inv <- get_V_inv(Y = Y,
+                     mi_vec = mi_vec,
+                     i_index = i_index,
+                     phi = phi,
+                     beta = beta,
+                     Z = Z,
+                     B = B,
+                     K = ncol(Y))
   # compute it just once first so we don't have to calculate it for both H and Q.
   H <- get_Hessian_l(l = lp,
                      Y = Y,
@@ -297,7 +305,8 @@ update_beta_admm <- function(Y,
                      Z = Z,
                      B = B,
                      phi = phi,
-                     C = C)
+                     C = C,
+                     V_inv = V_inv)
   Q <- get_gradient_l(Y = Y,
                       mi_vec = mi_vec,
                       i_index = i_index,

@@ -21,6 +21,16 @@ algorithm2 <- function(Y, Z, mi_vec, i_index, lp, B, beta, D, gammas, phi, C){
   l_loop <- setdiff(0:L , lp)
 
 
+  # Get V inverse for all is (and ls... )
+  V_inv <- get_V_inv(Y = Y,
+                     mi_vec = mi_vec,
+                     i_index = i_index,
+                     phi = phi,
+                     beta = beta,
+                     Z = Z,
+                     B = B,
+                     K = ncol(Y))
+
   for (l in l_loop) {
     gamma_l <- gammas[l + 1]
     beta_l <- beta[, l + 1]
@@ -43,7 +53,8 @@ algorithm2 <- function(Y, Z, mi_vec, i_index, lp, B, beta, D, gammas, phi, C){
                                Z = Z,
                                B = B,
                                phi = phi,
-                               C = C)
+                               C = C,
+                               V_inv = V_inv)
     # function of beta_l_list not beta_l
 
     first_term <- -Hessian_l + gamma_l*D

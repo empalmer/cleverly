@@ -412,17 +412,35 @@ get_alpha_ijk <- function(i, j, k, beta, Z, B, i_index) {
 #' @returns Vector of length K
 #' @export
 get_alpha_ij <- function(i, j, beta, Z, B, K, i_index) {
-  alphas <- c()
+  alphas <- numeric(K)
   for (k in 1:K) {
-    alphas <- c(alphas, get_alpha_ijk(i, j, k, beta, Z, B, i_index))
+    alphas[k] <- get_alpha_ijk(i, j, k, beta, Z, B, i_index)
   }
   return(alphas)
 }
 
 
+get_alpha_i <- function(i, beta, Z, B, K, i_index, mi_vec){
+  mi <- mi_vec[i]
+  alpha_i <- purrr::map(1:mi, ~get_alpha_ij(i = i,
+                                           j = .x,
+                                           beta = beta,
+                                           Z = Z,
+                                           B = B,
+                                           K = K,
+                                           i_index = i_index))
 
-get_alpha_array <- function(beta, Z, B, K, i_index){
-  return(NULL)
+}
+
+get_alpha_list <- function(beta, Z, B, K, i_index){
+  n <- length(i_index)
+  alpha_list <- purrr::map(1:n, ~get_alpha_i(i = .x,
+                                             beta = beta,
+                                             Z = Z,
+                                             B = B,
+                                             K = K,
+                                             i_index = i_index))
+  return(alpha_list)
 
 
 }
