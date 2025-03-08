@@ -4,7 +4,7 @@
 \alias{get_Hessian_l}
 \title{Get hessian with respect to the lth external variable}
 \usage{
-get_Hessian_l(l, Y, mi_vec, i_index, beta, Z, B, phi, C)
+get_Hessian_l(l, Y, mi_vec, i_index, beta, Z, B, phi, C, V_inv)
 }
 \arguments{
 \item{l}{external variable index}
@@ -22,6 +22,8 @@ get_Hessian_l(l, Y, mi_vec, i_index, beta, Z, B, phi, C)
 \item{phi}{Current value of overdispersion parameter}
 
 \item{C}{Constant for determining the hessian change.}
+
+\item{V_inv}{(optional) List of V inverses for each i. If supplied is faster}
 }
 \value{
 Matrix of dimension KP times KP

@@ -10,8 +10,8 @@
 #' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
 #' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
 #' @param B B spline basis matrix of dimension (N x P)
+#' @param i_index
 #' @param K Number of responses
-#' @param mi number of timepoints for ith subject
 #'
 #' @returns matrix of dimension K x K for a single j
 #' @export
@@ -51,6 +51,7 @@ get_V_ijj <- function(Y_ij0,
 #' @param Y_ij0 Total sum of counts across all K
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #' @param K Number of responses
+#' @param i_index
 #'
 #' @returns Diagonal matrix of Kmi x Kmi Each block is for a single j of block size K x K
 #' @export
@@ -107,14 +108,16 @@ get_V_i <- function(i, Y, Y_ij0,
 #' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
 #' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
 #' @param B B spline basis matrix of dimension (N x P)
+#' @param alpha
+#' @param i_index
 #' @param K Number of responses
-#' @param V_i
 #'
 #' @returns Matrix of dimension Kmi x Kmi
 #' @export
 #'
 get_Vi_inv <- function(i,
                        Y,
+                       alpha,
                        mi_vec,
                        i_index,
                        phi,
@@ -130,16 +133,20 @@ get_Vi_inv <- function(i,
                        j = j,
                        Y = Y,
                        i_index)
-    alpha_ij <- get_alpha_ij(i = i,
-                             j = j,
-                             beta = beta,
-                             Z = Z,
-                             B = B,
-                             K = K,
-                             i_index = i_index)
+    # alpha_ij2 <- get_alpha_ij(i = i,
+    #                          j = j,
+    #                          beta = beta,
+    #                          Z = Z,
+    #                          B = B,
+    #                          K = K,
+    #                          i_index = i_index)
+    # alpha_ij == alpha_ij2
+    alpha_ij <- alpha[[i]][[j]]
+
     V_ijj <- get_V_ijj(Y_ij0 = Y_ij0,
                        phi = phi,
                        alpha_ij = alpha_ij)
+
     V_i_inv_list[[j]] <- MASS::ginv(V_ijj)
     #V_ij_inv_list[[j]] <- V_ijj
   }
@@ -174,12 +181,14 @@ get_Vi_inv <- function(i,
 #' @param Z
 #' @param B
 #' @param K
+#' @param alpha
 #'
 #' @returns
 #' @export
 #'
 #' @examples
 get_V_inv <- function(Y,
+                      alpha,
                       mi_vec,
                       i_index,
                       phi,
@@ -191,6 +200,7 @@ get_V_inv <- function(Y,
   for (i in 1:length(mi_vec)) {
     V_inv[[i]] <- get_Vi_inv(i = i,
                              Y = Y,
+                             alpha = alpha,
                              mi_vec = mi_vec,
                              i_index = i_index,
                              phi = phi,

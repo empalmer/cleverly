@@ -432,16 +432,16 @@ get_alpha_i <- function(i, beta, Z, B, K, i_index, mi_vec){
 
 }
 
-get_alpha_list <- function(beta, Z, B, K, i_index){
-  n <- length(i_index)
+get_alpha_list <- function(beta, Z, B, K, i_index, mi_vec){
+  n <- length(mi_vec)
   alpha_list <- purrr::map(1:n, ~get_alpha_i(i = .x,
                                              beta = beta,
                                              Z = Z,
                                              B = B,
                                              K = K,
-                                             i_index = i_index))
+                                             i_index = i_index,
+                                             mi_vec = mi_vec))
   return(alpha_list)
-
 
 }
 

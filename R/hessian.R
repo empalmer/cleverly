@@ -12,11 +12,22 @@
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #' @param i_index
 #' @param Vi_inv (optional) Vi inverse If supplied is faster
+#' @param partials_il
 #'
 #' @returns Matrix of dimension KP times KP
 #' @export
 #'
-get_dHessian_il <- function(i, l, Y, mi_vec, i_index, beta, Z, B, phi, Vi_inv){
+get_dHessian_il <- function(i,
+                            l,
+                            Y,
+                            mi_vec,
+                            i_index,
+                            beta,
+                            Z,
+                            B,
+                            phi,
+                            Vi_inv,
+                            partials_il){
   # Third term:
   K <- ncol(Y)
   partials_il <- get_partials_il(i = i,
@@ -29,15 +40,16 @@ get_dHessian_il <- function(i, l, Y, mi_vec, i_index, beta, Z, B, phi, Vi_inv){
                                 B = B)
 
   if (missing(Vi_inv)) {
-    Vi_inv <- get_Vi_inv(i = i,
-                         Y = Y,
-                         mi_vec = mi_vec,
-                         i_index = i_index,
-                         phi = phi,
-                         beta = beta,
-                         Z = Z,
-                         B = B,
-                         K = K)
+    stop("Missing Vi inverse argument")
+    # Vi_inv <- get_Vi_inv(i = i,
+    #                      Y = Y,
+    #                      mi_vec = mi_vec,
+    #                      i_index = i_index,
+    #                      phi = phi,
+    #                      beta = beta,
+    #                      Z = Z,
+    #                      B = B,
+    #                      K = K)
   }
   #slower
   #hessian_il <- -partials_il %*% Vi_inv %*% t(partials_il)
@@ -66,7 +78,17 @@ get_dHessian_il <- function(i, l, Y, mi_vec, i_index, beta, Z, B, phi, Vi_inv){
 #' @returns Matrix of dimension KP times KP
 #' @export
 #'
-get_Hessian_l <- function(l, Y, mi_vec, i_index, beta, Z, B, phi, C, V_inv) {
+get_Hessian_l <- function(l,
+                          Y,
+                          mi_vec,
+                          i_index,
+                          beta,
+                          Z,
+                          B,
+                          phi,
+                          C,
+                          V_inv,
+                          partials_l) {
   n <- length(mi_vec)
   #hessian_l <- matrix(0, nrow = nrow(beta), ncol = nrow(beta))
   d_hessian_l <- numeric(nrow(beta))
@@ -81,7 +103,8 @@ get_Hessian_l <- function(l, Y, mi_vec, i_index, beta, Z, B, phi, C, V_inv) {
                                    Z = Z,
                                    B = B,
                                    phi = phi,
-                                   Vi_inv = V_inv[[i]])
+                                   Vi_inv = V_inv[[i]],
+                                   partials_il = partials_l[[i]])
     d_hessian_l <- d_hessian_l + dhessian_il
   }
 

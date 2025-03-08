@@ -2,7 +2,7 @@
 % Please edit documentation in R/gradient.R
 \name{get_gradient_il}
 \alias{get_gradient_il}
-\title{Title}
+\title{Get gradient for a given i, l}
 \usage{
 get_gradient_il(i, l, Y, mi_vec, i_index, phi, beta, Z, B)
 }
@@ -14,6 +14,8 @@ get_gradient_il(i, l, Y, mi_vec, i_index, phi, beta, Z, B)
 \item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
 
 \item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
+
+\item{i_index}{starting index of the ith subject in the data}
 
 \item{phi}{Current value of overdispersion parameter}
 
@@ -27,5 +29,5 @@ get_gradient_il(i, l, Y, mi_vec, i_index, phi, beta, Z, B)
 Vector of length PK
 }
 \description{
-Title
+Get gradient for a given i, l
 }

@@ -240,23 +240,22 @@ test_that("Check alpha_ij", {
   expect_equal(as.numeric(alpha_ij)[1], 1.204884947)
 })
 
-test_that("Check alpha_i", {
+test_that("Check alpha list = alphaijk", {
   beta <- readRDS(test_path("test_data", "beta.rds"))
   Z <- readRDS(test_path("test_data","Z.rds"))
   B <- readRDS(test_path("test_data","B.rds"))
   K <- 4
   mi_vec <- rep(3, 5)
   i_index <- c(0, cumsum(mi_vec))
-  alpha_ij <- get_alpha_ij(i = 1, j = 1,
-                           beta = beta,
-                           Z = Z,
-                           B = B,
-                           K = K,
-                           i_index = i_index)
 
-  alpha_i <- get_alpha_i(i, beta, Z, B, K, i_index, mi_vec)
-
-  expect_equal(as.numeric(alpha_ij)[1], 1.204884947)
+  i <- 2
+  j <- 3
+  k <- 2
+  alpha <- get_alpha_list(beta, Z, B, K, i_index, mi_vec)
+  alpha_ijk <- get_alpha_ijk(i = i,
+                             j = j,
+                             k, beta, Z, B, i_index)
+  expect_equal(alpha_ijk, alpha[[i]][[j]][k])
 })
 
 

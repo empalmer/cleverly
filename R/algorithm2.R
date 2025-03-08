@@ -10,30 +10,56 @@
 #' @param gammas Vector of dimension L + 1 for penalizing the D matrix
 #' @param phi Current value of overdispersion parameter
 #' @param C Constant for determining the hessian change.
+#' @param i_index
+#' @param V_inv
 #'
 #' @returns Vector of length PK x L
 #' @export
-algorithm2 <- function(Y, Z, mi_vec, i_index, lp, B, beta, D, gammas, phi, C){
+algorithm2 <- function(Y,
+                       Z,
+                       mi_vec,
+                       i_index,
+                       lp,
+                       B,
+                       beta, D, gammas, phi, C){
   L <- ncol(Z) - 1
+  K <- ncol(Y)
   lp_minus <- NULL
 
   # Loop only through non-clustering values
   l_loop <- setdiff(0:L , lp)
 
-
-  # Get V inverse for all is (and ls... )
-  V_inv <- get_V_inv(Y = Y,
-                     mi_vec = mi_vec,
-                     i_index = i_index,
-                     phi = phi,
-                     beta = beta,
-                     Z = Z,
-                     B = B,
-                     K = ncol(Y))
-
   for (l in l_loop) {
     gamma_l <- gammas[l + 1]
     beta_l <- beta[, l + 1]
+
+
+    # Things to be calculated once per loop/beta update
+    # Which are: alpha, V inverse, and partials
+    alpha <- get_alpha_list(beta = beta,
+                            Z = Z,
+                            B = B,
+                            K = K,
+                            i_index = i_index,
+                            mi_vec = mi_vec)
+    # Get V inverse for all is (and ls... )
+    V_inv <- get_V_inv(Y = Y,
+                       alpha = alpha,
+                       mi_vec = mi_vec,
+                       i_index = i_index,
+                       phi = phi,
+                       beta = beta,
+                       Z = Z,
+                       B = B,
+                       K = ncol(Y))
+    partials_l <- get_partials_l_list(Y = Y,
+                                      l = l,
+                                      mi_vec = mi_vec,
+                                      i_index = i_index,
+                                      beta = beta,
+                                      Z = Z,
+                                      B = B)
+
 
 
     # function of beta_l_list not beta_l
@@ -44,7 +70,9 @@ algorithm2 <- function(Y, Z, mi_vec, i_index, lp, B, beta, D, gammas, phi, C){
                                  phi = phi,
                                  beta = beta,
                                  Z = Z,
-                                 B = B) # function of beta_l_list not beta_l
+                                 B = B,
+                                 V_inv = V_inv,
+                                 partials_l = partials_l) # function of beta_l_list not beta_l
     Hessian_l <- get_Hessian_l(l = l,
                                Y = Y,
                                mi_vec = mi_vec,
@@ -54,7 +82,8 @@ algorithm2 <- function(Y, Z, mi_vec, i_index, lp, B, beta, D, gammas, phi, C){
                                B = B,
                                phi = phi,
                                C = C,
-                               V_inv = V_inv)
+                               V_inv = V_inv,
+                               partials_l = partials_l)
     # function of beta_l_list not beta_l
 
     first_term <- -Hessian_l + gamma_l*D

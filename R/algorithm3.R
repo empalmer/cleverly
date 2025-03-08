@@ -286,8 +286,18 @@ update_beta_admm <- function(Y,
 
 
   gamma <- gammas[lp + 1]
+  K <- ncol(Y)
 
+  # Things to be calculated once per loop/beta update
+  # Which are: alpha and V inverse and partials_l
+  alpha <- get_alpha_list(beta = beta,
+                          Z = Z,
+                          B = B,
+                          K = K,
+                          i_index = i_index,
+                          mi_vec = mi_vec)
   # Get V inverse for all is
+  # compute it just once first so we don't have to calculate it for both H and Q.
   V_inv <- get_V_inv(Y = Y,
                      mi_vec = mi_vec,
                      i_index = i_index,
@@ -295,8 +305,18 @@ update_beta_admm <- function(Y,
                      beta = beta,
                      Z = Z,
                      B = B,
-                     K = ncol(Y))
-  # compute it just once first so we don't have to calculate it for both H and Q.
+                     K = ncol(Y),
+                     alpha = alpha)
+  partials_l <- get_partials_l_list(Y = Y,
+                                    l = lp,
+                                    mi_vec = mi_vec,
+                                    i_index = i_index,
+                                    beta = beta,
+                                    Z = Z,
+                                    B = B)
+
+
+  # Things we need to calculate new beta:
   H <- get_Hessian_l(l = lp,
                      Y = Y,
                      mi_vec = mi_vec,
@@ -306,7 +326,8 @@ update_beta_admm <- function(Y,
                      B = B,
                      phi = phi,
                      C = C,
-                     V_inv = V_inv)
+                     V_inv = V_inv,
+                     partials_l = partials_l)
   Q <- get_gradient_l(Y = Y,
                       mi_vec = mi_vec,
                       i_index = i_index,
@@ -314,13 +335,16 @@ update_beta_admm <- function(Y,
                       phi = phi,
                       beta = beta,
                       Z = Z,
-                      B = B)
-
+                      B = B,
+                      V_inv = V_inv,
+                      partials_l = partials_l)
   v_tilde <- v - lambda/theta
   beta_lp <- beta[,lp + 1]
 
-  #first_term <- -H + gamma * D + theta * t(A) %*% A
-  #second_term <- Q - H %*% beta_lp + theta * t(A) %*% v_tilde
+  # slower
+  # first_term <- -H + gamma * D + theta * t(A) %*% A
+  # second_term <- Q - H %*% beta_lp + theta * t(A) %*% v_tilde
+  # faster
   first_term <- -H + gamma * D + theta * AtA
   second_term <- Q - H %*% beta_lp + theta * crossprod(A, v_tilde)
 
