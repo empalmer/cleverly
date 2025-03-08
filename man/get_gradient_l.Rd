@@ -4,7 +4,7 @@
 \alias{get_gradient_l}
 \title{Get the gradient for a given l}
 \usage{
-get_gradient_l(Y, mi_vec, l, phi, beta, Z, B)
+get_gradient_l(Y, mi_vec, i_index, l, phi, beta, Z, B)
 }
 \arguments{
 \item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}

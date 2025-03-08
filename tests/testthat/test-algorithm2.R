@@ -9,6 +9,7 @@ test_that("Algorithm 2", {
   beta_step <- algorithm2(Y = sim$Y,
                         Z = sim$Z,
                         mi_vec = sim$mi_vec,
+                        i_index = c(0, cumsum(sim$mi_vec)),
                         lp = lp,
                         B = sim$B,
                         beta = sim$beta,
@@ -17,5 +18,6 @@ test_that("Algorithm 2", {
                         phi = .5,
                         C = 1)
 
+  expect_true(is.matrix(beta_step))
 
 })

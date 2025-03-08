@@ -4,7 +4,7 @@
 \alias{sim_Y}
 \title{Simulate all Y counts}
 \usage{
-sim_Y(beta, Z, B, K, mi_vec)
+sim_Y(beta, Z, B, K, mi_vec, i_index)
 }
 \arguments{
 \item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}

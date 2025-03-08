@@ -89,11 +89,13 @@ test_that("Update beta_lp", {
                                      order = 3,
                                      nknots = 3),
                            A = A,
+                           AtA <- crossprod(A),
                            Z = sim$Z,
                            B = B,
                            phi = 1,
                            C = 10,
-                           mi_vec = sim$mi_vec)
+                           mi_vec = sim$mi_vec,
+                           i_index = c(0, cumsum(sim$mi_vec)))
 
   expect_equal(dim(beta), dim(sim$beta))
   # Only the beta for lp should be different

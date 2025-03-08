@@ -4,7 +4,7 @@
 \alias{get_alpha_ij}
 \title{Calculate alpha for all k for a single i and j.}
 \usage{
-get_alpha_ij(i, j, beta, Z, B, K, mi_vec)
+get_alpha_ij(i, j, beta, Z, B, K, i_index)
 }
 \arguments{
 \item{i}{subject index}

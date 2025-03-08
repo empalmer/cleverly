@@ -1,6 +1,10 @@
 
 
 
+# Get hyperparameters -----------------------------------------------------
+
+
+
 get_hyperparameters <- function(Y, Z, mi_vec, lp, B, D, K, P){
   L <- ncol(Z) - 1
   beta_init <- matrix(0, nrow = K * P, ncol = L + 1)
@@ -19,7 +23,7 @@ get_gammas <- function(Y, Z, mi_vec, lp, B, beta, D, K, P){
 
   for (g in 1:length(gamma_grid)) {
 
-    browser()
+    #browser()
     gammas <- rep(gamma_grid[g], ncol(Z))
     fit <- algorithm2(Y = Y,
                       Z = Z,
@@ -78,4 +82,22 @@ get_gammas <- function(Y, Z, mi_vec, lp, B, beta, D, K, P){
   return(gammas_selected)
 
 
+}
+
+
+
+# Calculate cluster BIC ---------------------------------------------------
+
+BIC_cluster <- function(y_ra_df,
+                        K, n_clusters,
+                        mi_vec,
+                        nknots, order){
+
+  N <- sum(mi_vec)
+  yhat_y <- log(y_ra_df$yhat + .1) - log(y_ra_df$y + .1)
+  first_term <- sum(yhat_y^2)/(N*K)
+  second_term <- log(N * K) * n_clusters * (order + nknots)/(N*K)
+
+  BIC <- log(first_term) + second_term
+  return(BIC)
 }

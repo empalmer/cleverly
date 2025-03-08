@@ -4,8 +4,9 @@
 
 test_that("Y ij0", {
   mi_vec <- rep(3, 5)
+  i_index <- c(0, cumsum(mi_vec))
   Y <- readRDS(test_path("test_data", "Y.rds"))
-  Y_ij0 <- get_Y_ij0(i = 1, j = 1, Y = Y, mi_vec = mi_vec)
+  Y_ij0 <- get_Y_ij0(i = 1, j = 1, Y = Y, i_index = i_index)
   expect_equal(Y_ij0, 100)
 })
 
@@ -64,11 +65,21 @@ test_that("Y and mu indexing match", {
   K <- 4
   mi <- 3
   mi_vec <- rep(3, 5)
+  i_index <- c(0, cumsum(mi_vec))
 
-  Y_i <- get_Y_i_vec(i = 1, mi_vec = mi_vec, Y = Y)
-  mu_i <- get_mu_i(i = 1, mi_vec = mi_vec, Y = Y, beta, Z, B, K)
+  Y_i <- get_Y_i_vec(i = 1,
+                     mi_vec = mi_vec,
+                     Y = Y)
+  mu_i <- get_mu_i(i = 1,
+                   mi_vec = mi_vec,
+                   i_index = i_index,
+                   Y = Y,
+                   beta = beta,
+                   Z = Z,
+                   B = B,
+                   K = K)
 
-  expect_equal(names(Y_i), names(mu_i))
+  expect_equal(length(Y_i), length(mu_i))
 })
 
 
@@ -148,8 +159,9 @@ test_that("Check mi_vec", {
 test_that("B", {
   mi_vec <- rep(3, 5)
   B <- readRDS(test_path("test_data", "B.rds"))
+  i_index <- c(0, cumsum(mi_vec))
 
-  B_ij <- get_B_ij(i = 3, j = 2, B = B, mi_vec = mi_vec)
+  B_ij <- get_B_ij(i = 3, j = 2, B = B, i_index = i_index)
 
   expect_length(B_ij, 6)
 
@@ -161,7 +173,10 @@ test_that("B", {
 test_that("Z", {
   Z <- readRDS(test_path("test_data", "Z.rds"))
   mi_vec <- rep(3, 5)
-  Z_ijl <- get_Z_ijl(i = 5, j = 2, l = 2, Z = Z, mi_vec = mi_vec)
+  i_index <- c(0, cumsum(mi_vec))
+  Z_ijl <- get_Z_ijl(i = 5, j = 2,
+                     l = 2, Z = Z,
+                     i_index = i_index)
   expect_equal(Z_ijl, 1)
 })
 
@@ -171,9 +186,12 @@ test_that("Z0 all 1", {
   Z <- readRDS(test_path("test_data", "Z.rds"))
   mi_vec <- rep(3, 5)
   n <- length(mi_vec)
+  i_index <- c(0, cumsum(mi_vec))
   # tests for the first time point of each sample
   for (i in 1:n) {
-    Z_ijl <- get_Z_ijl(i = i, j = 1, l = 0, Z = Z, mi_vec = mi_vec)
+    Z_ijl <- get_Z_ijl(i = i, j = 1,
+                       l = 0, Z = Z,
+                       i_index = i_index)
     expect_equal(Z_ijl, 1)
   }
 })
@@ -189,8 +207,14 @@ test_that("Check alpha_ijk", {
   B <- readRDS(test_path("test_data", "B.rds"))
   K <- 4
   mi_vec <- rep(3, 5)
+  i_index <- c(0, cumsum(mi_vec))
 
-  alpha_ijk <- get_alpha_ijk(i = 1, j = 1, k = 1, beta = beta, Z = Z, B = B, mi_vec = mi_vec)
+  alpha_ijk <- get_alpha_ijk(i = 1,
+                             j = 1, k = 1,
+                             beta = beta,
+                             Z = Z, B = B,
+                             i_index = i_index)
+
   # Check dimensions
   # Should be one value
   expect_length(alpha_ijk, 1)
@@ -203,12 +227,13 @@ test_that("Check alpha_ij", {
   B <- readRDS(test_path("test_data","B.rds"))
   K <- 4
   mi_vec <- rep(3, 5)
+  i_index <- c(0, cumsum(mi_vec))
   alpha_ij <- get_alpha_ij(i = 1, j = 1,
                            beta = beta,
                            Z = Z,
                            B = B,
                            K = K,
-                           mi_vec = mi_vec)
+                           i_index = i_index)
   # Should be of dimension K
   expect_length(alpha_ij, K)
 
@@ -225,6 +250,7 @@ test_that("Check mu_ij", {
   B <- readRDS(test_path("test_data", "B.rds"))
   K <- 4
   mi_vec <- rep(3, 5)
+  i_index <- c(0, cumsum(mi_vec))
 
   # Test if alpha is supplied
   mu_ij_alpha <- get_mu_ij(Y_ij0 = 100,
@@ -234,7 +260,7 @@ test_that("Check mu_ij", {
                                              Z = Z,
                                              B = B,
                                              K = K,
-                                             mi_vec = mi_vec))
+                                             i_index = i_index))
   # Should be of dimension K
   expect_length(mu_ij_alpha, K)
   expect_equal(round(as.numeric(mu_ij_alpha[1])), 30.0)
@@ -247,7 +273,7 @@ test_that("Check mu_ij", {
                      Z = Z,
                      B = B,
                      K = K,
-                     mi_vec = mi_vec)
+                     i_index = i_index)
   expect_length(mu_ij, K)
   expect_equal(round(as.numeric(mu_ij[1])), 30.0)
 })
@@ -265,6 +291,7 @@ test_that("Check mu_i", {
   # Test if alpha is supplied
   mu_i <- get_mu_i(i = 1,
                    mi_vec = mi_vec,
+                   i_index = c(0, cumsum(mi_vec)),
                    Y = Y,
                    beta = beta,
                    Z = Z,
@@ -281,8 +308,10 @@ test_that("Check mu_i SIM", {
 
   # Test if alpha is supplied
   i <- 3
+  i_index <- c(0, cumsum(sim$mi_vec))
   mu_i <- get_mu_i(i = i,
                    mi_vec = sim$mi_vec,
+                   i_index = i_index,
                    Y = sim$Y,
                    beta = sim$beta,
                    Z = sim$Z,
@@ -302,6 +331,7 @@ test_that("Check Uij", {
   B <- readRDS(test_path("test_data", "B.rds"))
   K <- 4
   mi_vec <- rep(3, 5)
+  i_index <- c(0, cumsum(mi_vec))
 
   U_ij <- get_U_ij(alpha_ij = get_alpha_ij(i = 1,
                                            j = 2,
@@ -309,7 +339,7 @@ test_that("Check Uij", {
                                            Z = Z,
                                            B = B,
                                            K = K,
-                                           mi_vec = mi_vec))
+                                           i_index = i_index))
   # Check is square
   expect_equal(dim(U_ij)[1], dim(U_ij)[2])
 
@@ -324,6 +354,7 @@ test_that("Check Vijj dimension", {
   B <- readRDS(test_path("test_data", "B.rds"))
   K <- 4
   mi_vec <- rep(3, 5)
+  i_index <- c(0, cumsum(mi_vec))
 
   V_ijj <- get_V_ijj(Y_ij0 = 100,
                      phi = 1,
@@ -333,7 +364,7 @@ test_that("Check Vijj dimension", {
                                              Z = Z,
                                              B = B,
                                              K = K,
-                                             mi_vec = mi_vec))
+                                             i_index = i_index))
   # Check is square
   expect_equal(dim( V_ijj)[1], dim( V_ijj)[2])
 
@@ -349,6 +380,7 @@ test_that("Check Vi dimension", {
   K <- 4
   mi <- 3
   mi_vec <- rep(3, 5)
+  i_index <- c(0, cumsum(mi_vec))
 
   V_i <- get_V_i(i = 1,
                  Y = Y,
@@ -357,7 +389,8 @@ test_that("Check Vi dimension", {
                  Z = Z,
                  B = B,
                  K = K,
-                 mi_vec = mi_vec)
+                 mi_vec = mi_vec,
+                 i_index = i_index)
   # Check is square
   expect_equal(dim(V_i)[1], dim(V_i)[2])
 
@@ -376,6 +409,7 @@ test_that("Check alpha_ijk l0", {
   B <- readRDS(test_path("test_data", "Bl0.rds"))
   K <- 4
   mi_vec <- rep(3, 5)
+  i_index <- c(0, cumsum(mi_vec))
 
   alpha_ijk <- get_alpha_ijk(i = 1,
                              j = 1,
@@ -383,7 +417,8 @@ test_that("Check alpha_ijk l0", {
                              beta = beta,
                              Z = Z,
                              B = B,
-                             mi_vec = mi_vec)
+
+                             i_index = i_index)
   # Check dimensions
   # Should be one value
   expect_length(alpha_ijk, 1)

@@ -388,7 +388,7 @@ sim_Z <- function(mi_vec){
 #'
 #' @returns Y_i
 #' @export
-sim_Y_ij <- function(i, j, beta, Z, B, Y_ij0, K, mi_vec){
+sim_Y_ij <- function(i, j, beta, Z, B, Y_ij0, K, mi_vec, i_index){
   Y_ij <- MGLM::rdirmn(n = 1,
                        size = Y_ij0,
                        alpha = get_alpha_ij(i = i,
@@ -397,17 +397,20 @@ sim_Y_ij <- function(i, j, beta, Z, B, Y_ij0, K, mi_vec){
                                             Z = Z,
                                             B = B,
                                             K = K,
-                                            mi_vec = mi_vec))
+                                            i_index = i_index))
   return(Y_ij) # Returns a 1xK matrix
 }
 
 # Simulate Y for all i, j, k
-sim_Yi <- function(i, beta, Z, B, K, mi_vec){
+sim_Yi <- function(i, beta, Z, B, K, mi_vec, i_index){
   mi <- mi_vec[i]
   Y_i <- matrix(nrow = mi, ncol = K)
   for (j in 1:mi) {
     Y_ij0 <- sample(100:500, 1)
-    Y_i[j,] <- sim_Y_ij(i, j, beta, Z, B, Y_ij0, K, mi_vec)
+    Y_i[j,] <- sim_Y_ij(i, j,
+                        beta, Z, B,
+                        Y_ij0, K,
+                        mi_vec, i_index)
   }
   return(Y_i)
 }
@@ -423,7 +426,7 @@ sim_Yi <- function(i, beta, Z, B, K, mi_vec){
 #'
 #' @returns Y
 #' @export
-sim_Y <- function(beta, Z, B, K, mi_vec){
+sim_Y <- function(beta, Z, B, K, mi_vec, i_index){
   Y <- matrix(nrow = 0, ncol = K)
   n <- length(mi_vec)
 
@@ -434,7 +437,8 @@ sim_Y <- function(beta, Z, B, K, mi_vec){
                       Z,
                       B,
                       K,
-                      mi_vec))
+                      mi_vec,
+                      i_index))
   }
   return(Y)
 }
@@ -451,6 +455,7 @@ base_sim <- function(seed = 124){
   time_list <- sim_timepoints(n = 5)
   time <- time_list$X$time
   mi_vec <- time_list$mi_vec
+  i_index <- c(0, cumsum(mi_vec))
   is <- rep(1:5, mi_vec)
   M <- sum(mi_vec)
   K <- 4
@@ -469,7 +474,8 @@ base_sim <- function(seed = 124){
              Z = Z,
              B = B,
              K = K,
-             mi_vec = mi_vec)
+             mi_vec = mi_vec,
+             i_index = i_index)
 
   return(list(Y = Y,
               Z = Z,

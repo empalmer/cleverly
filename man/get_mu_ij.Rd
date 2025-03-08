@@ -4,7 +4,7 @@
 \alias{get_mu_ij}
 \title{Get the ijth values for mu}
 \usage{
-get_mu_ij(Y_ij0, alpha_ij, i, j, beta, Z, B, K, mi_vec)
+get_mu_ij(Y_ij0, alpha_ij, i, j, beta, Z, B, K, i_index)
 }
 \arguments{
 \item{Y_ij0}{Total sum of counts across all K}

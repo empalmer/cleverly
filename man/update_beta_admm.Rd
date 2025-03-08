@@ -14,11 +14,13 @@ update_beta_admm(
   gammas,
   D,
   A,
+  AtA,
   Z,
   B,
   phi,
   C,
-  mi_vec
+  mi_vec,
+  i_index
 )
 }
 \arguments{

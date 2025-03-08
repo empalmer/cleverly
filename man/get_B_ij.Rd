@@ -4,7 +4,7 @@
 \alias{get_B_ij}
 \title{Get \eqn{B_ij}}
 \usage{
-get_B_ij(i, j, B, mi_vec)
+get_B_ij(i, j, B, i_index)
 }
 \arguments{
 \item{i}{subject index}

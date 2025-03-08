@@ -1,10 +1,13 @@
 test_that("Hessian il", {
   sim <- base_sim()
+  mi_vec <- sim$mi_vec
+  i_index <- c(0, cumsum(mi_vec))
 
   hessian_il <- get_Hessian_il(i = 1,
                                l = 2,
                                Y = sim$Y,
                                mi_vec = sim$mi_vec,
+                               i_index = i_index,
                                beta = sim$beta,
                                Z = sim$Z,
                                B = sim$B,
@@ -23,9 +26,13 @@ test_that("Hessian il", {
 test_that("Hessian l", {
   sim <- base_sim()
 
+  mi_vec <- sim$mi_vec
+  i_index <- c(0, cumsum(mi_vec))
+
   hessian_l <- get_Hessian_l(l = 2,
                              Y = sim$Y,
                              mi_vec = sim$mi_vec,
+                             i_index = i_index,
                              beta = sim$beta,
                              Z = sim$Z,
                              B = sim$B,

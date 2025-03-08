@@ -4,7 +4,7 @@
 \alias{get_V_ijj}
 \title{Get DM variance for ith subject jth timepoint}
 \usage{
-get_V_ijj(Y_ij0, phi, alpha_ij, i, j, beta, Z, B, K, mi)
+get_V_ijj(Y_ij0, phi, alpha_ij, i, j, beta, Z, B, K, i_index)
 }
 \arguments{
 \item{Y_ij0}{Total sum of counts across all K}

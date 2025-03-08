@@ -49,6 +49,10 @@ algorithm1 <- function(Y,
   # Get indices for the non-cluster responses
   lp_minus <- setdiff(0:L , lp)
 
+  # Get indeces for where each i starts (since different mi for each i)
+  # Pre-calculate to save time
+  i_index <- c(0, cumsum(mi_vec))
+
   # Calculate B-spline basis based on time for each subject/time
   B <- get_B(time = time,
              order = order,
@@ -79,6 +83,7 @@ algorithm1 <- function(Y,
   beta <- algorithm2(Y = Y,
                      Z = Z,
                      mi_vec = mi_vec,
+                     i_index = i_index,
                      lp = -1,
                      B = B,
                      beta = zeros_beta,
@@ -136,6 +141,7 @@ algorithm1 <- function(Y,
         algorithm2(Y = Y,
                    Z = Z,
                    mi_vec = mi_vec,
+                   i_index = i_index,
                    lp = lp,
                    B = B,
                    beta = beta,
@@ -171,6 +177,7 @@ algorithm1 <- function(Y,
                  D = D,
                  Kappa = Kappa,
                  mi_vec = mi_vec,
+                 i_index = i_index,
                  gammas = gammas,
                  tau = tau,
                  theta = theta,
@@ -221,12 +228,21 @@ algorithm1 <- function(Y,
   clusters <- get_clusters(v = v,
                            K = K,
                            P = P)
+  # This is in relative abundance
   y_hat <- estimate_y(beta = beta,
                       B = B,
                       Z = Z,
                       K = K,
                       Y = Y,
                       time = time)
+
+
+  BIC <- BIC_cluster(y_ra_df= y_hat,
+                     K = K,
+                     n_clusters = clusters$no,
+                     mi_vec = mi_vec,
+                     nknots = nknots,
+                     order = order)
 
   return(list(beta = beta,
               clusters = clusters,
@@ -241,6 +257,7 @@ algorithm1 <- function(Y,
               phis_list = phis_list,
               r_list = r_list,
               d_list = d_list,
+              BIC = BIC,
               error = error))
 }
 

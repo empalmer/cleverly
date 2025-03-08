@@ -4,7 +4,7 @@
 \alias{get_Y_ij0}
 \title{Get \eqn{Y_{ij0}}}
 \usage{
-get_Y_ij0(i, j, Y, mi_vec)
+get_Y_ij0(i, j, Y, i_index)
 }
 \arguments{
 \item{i}{subject index}

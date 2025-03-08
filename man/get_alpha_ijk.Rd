@@ -4,7 +4,7 @@
 \alias{get_alpha_ijk}
 \title{Calculate alpha for a single \eqn{i = 1, j = 1, k = 1} from \eqn{\beta}}
 \usage{
-get_alpha_ijk(i, j, k, beta, Z, B, mi_vec)
+get_alpha_ijk(i, j, k, beta, Z, B, i_index)
 }
 \arguments{
 \item{i}{subject index}

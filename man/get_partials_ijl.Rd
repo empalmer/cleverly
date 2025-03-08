@@ -4,7 +4,7 @@
 \alias{get_partials_ijl}
 \title{Get partials matrix for i, j, l}
 \usage{
-get_partials_ijl(i, j, l, mi_vec, K, Y, Z, B, beta)
+get_partials_ijl(i, j, l, mi_vec, i_index, K, Y, Z, B, beta)
 }
 \arguments{
 \item{i}{subject index}

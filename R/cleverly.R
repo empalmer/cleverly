@@ -163,6 +163,7 @@ cleverly <- function(Y,
               cluster_list = result$cluster_list,
               r_list = result$r_list,
               d_list = result$d_list,
+              BIC = result$BIC,
               error = result$error,
               # Input values
               B = result$B,

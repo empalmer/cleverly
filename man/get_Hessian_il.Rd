@@ -4,7 +4,7 @@
 \alias{get_Hessian_il}
 \title{Get hessian elements}
 \usage{
-get_Hessian_il(i, l, Y, mi_vec, beta, Z, B, phi)
+get_Hessian_il(i, l, Y, mi_vec, i_index, beta, Z, B, phi)
 }
 \arguments{
 \item{i}{subject index}

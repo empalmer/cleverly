@@ -10,32 +10,42 @@
 #' @param B B spline basis matrix of dimension (N x P)
 #' @param phi Current value of overdispersion parameter
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
+#' @param i_index
+#' @param V_inv (optional) List of V inverses for each i. If supplied is faster
 #'
 #' @returns Matrix of dimension KP times KP
 #' @export
 #'
-get_Hessian_il <- function(i, l, Y, mi_vec, beta, Z, B, phi){
+get_Hessian_il <- function(i, l, Y, mi_vec, i_index, beta, Z, B, phi, V_inv){
   # Third term:
   K <- ncol(Y)
   partials_il <- get_partials_il(i = i,
                                 l = l,
                                 Y = Y,
                                 mi_vec = mi_vec,
+                                i_index = i_index,
                                 beta = beta,
                                 Z = Z,
                                 B = B)
 
-  Vi_inv <- get_Vi_inv(i = i,
-                        Y = Y,
-                        mi_vec = mi_vec,
-                        phi = phi,
-                        beta = beta,
-                        Z = Z,
-                        B = B,
-                        K = K)
+  if (missing(V_inv)) {
+    Vi_inv <- get_Vi_inv(i = i,
+                         Y = Y,
+                         mi_vec = mi_vec,
+                         i_index = i_index,
+                         phi = phi,
+                         beta = beta,
+                         Z = Z,
+                         B = B,
+                         K = K)
+  } else {
+    Vi_inv <- V_inv[[i]]
+  }
 
-
+  #slower
   #hessian_il <- -partials_il %*% Vi_inv %*% t(partials_il)
+
+  #faster
   hessian_il <- -partials_il %*% tcrossprod(Vi_inv, partials_il)
 
   return(hessian_il)
@@ -52,11 +62,13 @@ get_Hessian_il <- function(i, l, Y, mi_vec, beta, Z, B, phi){
 #' @param phi Current value of overdispersion parameter
 #' @param C Constant for determining the hessian change.
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
+#' @param i_index
+#' @param V_inv (optional) List of V inverses for each i. If supplied is faster
 #'
 #' @returns Matrix of dimension KP times KP
 #' @export
 #'
-get_Hessian_l <- function(l, Y, mi_vec, beta, Z, B, phi, C) {
+get_Hessian_l <- function(l, Y, mi_vec, i_index, beta, Z, B, phi, C, V_inv) {
   n <- length(mi_vec)
 
 
@@ -66,13 +78,31 @@ get_Hessian_l <- function(l, Y, mi_vec, beta, Z, B, phi, C) {
                                  l = l,
                                  Y = Y,
                                  mi_vec = mi_vec,
+                                 i_index = i_index,
                                  beta = beta,
                                  Z = Z,
                                  B = B,
-                                 phi = phi)
+                                 phi = phi,
+                                 V_inv = V_inv)
     hessian_l <- hessian_l + hessian_il
-
   }
+  browser()
+  # Use reduce instead:
+  hessian_i_list <- purrr::map(1:n, function(i) {
+    get_Hessian_il(i = i,
+                   l = l,
+                   Y = Y,
+                   mi_vec = mi_vec,
+                   i_index = i_index,
+                   beta = beta,
+                   Z = Z,
+                   B = B,
+                   phi = phi,
+                   V_inv = V_inv)
+  })
+  hessian_i <- purrr::reduce(hessian_i_list, `+`)
+
+
 
 
   # Diagonalize hessian:

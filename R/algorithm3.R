@@ -39,6 +39,7 @@ algorithm3 <- function(Y,
                        D,
                        Kappa,
                        mi_vec,
+                       i_index,
                        gammas,
                        tau,
                        theta,
@@ -102,7 +103,11 @@ algorithm3 <- function(Y,
                                  B = B,
                                  phi = phi,
                                  C = C,
-                                 mi_vec = mi_vec)
+                                 mi_vec = mi_vec,
+                                 i_index = i_index)
+
+    # CALCULATE NEW ALPHAS HERE!
+
     lambda_new <- update_lambda(beta_lp = beta_new[,lp + 1],
                                 v = v_new,
                                 lambda = lambda,
@@ -115,7 +120,8 @@ algorithm3 <- function(Y,
                    Z = Z,
                    B = B,
                    K = ncol(Y),
-                   mi_vec = mi_vec)
+                   mi_vec = mi_vec,
+                   i_index = i_index)
 
     # Keep track of loop
     phi_track <- c(phi_track, phi)
@@ -165,6 +171,7 @@ algorithm3 <- function(Y,
 
   }
   utils::setTxtProgressBar(pb_admm, max_admm_iter)
+  close(pb_admm)
   #print(paste("Last ADMM Iteration: ", t - 1))
   return(list(beta = beta,
               lambda = lambda,
@@ -274,13 +281,18 @@ update_beta_admm <- function(Y,
                              B,
                              phi,
                              C,
-                             mi_vec){
+                             mi_vec,
+                             i_index){
 
 
   gamma <- gammas[lp + 1]
+
+  # Get V inverse for each i
+  # compute it just once first so we don't have to calculate it for both H and Q.
   H <- get_Hessian_l(l = lp,
                      Y = Y,
                      mi_vec = mi_vec,
+                     i_index = i_index,
                      beta = beta,
                      Z = Z,
                      B = B,
@@ -288,6 +300,7 @@ update_beta_admm <- function(Y,
                      C = C)
   Q <- get_gradient_l(Y = Y,
                       mi_vec = mi_vec,
+                      i_index = i_index,
                       l = lp,
                       phi = phi,
                       beta = beta,
@@ -301,6 +314,7 @@ update_beta_admm <- function(Y,
   #second_term <- Q - H %*% beta_lp + theta * t(A) %*% v_tilde
   first_term <- -H + gamma * D + theta * AtA
   second_term <- Q - H %*% beta_lp + theta * crossprod(A, v_tilde)
+
   beta_lp_new <- MASS::ginv(first_term) %*% second_term
 
   # All other beta elements are fixed, only the lp column is updated.

@@ -4,7 +4,7 @@
 \alias{sim_Y_ij}
 \title{Simulate Yij counts}
 \usage{
-sim_Y_ij(i, j, beta, Z, B, Y_ij0, K, mi_vec)
+sim_Y_ij(i, j, beta, Z, B, Y_ij0, K, mi_vec, i_index)
 }
 \arguments{
 \item{i}{subject index}

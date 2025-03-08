@@ -4,7 +4,7 @@
 \alias{get_Hessian_l}
 \title{Get hessian with respect to the lth external variable}
 \usage{
-get_Hessian_l(l, Y, mi_vec, beta, Z, B, phi, C)
+get_Hessian_l(l, Y, mi_vec, i_index, beta, Z, B, phi, C)
 }
 \arguments{
 \item{l}{external variable index}

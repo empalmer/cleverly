@@ -4,7 +4,7 @@
 \alias{algorithm2}
 \title{Algorithm 2: Updating the non clustering betas}
 \usage{
-algorithm2(Y, Z, mi_vec, lp, B, beta, D, gammas, phi, C)
+algorithm2(Y, Z, mi_vec, i_index, lp, B, beta, D, gammas, phi, C)
 }
 \arguments{
 \item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}

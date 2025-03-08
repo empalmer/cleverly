@@ -13,7 +13,7 @@
 #'
 #' @returns Vector of length PK x L
 #' @export
-algorithm2 <- function(Y, Z, mi_vec, lp, B, beta, D, gammas, phi, C){
+algorithm2 <- function(Y, Z, mi_vec, i_index, lp, B, beta, D, gammas, phi, C){
   L <- ncol(Z) - 1
   lp_minus <- NULL
 
@@ -29,6 +29,7 @@ algorithm2 <- function(Y, Z, mi_vec, lp, B, beta, D, gammas, phi, C){
     # function of beta_l_list not beta_l
     gradient_l <- get_gradient_l(Y = Y,
                                  mi_vec = mi_vec,
+                                 i_index = i_index,
                                  l = l,
                                  phi = phi,
                                  beta = beta,
@@ -37,6 +38,7 @@ algorithm2 <- function(Y, Z, mi_vec, lp, B, beta, D, gammas, phi, C){
     Hessian_l <- get_Hessian_l(l = l,
                                Y = Y,
                                mi_vec = mi_vec,
+                               i_index = i_index,
                                beta = beta,
                                Z = Z,
                                B = B,

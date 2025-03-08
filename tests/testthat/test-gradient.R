@@ -6,10 +6,12 @@ test_that("Yi  minus mui", {
   K <- 4
   mi <- 3
   mi_vec <- rep(3, 5)
+  i_index <- c(0, cumsum(mi_vec))
 
   term <- get_Yi_minus_mui(i = 1,
                            Y = Y,
                            mi_vec = mi_vec,
+                           i_index = i_index,
                            beta = beta,
                            Z = Z,
                            B = B,
@@ -25,6 +27,7 @@ test_that("Yi  minus mui SIM", {
   term <- get_Yi_minus_mui(i = i,
                            Y = sim$Y,
                            mi_vec = sim$mi_vec,
+                           i_index = c(0, cumsum(sim$mi_vec)),
                            beta = sim$beta,
                            Z = sim$Z,
                            B = sim$B,
@@ -43,10 +46,12 @@ test_that("Vi inverse", {
   K <- 4
   mi <- 3
   mi_vec <- rep(3, 5)
+  i_index <- c(0, cumsum(mi_vec))
 
   V_i_inv <- get_Vi_inv(i = 1,
                         Y = Y,
                         mi_vec = mi_vec,
+                        i_index = i_index,
                         phi = .5,
                         beta = beta,
                         Z = Z,
@@ -62,9 +67,11 @@ test_that("Vi inv SIM ", {
   sim <- base_sim()
 
   i <- 1
+  i_index <- c(0, cumsum(sim$mi_vec))
   V_i_inv <- get_Vi_inv(i = i,
                         Y = sim$Y,
                         mi_vec = sim$mi_vec,
+                        i_index = i_index,
                         phi = .5,
                         beta = sim$beta,
                         Z = sim$Z,
@@ -86,12 +93,14 @@ test_that("Partials ijl dimension", {
   mi <- 3
   P <- 6
   mi_vec <- rep(3, 5)
+  i_index <- c(0, cumsum(mi_vec))
 
   partials <- get_partials_ijl(i = 1,
                            j = 2,
                            l = 2,
                            Y = Y,
                            mi_vec = mi_vec,
+                           i_index = i_index,
                            beta = beta,
                            Z = Z,
                            B = B,
@@ -109,6 +118,7 @@ test_that("Partials ijl dim SIM", {
                                l = 2,
                                Y = sim$Y,
                                mi_vec = sim$mi_vec,
+                               i_index = c(0, cumsum(sim$mi_vec)),
                                beta = sim$beta,
                                Z = sim$Z,
                                B = sim$B,
@@ -135,6 +145,7 @@ test_that("Partials il dimension",{
                               l = 2,
                               Y = Y,
                               mi_vec = mi_vec,
+                              i_index = c(0, cumsum(mi_vec)),
                               beta = beta,
                               Z = Z,
                               B = B)
@@ -153,6 +164,7 @@ test_that("Partials il dim SIM ",{
                               l = 2,
                               Y = sim$Y,
                               mi_vec = sim$mi_vec,
+                              i_index = c(0, cumsum(sim$mi_vec)),
                               beta = sim$beta,
                               Z = sim$Z,
                               B = sim$B)
@@ -180,6 +192,7 @@ test_that("Gradient il dimension",{
                               l = 2,
                               Y = Y,
                               mi_vec = mi_vec,
+                              i_index = c(0, cumsum(mi_vec)),
                               phi = .5,
                               beta = beta,
                               Z = Z,
@@ -197,6 +210,7 @@ test_that("Gradient il dim SIM",{
                                  l = 2,
                                  Y = sim$Y,
                                  mi_vec = sim$mi_vec,
+                                 i_index = c(0, cumsum(sim$mi_vec)),
                                  phi = .5,
                                  beta = sim$beta,
                                  Z = sim$Z,
@@ -217,11 +231,13 @@ test_that("Gradient i",{
   mi <- 3
   P <- 6
   mi_vec <- rep(3, 5)
+  i_index <- c(0, cumsum(mi_vec))
 
   gradient_il <- get_gradient_il(i = 1,
                                  l = 2,
                                  Y = Y,
                                  mi_vec = mi_vec,
+                                 i_index = i_index,
                                  phi = .5,
                                  beta = beta,
                                  Z = Z,
@@ -246,6 +262,7 @@ test_that("Gradient l",{
 
   gradient_l <- get_gradient_l(Y = Y,
                                mi_vec = rep(3, 5),
+                               i_index = c(0, cumsum(rep(3, 5))),
                                l = 0,
                                phi = .5,
                                beta = beta,
@@ -261,6 +278,7 @@ test_that("Gradient l SIM",{
 
   gradient_l <- get_gradient_l(Y = sim$Y,
                                mi_vec = rep(3, 5),
+                               i_index = c(0, cumsum(rep(3, 5))),
                                l = 0,
                                phi = .5,
                                beta = sim$beta,

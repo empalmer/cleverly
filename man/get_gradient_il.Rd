@@ -4,7 +4,7 @@
 \alias{get_gradient_il}
 \title{Title}
 \usage{
-get_gradient_il(i, l, Y, mi_vec, phi, beta, Z, B)
+get_gradient_il(i, l, Y, mi_vec, i_index, phi, beta, Z, B)
 }
 \arguments{
 \item{i}{subject index}

@@ -4,7 +4,7 @@
 \alias{get_pearson_residuals}
 \title{Get pearson residuals}
 \usage{
-get_pearson_residuals(Y, beta, Z, B, K, mi_vec)
+get_pearson_residuals(Y, beta, Z, B, K, mi_vec, i_index)
 }
 \arguments{
 \item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
