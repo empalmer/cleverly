@@ -122,6 +122,8 @@ test_that("No Z - Functional simulation", {
 
 
 
+
+
 test_that("Bspline sim no Z",{
   testthat::skip("Debugging, not test")
   set.seed(123)
@@ -135,6 +137,12 @@ test_that("Bspline sim no Z",{
   Z <- matrix(rep(1, M), nrow = M)
   B <- get_B(time, order = 3, nknots = 3)
   P <- 6
+
+
+
+
+
+
 
   # 2 clusters
   betaC1 <- matrix(c(rep(c(1, 2, 3, 4, 5, 6), 2), ncol = 1))#l = 2
@@ -216,12 +224,68 @@ test_that("Simulation With Z", {
                         "Z"))
   Z <- sim$Z
 
+  # No id
+  Y_user <- dplyr::select(Y, -c(time, individual))
+  mi_vec <- get_mi_vec(Y, sim$individual, sim$time)$mi
+  i_index <- c(0, cumsum(mi_vec))
+  n <- length(unique(sim$individual))
+  Z_id <- data.frame(id = sim$individual, Z_f)
+  Z_fdf <- data.frame(Z_f)
+  Z_split <- split(Z_fdf, Z_id$id)
+  function_a <- function(){
+    for (i in 1:n) {
+      for(j in 1:mi_vec[i])
+        for(l in 1:2){
+          print(Z_split[[i]][j,l])
+        }
+    }
+  }
+  function_a()
+  function_b <- function(){
+    for (i in 1:n) {
+      for(j in 1:mi_vec[i])
+        for(l in 1:2){
+          print(get_Z_ijl(i, j, l - 1, Z_f, i_index))
+        }
+    }
+  }
+  function_b()
+  function_c <- function(){
+    for (i in 1:n) {
+      for (j in 1:mi_vec[i])
+        for (l in 1:2) {
+          val <- if(l == 1){1} else {Z_split[[i]][j,l]}
+          print(val)
+        }
+    }
+  }
+  function_c()
+  function_d <- function(){
+    for (i in 1:n) {
+      for(j in 1:mi_vec[i])
+        for(l in 1:2){
+          val <- if(l == 1){1} else {get_Z_ijl(i, j, l - 1, Z_f, i_index)}
+          print(val)
+        }
+    }
+  }
 
-  psi <- 2450
+
+  microbenchmark::microbenchmark(
+    function_a(),
+    function_b(),
+    function_c(),
+    function_d()
+  )
+
+
+
+
+  psi <- 1000
   tau <- 0.2
   theta <- 250
-  max_admm_iter = 20
-  max_outer_iter = 2
+  max_admm_iter = 100
+  max_outer_iter = 50
   start <- Sys.time()
   Rprof("test.out")
   res <- cleverly(Y = Y,
@@ -236,13 +300,14 @@ test_that("Simulation With Z", {
                   C = 100,
                   max_admm_iter = max_admm_iter,
                   max_outer_iter = max_outer_iter,
-                  epsilon_r = 1,
-                  epsilon_d = 1,
-                  epsilon_b = 1)
+                  epsilon_r = .1,
+                  epsilon_d = .1,
+                  epsilon_b = .1)
   end <- Sys.time()
   Rprof(NULL)
   summaryRprof("test.out")$by.self[1:10,1:2]
   (duration <- end - start)
+  res$clusters$no
 
   y_hat <- res$y_hat
 
@@ -251,6 +316,8 @@ test_that("Simulation With Z", {
   (s <- length(res$admm_beta_list))
   # Algorithm 3 admm iterations
   (t <- purrr::map_dbl(res$admm_beta_list, length))
+  res$clusters$no
+
 
   # # admm parts:
   # purrr::map(res$r_list, unlist) # beta - beta - v
@@ -267,7 +334,7 @@ test_that("Simulation With Z", {
     ggplot2::geom_line() +
     ggplot2::geom_hline(yintercept = 3, linetype = 2) +
     ggplot2::labs(x = "Overall Iteration",
-                  y = "Number of Clusters",
+                  y = "d",
                   title = "d",
                   subtitle = paste("psi:",psi,
                                    ",tau:",round(tau,2),
@@ -285,7 +352,7 @@ test_that("Simulation With Z", {
     ggplot2::geom_line() +
     ggplot2::geom_hline(yintercept = 3, linetype = 2) +
     ggplot2::labs(x = "Overall Iteration",
-                  y = "Number of Clusters",
+                  y = "r",
                   title = "r = beta_k - beta_k' - v_kappa",
                   subtitle = paste("psi:",psi,
                                    ",tau:",round(tau,2),
@@ -378,12 +445,12 @@ test_that("psi BIC", {
   test <- furrr::future_pmap(try, ~mean(c(..1, ..2, ..3)))
 
 
-  Rprof("test.out")
-  psis <- c(2450, 2500, 2550)
-  taus <- c(.2, .25, .3)
-  thetas <- c(150, 200, 250)
-  max_admm_iter = 50
-  max_outer_iter = 6
+
+  psis <- c(2450, 2500)
+  taus <- c(.2, .25)
+  thetas <- c(150, 200)
+  max_admm_iter = 100
+  max_outer_iter = 30
   hyps <- expand.grid(psi = psis,
                       taus = taus,
                       theta = thetas)
@@ -407,12 +474,12 @@ test_that("psi BIC", {
                                                  epsilon_b = 1))
   end <- Sys.time()
   (duration <- end - start)
-  Rprof(NULL)
-  summaryRprof("test.out")$by.self[1:10,]
+
 
   purrr::map_dbl(res_list, ~.x$BIC)
-  hyps[best,]
+
   best <- which.min(purrr::map_dbl(res_list, ~.x$BIC))
+  hyps[best,]
 
   res <- res_list[[best]]
   tau <- hyps[best,2]

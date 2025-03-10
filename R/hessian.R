@@ -27,7 +27,8 @@ get_dHessian_il <- function(i,
                             B,
                             phi,
                             Vi_inv,
-                            partials_il){
+                            partials_il,
+                            alpha_i){
   # Third term:
   K <- ncol(Y)
   partials_il <- get_partials_il(i = i,
@@ -37,7 +38,8 @@ get_dHessian_il <- function(i,
                                 i_index = i_index,
                                 beta = beta,
                                 Z = Z,
-                                B = B)
+                                B = B,
+                                alpha_i = alpha_i)
 
   if (missing(Vi_inv)) {
     stop("Missing Vi inverse argument")
@@ -88,7 +90,8 @@ get_Hessian_l <- function(l,
                           phi,
                           C,
                           V_inv,
-                          partials_l) {
+                          partials_l,
+                          alpha) {
   n <- length(mi_vec)
   #hessian_l <- matrix(0, nrow = nrow(beta), ncol = nrow(beta))
   d_hessian_l <- numeric(nrow(beta))
@@ -104,7 +107,8 @@ get_Hessian_l <- function(l,
                                    B = B,
                                    phi = phi,
                                    Vi_inv = V_inv[[i]],
-                                   partials_il = partials_l[[i]])
+                                   partials_il = partials_l[[i]],
+                                   alpha_i = alpha[[i]])
     d_hessian_l <- d_hessian_l + dhessian_il
   }
 

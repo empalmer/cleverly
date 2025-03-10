@@ -312,9 +312,9 @@ update_beta_admm <- function(Y,
                                     mi_vec = mi_vec,
                                     i_index = i_index,
                                     beta = beta,
+                                    alpha = alpha,
                                     Z = Z,
                                     B = B)
-
 
   # Things we need to calculate new beta:
   H <- get_Hessian_l(l = lp,
@@ -327,7 +327,8 @@ update_beta_admm <- function(Y,
                      phi = phi,
                      C = C,
                      V_inv = V_inv,
-                     partials_l = partials_l)
+                     partials_l = partials_l,
+                     alpha = alpha)
   Q <- get_gradient_l(Y = Y,
                       mi_vec = mi_vec,
                       i_index = i_index,

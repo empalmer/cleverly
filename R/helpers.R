@@ -46,8 +46,15 @@ get_mi_vec <- function(Y, subject_ids, time_ids) {
 #' @returns Scalar for the l-th external variable for subject i at time j
 #' @export
 get_Z_ijl <- function(i, j, l, Z, i_index) {
-  i_start <- i_index[i] + 1
-  Z_ijl <- Z[i_start + j - 1, (l + 1)]
+  if (l == 0) {
+    return(1)
+  } else {
+    i_start <- i_index[i] + 1
+    Z_ijl <- Z[i_start + j - 1, (l + 1)]
+  }
+  # i_start <- i_index[i] + 1
+  # Z_ijl <- Z[i_start + j - 1, (l + 1)]
+
   return(Z_ijl)
 }
 
@@ -373,15 +380,22 @@ get_B <- function(time, order, nknots) {
 #'
 #' @returns Numeric (1x1)
 #' @export
-get_alpha_ijk <- function(i, j, k, beta, Z, B, i_index) {
-  P <- ncol(B)
+get_alpha_ijk <- function(i, j, k, beta, Z, B_ij, i_index) {
+  P <- length(B_ij)
   L <- ncol(Z) - 1
   lsum <- numeric(L)
-  B_ij <- get_B_ij(i, j, B, i_index)
+
 
   for (l in 0:L) {
-    Z_ijl <- get_Z_ijl(i, j, l, Z, i_index)
-    beta_lk <- get_beta_kl(k, l, beta, P)
+    Z_ijl <- get_Z_ijl(i = i,
+                       j = j,
+                       l = l,
+                       Z = Z,
+                       i_index = i_index)
+    beta_lk <- get_beta_kl(k = k,
+                           l = l,
+                           beta = beta,
+                           P = P)
     #lsum[l + 1] <- Z_ijl * t(B_ij) %*% beta_lk
     lsum[l + 1] <- Z_ijl * crossprod(B_ij, beta_lk)
   }
@@ -412,9 +426,20 @@ get_alpha_ijk <- function(i, j, k, beta, Z, B, i_index) {
 #' @returns Vector of length K
 #' @export
 get_alpha_ij <- function(i, j, beta, Z, B, K, i_index) {
+  B_ij <- get_B_ij(i = i,
+                   j = j,
+                   B = B,
+                   i_index = i_index)
+
   alphas <- numeric(K)
   for (k in 1:K) {
-    alphas[k] <- get_alpha_ijk(i, j, k, beta, Z, B, i_index)
+    alphas[k] <- get_alpha_ijk(i = i,
+                               j = j,
+                               k = k,
+                               beta = beta,
+                               Z = Z,
+                               B_ij = B_ij,
+                               i_index = i_index)
   }
   return(alphas)
 }

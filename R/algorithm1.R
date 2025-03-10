@@ -222,6 +222,10 @@ algorithm1 <- function(Y,
     #   total = max_admm_iter, clear = TRUE, width = 50
     # )
   }
+  if (!is.list(alg3)) {
+    stop("Error in algorithm 3")
+  }
+
 
   # After loop:
   # Calculte estimated ys and clusters

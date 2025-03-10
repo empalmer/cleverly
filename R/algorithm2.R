@@ -58,7 +58,8 @@ algorithm2 <- function(Y,
                                       i_index = i_index,
                                       beta = beta,
                                       Z = Z,
-                                      B = B)
+                                      B = B,
+                                      alpha = alpha)
 
 
 
@@ -83,7 +84,8 @@ algorithm2 <- function(Y,
                                phi = phi,
                                C = C,
                                V_inv = V_inv,
-                               partials_l = partials_l)
+                               partials_l = partials_l,
+                               alpha = alpha)
     # function of beta_l_list not beta_l
 
     first_term <- -Hessian_l + gamma_l*D

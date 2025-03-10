@@ -15,27 +15,35 @@
 #' @returns Matrix of dimension PK x K
 #' @export
 #'
-get_partials_ijl <- function(i, j, l, mi_vec, i_index, K, Y, Z, B, beta){
+get_partials_ijl <- function(i,
+                             j,
+                             l,
+                             mi_vec,
+                             i_index,
+                             K,
+                             Y,
+                             Z,
+                             B,
+                             beta,
+                             alpha_ij){
   Y_ij0 <- get_Y_ij0(i = i,
                      j = j,
                      Y = Y,
                      i_index = i_index)
-  U_ij <- get_U_ij(
-    i = i,
-    j = j,
-    beta = beta,
-    Z = Z,
-    B = B,
-    K = K,
-    i_index = i_index
-  )
-  Z_ijl <- get_Z_ijl(
-    i = i,
-    j = j,
-    l = l,
-    Z = Z,
-    i_index = i_index
-  )
+  U_ij <- get_U_ij(alpha_ij = alpha_ij)
+  # U_ij <- get_U_ij(i = i,
+  #                  j = j,
+  #                  beta = beta,
+  #                  Z = Z,
+  #                  B = B,
+  #                  K = K,
+  #                  i_index = i_index,
+  #                  alpha_ij = alpha_ij)
+  Z_ijl <- get_Z_ijl(i = i,
+                     j = j,
+                     l = l,
+                     Z = Z,
+                     i_index = i_index)
   B_ij <- get_B_ij(i = i,
                    j = j,
                    B = B,
@@ -60,12 +68,21 @@ get_partials_ijl <- function(i, j, l, mi_vec, i_index, K, Y, Z, B, beta){
 #' @returns Matrix of dimension KP x Kmi
 #' @export
 #'
-get_partials_il <- function(i, l, Y, Z, B, beta, mi_vec, i_index){
+get_partials_il <- function(i,
+                            l,
+                            Y,
+                            Z,
+                            B,
+                            beta,
+                            alpha_i,
+                            mi_vec,
+                            i_index){
   P <- ncol(B)
   K <- ncol(Y)
   mi <- mi_vec[i]
   partials_il <- matrix(nrow = K*P, ncol = K*mi)
   for (j in 1:mi) {
+    alpha_ij <- alpha_i[[j]]
     partials_il[, ((j - 1)*K + 1):(j*K)] <-
       get_partials_ijl(i = i,
                        j = j,
@@ -76,7 +93,8 @@ get_partials_il <- function(i, l, Y, Z, B, beta, mi_vec, i_index){
                        Y = Y,
                        Z = Z,
                        B = B,
-                       beta = beta)
+                       beta = beta,
+                       alpha_ij = alpha_ij)
   }
   return(partials_il)
 }
@@ -95,7 +113,14 @@ get_partials_il <- function(i, l, Y, Z, B, beta, mi_vec, i_index){
 #'
 #' @returns
 #' @export
-get_partials_l_list <- function(Y, l, mi_vec, i_index, beta, Z, B){
+get_partials_l_list <- function(Y,
+                                l,
+                                mi_vec,
+                                i_index,
+                                beta,
+                                alpha,
+                                Z,
+                                B){
   M <- nrow(Y)
   L <- ncol(Z) - 1
   K <- ncol(Y)
@@ -109,6 +134,7 @@ get_partials_l_list <- function(Y, l, mi_vec, i_index, beta, Z, B){
                                           Z = Z,
                                           B = B,
                                           beta = beta,
+                                          alpha_i = alpha[[i]],
                                           mi_vec = mi_vec,
                                           i_index = i_index)
   }

@@ -27,8 +27,11 @@ Imports:
     pracma,
     purrr,
     rcartocolor,
+    Rcpp,
     rlang,
     stats,
     tidyr,
     utils,
     viridis
+LinkingTo: 
+    Rcpp
