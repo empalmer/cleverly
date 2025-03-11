@@ -38,7 +38,9 @@ algorithm1 <- function(Y,
                        epsilon_r,
                        epsilon_d,
                        max_outer_iter,
-                       max_admm_iter) {
+                       max_admm_iter,
+                       max_2_iter,
+                       epsilon_2) {
 
   # Get algorithm constants.
   P <- nknots + order
@@ -90,8 +92,34 @@ algorithm1 <- function(Y,
                      D = D,
                      gammas = gammas,
                      phi = phi,
-                     C = C)
-  beta <- zeros_beta
+                     C = C,
+                     max_2_iter = max_2_iter,
+                     epsilon_2 = epsilon_2,
+                     time = time,
+                     s = "Initial fit")
+
+  # y_hat_init <- estimate_y(beta = beta,
+  #                          B = B,
+  #                          Z = Z,
+  #                          K = K,
+  #                          Y = Y,
+  #                          time = time)
+  # browser()
+  # y_hat_init %>%
+  #   dplyr::mutate(response = factor(response, levels = 1:12)) %>%
+  #   ggplot2::ggplot(ggplot2::aes(x = time)) +
+  #   ggplot2::geom_point(ggplot2::aes(y = y,
+  #                                    color = factor(Z),
+  #                                    shape = factor(Z)),
+  #                       size = .6, alpha = .8) +
+  #   ggplot2::geom_line(ggplot2::aes(y = yhat,
+  #                                   color = factor(Z),
+  #                                   group = factor(Z)),
+  #                      linewidth = 1) +
+  #   ggplot2::facet_wrap(~response)
+
+
+
   # Initialize lambda to all 0
   lambda <- numeric(nrow(Kappa)*P)
   # loop initialization
@@ -115,9 +143,6 @@ algorithm1 <- function(Y,
   # pb_outer <- utils::txtProgressBar(min = 0,
   #                             max = max_outer_iter,
   #                             style = 3)
-
-
-
   # pb_outer <- progress::progress_bar$new(
   #   format = "Outer Loop [:bar] :percent (:current/:total)",
   #   total = max_outer_iter, clear = FALSE, width = 50
@@ -129,11 +154,9 @@ algorithm1 <- function(Y,
   # )
 
   #pb_outer$tick(0)
-  while ((diff > epsilon_b) & (s <= max_outer_iter)) {
-    cat(paste0("\n","Backfitting algorithm iteration: ", s, "\n"))
+  for (s in 1:max_outer_iter) {
+
     # Go straight to ADMM code if there is no external variables
-    #cat(sprintf("\nOuter Loop (s = %d):\n", s))
-    #setTxtProgressBar(pb_outer, s)
     if (L > 0) {
       # Solution for l_p minus, with l_p fixed
 
@@ -148,7 +171,11 @@ algorithm1 <- function(Y,
                    D = D,
                    gammas = gammas,
                    phi = phi,
-                   C = C)
+                   C = C,
+                   max_2_iter = max_2_iter,
+                   epsilon_2 = epsilon_2,
+                   time = time,
+                   s = s)
       }, error = function(e) {
         print(paste0("ERROR!!!!: ", e$message))
         return(e$message)
@@ -156,7 +183,7 @@ algorithm1 <- function(Y,
     } else {
       beta_lp_minus <- beta
     }
-
+    # If there is an error, exit out of the loop
     if (is.character(beta_lp_minus)) {
       error <- beta_lp_minus
       break
@@ -185,7 +212,8 @@ algorithm1 <- function(Y,
                  phi = phi,
                  epsilon_r = epsilon_r,
                  epsilon_d = epsilon_d,
-                 max_admm_iter = max_admm_iter)
+                 max_admm_iter = max_admm_iter,
+                 s = s)
     }, error = function(e) {
       print(paste0("ERROR!!!!: ", e$message))
       return(e$message)
@@ -194,7 +222,20 @@ algorithm1 <- function(Y,
       error <- alg3
       break
     }
-    # phi <- estimate_phi()
+    if (is.character(beta_lp_minus)) {
+      error <- beta_lp_minus
+      break
+    }
+
+    phi <- get_phi(Y = Y,
+                   beta = beta,
+                   Z = Z,
+                   B = B,
+                   K = ncol(Y),
+                   mi_vec = mi_vec,
+                   i_index = i_index)
+
+
     beta_lp <- alg3$beta
     admm_beta_list[[s]] <- alg3$beta_admm_track
     lambda <- alg3$lambda
@@ -212,15 +253,6 @@ algorithm1 <- function(Y,
     d_list[[s]] <- alg3$d_list
     cluster_list[[s]] <- alg3$cluster_list
 
-
-    # Increment loop
-    s <- s + 1
-
-    # pb_outer$tick()
-    # pb_admm <- progress::progress_bar$new(  # Reset inner progress bar
-    #   format = "  Inner Loop [:bar] :percent (:current/:total)",
-    #   total = max_admm_iter, clear = TRUE, width = 50
-    # )
   }
   if (!is.list(alg3)) {
     stop("Error in algorithm 3")

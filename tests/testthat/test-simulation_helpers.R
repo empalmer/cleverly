@@ -281,35 +281,50 @@ test_that("Simulation With Z", {
 
 
 
-  psi <- 1000
-  tau <- 0.2
+  psi <- 250
+  tau <- 8/1000
   theta <- 250
-  max_admm_iter = 10
-  max_outer_iter = 6
+  max_admm_iter = 1
+  max_outer_iter = 1
   start <- Sys.time()
-  #Rprof("test.out", interval = .02)
+  Rprof("test.out", interval = .02)
   res <- cleverly(Y = Y,
                   Z = Z,
                   subject_ids = individual,
                   lp = 0,
                   time = time,
-                  gammas = c(500,500), # controls smoothness
+                  gammas = c(5, 5), # controls smoothness
                   tau = tau, # Controls cuttoff for highest shrinkage
                   theta = theta, # for lambda, but also for d
                   psi = psi, # controls clustering
                   C = 100,
                   max_admm_iter = max_admm_iter,
                   max_outer_iter = max_outer_iter,
-                  epsilon_r = .1,
-                  epsilon_d = .5,
-                  epsilon_b = .1)
+                  max_2_iter = 50,
+                  epsilon_r = .001,
+                  epsilon_d = .005,
+                  epsilon_b = .001,
+                  epsilon_2 = .001)
   end <- Sys.time()
-  #Rprof(NULL)
-  #summaryRprof("test.out")$by.self[1:10,1:2]
+  Rprof(NULL)
+  summaryRprof("test.out")$by.self[1:10,1:2]
   (duration <- end - start)
   res$clusters$no
 
   y_hat <- res$y_hat
+  y_hat %>%
+    dplyr::mutate(response = factor(response, levels = 1:12)) %>%
+    ggplot2::ggplot(ggplot2::aes(x = time)) +
+    ggplot2::geom_point(ggplot2::aes(y = y,
+                                     color = factor(Z),
+                                     shape = factor(Z)),
+                        size = .6, alpha = .8) +
+    ggplot2::geom_line(ggplot2::aes(y = yhat,
+                                    color = factor(Z),
+                                    group = factor(Z)),
+                       linewidth = 1) +
+    ggplot2::facet_wrap(~response)
+
 
   # Examine convergence:
   # Algorithm 1 iterations
@@ -318,6 +333,9 @@ test_that("Simulation With Z", {
   (t <- purrr::map_dbl(res$admm_beta_list, length))
   res$clusters$no
 
+  unlist(res$d_list)
+  unlist(res$r_list)
+  res$admm_diffs
 
   # # admm parts:
   # purrr::map(res$r_list, unlist) # beta - beta - v
@@ -332,7 +350,6 @@ test_that("Simulation With Z", {
     dplyr::mutate(row = dplyr::row_number()) %>%
     ggplot2::ggplot(ggplot2::aes(x = row, y = cluster, color = factor(run))) +
     ggplot2::geom_line() +
-    ggplot2::geom_hline(yintercept = 3, linetype = 2) +
     ggplot2::labs(x = "Overall Iteration",
                   y = "d",
                   title = "d",
@@ -350,7 +367,6 @@ test_that("Simulation With Z", {
     dplyr::mutate(row = dplyr::row_number()) %>%
     ggplot2::ggplot(ggplot2::aes(x = row, y = cluster, color = factor(run))) +
     ggplot2::geom_line() +
-    ggplot2::geom_hline(yintercept = 3, linetype = 2) +
     ggplot2::labs(x = "Overall Iteration",
                   y = "r",
                   title = "r = beta_k - beta_k' - v_kappa",

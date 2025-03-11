@@ -25,81 +25,107 @@ algorithm2 <- function(Y,
                        D,
                        gammas,
                        phi,
-                       C){
+                       C,
+                       max_2_iter,
+                       epsilon_2,
+                       time,
+                       s){
   L <- ncol(Z) - 1
   K <- ncol(Y)
   lp_minus <- NULL
 
   # Loop only through non-clustering values
   l_loop <- setdiff(0:L , lp)
+  # Initialize progress bar
+  cat(paste0("Algorithm 2 iteration: ", s, "\n"))
+  pb_alg2 <- utils::txtProgressBar(min = 0,
+                                   max = max_2_iter,
+                                   style = 3)
 
-  for (l in l_loop) {
-    gamma_l <- gammas[l + 1]
-    beta_l <- beta[, l + 1]
+  for (r in 1:max_2_iter) {
+    beta_old <- beta
+    for (l in l_loop) {
+      gamma_l <- gammas[l + 1]
+      beta_l <- beta[, l + 1]
 
+      # Things to be calculated once per loop/beta update
+      # Which are: alpha, V inverse, and partials
+      alpha <- get_alpha_list(beta = beta,
+                              Z = Z,
+                              B = B,
+                              K = K,
+                              i_index = i_index,
+                              mi_vec = mi_vec)
+      # Get V inverse for all is (and ls... )
+      V_inv <- get_V_inv(Y = Y,
+                         alpha = alpha,
+                         mi_vec = mi_vec,
+                         i_index = i_index,
+                         phi = phi,
+                         beta = beta,
+                         Z = Z,
+                         B = B,
+                         K = ncol(Y))
+      partials_l <- get_partials_l_list(Y = Y,
+                                        l = l,
+                                        mi_vec = mi_vec,
+                                        i_index = i_index,
+                                        beta = beta,
+                                        Z = Z,
+                                        B = B,
+                                        alpha = alpha)
 
-    # Things to be calculated once per loop/beta update
-    # Which are: alpha, V inverse, and partials
-    alpha <- get_alpha_list(beta = beta,
-                            Z = Z,
-                            B = B,
-                            K = K,
-                            i_index = i_index,
-                            mi_vec = mi_vec)
-    # Get V inverse for all is (and ls... )
-    V_inv <- get_V_inv(Y = Y,
-                       alpha = alpha,
-                       mi_vec = mi_vec,
-                       i_index = i_index,
-                       phi = phi,
-                       beta = beta,
-                       Z = Z,
-                       B = B,
-                       K = ncol(Y))
-    partials_l <- get_partials_l_list(Y = Y,
-                                      l = l,
-                                      mi_vec = mi_vec,
-                                      i_index = i_index,
-                                      beta = beta,
-                                      Z = Z,
-                                      B = B,
-                                      alpha = alpha)
-
-
-
-    # function of beta_l_list not beta_l
-    gradient_l <- get_gradient_l(Y = Y,
+      # functions of beta_l_list not beta_l
+      gradient_l <- get_gradient_l(Y = Y,
+                                   mi_vec = mi_vec,
+                                   i_index = i_index,
+                                   l = l,
+                                   phi = phi,
+                                   beta = beta,
+                                   Z = Z,
+                                   B = B,
+                                   V_inv = V_inv,
+                                   partials_l = partials_l)
+      Hessian_l <- get_Hessian_l(l = l,
+                                 Y = Y,
                                  mi_vec = mi_vec,
                                  i_index = i_index,
-                                 l = l,
-                                 phi = phi,
                                  beta = beta,
                                  Z = Z,
                                  B = B,
+                                 phi = phi,
+                                 C = C,
                                  V_inv = V_inv,
-                                 partials_l = partials_l) # function of beta_l_list not beta_l
-    Hessian_l <- get_Hessian_l(l = l,
-                               Y = Y,
-                               mi_vec = mi_vec,
-                               i_index = i_index,
-                               beta = beta,
-                               Z = Z,
-                               B = B,
-                               phi = phi,
-                               C = C,
-                               V_inv = V_inv,
-                               partials_l = partials_l,
-                               alpha = alpha)
-    # function of beta_l_list not beta_l
+                                 partials_l = partials_l,
+                                 alpha = alpha)
 
-    first_term <- -Hessian_l + gamma_l*D
-    second_term <- gradient_l - Hessian_l %*% beta_l
+      # function of beta_l_list not beta_l
+      first_term <- -Hessian_l + gamma_l*D
+      second_term <- gradient_l - Hessian_l %*% beta_l
 
-    beta_l_s <- MASS::ginv(first_term) %*% second_term
+      beta_l_s <- MASS::ginv(first_term) %*% second_term
 
-    # Update:
-    beta[,l + 1] <- beta_l_s
+      # Update:
+      beta[,l + 1] <- beta_l_s
+
+      # Update dispersion parameter
+      phi <- get_phi(Y = Y,
+                     beta = beta,
+                     Z = Z,
+                     B = B,
+                     K = ncol(Y),
+                     mi_vec = mi_vec,
+                     i_index = i_index)
+
+    }
+    beta_diff <- sum(beta - beta_old)^2
+    if (beta_diff < epsilon_2) {
+      break
+    }
+    utils::setTxtProgressBar(pb_alg2, r)
   }
+  utils::setTxtProgressBar(pb_alg2, max_2_iter)
+  close(pb_alg2)
 
   return(beta)
 }

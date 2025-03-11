@@ -40,11 +40,13 @@ cleverly <- function(Y,
                      d = 2,
                      nknots = 3,
                      order = 3,
-                     epsilon_b = 1e-6,
-                     epsilon_r = 1e-6,
-                     epsilon_d = 1e-6,
+                     epsilon_b = 1e-3,
+                     epsilon_r = 1e-3,
+                     epsilon_d = 1e-3,
                      max_outer_iter = 10,
-                     max_admm_iter = 100) {
+                     max_admm_iter = 100,
+                     max_2_iter = 100,
+                     epsilon_2 = 1e-3) {
 
 
   if (tau * theta - 1 == 0) {
@@ -143,7 +145,9 @@ cleverly <- function(Y,
                          epsilon_r = epsilon_r,
                          epsilon_d = epsilon_d,
                          max_outer_iter = max_outer_iter,
-                         max_admm_iter = max_admm_iter)
+                         max_admm_iter = max_admm_iter,
+                         max_2_iter = max_2_iter,
+                         epsilon_2 = epsilon_2)
   } else {
     stop("Invalid response type or type not yet implemented.")
   }

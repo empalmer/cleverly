@@ -47,10 +47,9 @@ algorithm3 <- function(Y,
                        phi,
                        max_admm_iter,
                        epsilon_r,
-                       epsilon_d) {
-  #print("Starting Algorithm 3")
-  # Iterations for admm loop
-  t <- 1
+                       epsilon_d,
+                       s) {
+
   K <- ncol(Y)
   # Initialize all return lists
   beta_admm_track <- list()
@@ -62,26 +61,27 @@ algorithm3 <- function(Y,
   diff_admm <- c()
   phi_track <- c()
 
-    pb_admm <- utils::txtProgressBar(min = 0,
-                              max = max_admm_iter,
-                              style = 3)
+  cat(paste0("\n","ADMM iteration: ", s, "\n"))
 
-  # Initialize lambda to all 0
-  #lambda <- numeric(nrow(Kappa)*P)
+  # Initialize progress bar
+  pb_admm <- utils::txtProgressBar(min = 0,
+                                   max = max_admm_iter,
+                                   style = 3)
   # Initialize v to be zero just for checking the difference
   # The first v will be based on the current beta.
   v <- numeric(nrow(Kappa)*P)
-  pb <- utils::txtProgressBar(min = 0,
-                              max = max_admm_iter,
-                              style = 3)
-  while (t <= max_admm_iter) {
-    # if (t == 1 | t %% 5 == 0) {
-    #   print(paste("ADMM Iteration: ", t))
-    # }
 
-    if (t == 1) {
-      browser()
-    }
+
+  for (t in 1:max_admm_iter) {
+
+    # Update dispersion parameter
+    phi <- get_phi(Y = Y,
+                   beta = beta,
+                   Z = Z,
+                   B = B,
+                   K = ncol(Y),
+                   mi_vec = mi_vec,
+                   i_index = i_index)
 
     v_new <- update_v(beta = beta,
                       lp = lp,
@@ -111,21 +111,13 @@ algorithm3 <- function(Y,
                                  i_index = i_index)
 
     # CALCULATE NEW ALPHAS HERE!
-
     lambda_new <- update_lambda(beta_lp = beta_new[,lp + 1],
                                 v = v_new,
                                 lambda = lambda,
                                 A = A,
                                 theta = theta)
 
-    # Update dispersion parameter
-    phi <- get_phi(Y = Y,
-                   beta = beta_new,
-                   Z = Z,
-                   B = B,
-                   K = ncol(Y),
-                   mi_vec = mi_vec,
-                   i_index = i_index)
+
 
     # Keep track of loop
     phi_track <- c(phi_track, phi)
@@ -134,9 +126,11 @@ algorithm3 <- function(Y,
     lambda_admm_track[[t]] <- lambda_new
     cluster_list[[t]] <- get_clusters(v_new, K, P)
 
+
     # Check for convergence
     diff <- sum(abs(beta_new - beta))
     diff_admm <- c(diff_admm, diff)
+
     r_norm <- get_r_norm(
       beta = beta_new,
       v = v_new,
@@ -159,21 +153,18 @@ algorithm3 <- function(Y,
       break
     }
 
-    if (t == 20) {
-      #browser()
-    }
+
     # Prepare for next iteration
     v <- v_new
     beta <- beta_new
     lambda <- lambda_new
-    t <- t + 1
     utils::setTxtProgressBar(pb_admm, t)
-    # pb_admm$tick()
 
   }
-  browser()
   utils::setTxtProgressBar(pb_admm, max_admm_iter)
   close(pb_admm)
+
+
   #print(paste("Last ADMM Iteration: ", t - 1))
   return(list(beta = beta,
               lambda = lambda,
@@ -331,7 +322,7 @@ update_beta_admm <- function(Y,
                      V_inv = V_inv,
                      partials_l = partials_l,
                      alpha = alpha)
-  browser()
+
   Q <- get_gradient_l(Y = Y,
                       mi_vec = mi_vec,
                       i_index = i_index,
