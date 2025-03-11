@@ -284,10 +284,10 @@ test_that("Simulation With Z", {
   psi <- 1000
   tau <- 0.2
   theta <- 250
-  max_admm_iter = 100
-  max_outer_iter = 50
+  max_admm_iter = 10
+  max_outer_iter = 6
   start <- Sys.time()
-  Rprof("test.out")
+  #Rprof("test.out", interval = .02)
   res <- cleverly(Y = Y,
                   Z = Z,
                   subject_ids = individual,
@@ -301,11 +301,11 @@ test_that("Simulation With Z", {
                   max_admm_iter = max_admm_iter,
                   max_outer_iter = max_outer_iter,
                   epsilon_r = .1,
-                  epsilon_d = .1,
+                  epsilon_d = .5,
                   epsilon_b = .1)
   end <- Sys.time()
-  Rprof(NULL)
-  summaryRprof("test.out")$by.self[1:10,1:2]
+  #Rprof(NULL)
+  #summaryRprof("test.out")$by.self[1:10,1:2]
   (duration <- end - start)
   res$clusters$no
 
@@ -361,6 +361,12 @@ test_that("Simulation With Z", {
                                    "outer_iter:",max_outer_iter,
                                    "time:", duration),
                   color = "Outer iteration")
+
+  cluster_track <- res$cluster_list
+  purrr::imap_dfr(cluster_track,
+                  ~data.frame(cluster = purrr::map_dbl(.x, ~.x$no),
+                              run = .y)) %>%
+    dplyr::filter(run == max_outer_iter)
 
   # Cluster progress:
   cluster_track <- res$cluster_list
@@ -446,17 +452,17 @@ test_that("psi BIC", {
 
 
 
-  psis <- c(2450, 2500)
+  psis <- c(1100, 1200)
   taus <- c(.2, .25)
   thetas <- c(150, 200)
   max_admm_iter = 100
-  max_outer_iter = 30
+  max_outer_iter = 60
   hyps <- expand.grid(psi = psis,
                       taus = taus,
                       theta = thetas)
 
   start <- Sys.time()
-  future::plan(multisession, workers = 9)
+  future::plan(multisession, workers = 8)
   res_list <- furrr::future_pmap(hyps, ~cleverly(Y = Y,
                                                  Z = Z,
                                                  subject_ids = individual,

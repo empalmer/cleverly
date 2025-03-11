@@ -21,7 +21,11 @@ algorithm2 <- function(Y,
                        i_index,
                        lp,
                        B,
-                       beta, D, gammas, phi, C){
+                       beta,
+                       D,
+                       gammas,
+                       phi,
+                       C){
   L <- ncol(Z) - 1
   K <- ncol(Y)
   lp_minus <- NULL

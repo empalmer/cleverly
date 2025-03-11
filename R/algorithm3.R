@@ -79,6 +79,10 @@ algorithm3 <- function(Y,
     #   print(paste("ADMM Iteration: ", t))
     # }
 
+    if (t == 1) {
+      browser()
+    }
+
     v_new <- update_v(beta = beta,
                       lp = lp,
                       lambda = lambda,
@@ -140,14 +144,12 @@ algorithm3 <- function(Y,
       P = P,
       lp = lp)
 
-
     d_norm <- get_d_norm(v_new = v_new,
                          v = v,
                          theta = theta,
                          Kappa = Kappa,
                          K = ncol(beta),
                          P = P)
-
 
     r_list[[t]] <- r_norm
     d_list[[t]] <- d_norm
@@ -168,8 +170,8 @@ algorithm3 <- function(Y,
     utils::setTxtProgressBar(pb_admm, t)
     # pb_admm$tick()
 
-
   }
+  browser()
   utils::setTxtProgressBar(pb_admm, max_admm_iter)
   close(pb_admm)
   #print(paste("Last ADMM Iteration: ", t - 1))
@@ -329,6 +331,7 @@ update_beta_admm <- function(Y,
                      V_inv = V_inv,
                      partials_l = partials_l,
                      alpha = alpha)
+  browser()
   Q <- get_gradient_l(Y = Y,
                       mi_vec = mi_vec,
                       i_index = i_index,
