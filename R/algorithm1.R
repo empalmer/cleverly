@@ -83,7 +83,7 @@ algorithm1 <- function(Y,
 
   # Initialize using Algorithm 2 for ALL responses
   zeros_beta <- matrix(0, nrow = K * P, ncol = L + 1)
-  beta <- algorithm2(Y = Y,
+  beta_init <- algorithm2(Y = Y,
                      Y0 = Y0,
                      Z = Z,
                      mi_vec = mi_vec,
@@ -102,8 +102,8 @@ algorithm1 <- function(Y,
                      L = L,
                      P = P,
                      K = K,
-                     M = M)$beta
-
+                     M = M)
+  beta <- beta_init$beta
 
   # Initialize lambda to all 0
   lambda <- numeric(nrow(Kappa)*P)
@@ -122,6 +122,7 @@ algorithm1 <- function(Y,
   ts <- list()
   diff <- Inf
   s <- 1
+  rs[[1]] <- beta_init$r
 
 
 
@@ -219,7 +220,7 @@ algorithm1 <- function(Y,
     # admm_diffs[[s]] <- alg3$diff_admm
     # admm_beta_list[[s]] <- alg3$beta_admm_track
     # phis_list[[s]] <- alg3$phi_track
-    rs[[s]] <- alg2$r
+    rs[[s+1]] <- alg2$r
     ts[[s]] <- alg3$t
     r_list[[s]] <- alg3$r_list
     d_list[[s]] <- alg3$d_list
@@ -246,23 +247,40 @@ algorithm1 <- function(Y,
                    M = M)
 
     # Difference in betas between this loop and the last
-    diff <- sum(abs(alg3$beta - beta_old)) # matrix difference
+    diff <- sum(abs(beta - beta_old)) # matrix difference
     alg1_diff[[s]] <- diff
-    if (diff < max_outer_iter) {
+
+    # Exit outer loop early if convergence is reached
+    if (diff < epsilon_b) {
       break
     }
-
   }
 
 
 
   # After loop:
+  # Calculate v for the last time (since v is updated before beta in admm)
+  v <- update_v(beta = beta,
+                lp = lp,
+                lambda = lambda,
+                Kappa = Kappa,
+                P = P,
+                gammas = gammas,
+                tau = tau,
+                theta = theta,
+                psi = psi)
   # Calculte estimated ys and clusters
   clusters <- get_clusters(v = v,
                            K = K,
                            P = P)
   # This is in relative abundance
   y_hat <- estimate_y(beta = beta,
+                      B = B,
+                      Z = Z,
+                      K = K,
+                      Y = Y,
+                      time = time)
+  y_hat_init <- estimate_y(beta = beta_init$beta,
                       B = B,
                       Z = Z,
                       K = K,
@@ -278,8 +296,10 @@ algorithm1 <- function(Y,
                      order = order)
 
   return(list(beta = beta,
+              beta_init = beta_init$beta,
               clusters = clusters,
               y_hat = y_hat,
+              y_hat_init = y_hat_init,
               v = v,
               B = B,
               rs = rs,

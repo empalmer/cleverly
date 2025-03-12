@@ -162,8 +162,10 @@ cleverly <- function(Y,
   # Return what is inputted and the result
   # Change eventually
   return(list(beta = result$beta,
+              beta_init = result$beta_init,
               clusters = result$clusters,
               y_hat = result$y_hat,
+              y_hat_init = result$y_hat_init,
               v = result$v,
               ts = result$ts,
               rs = result$rs,

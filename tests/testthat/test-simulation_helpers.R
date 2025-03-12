@@ -281,51 +281,87 @@ test_that("Simulation With Z", {
 
 
 
-  psi <- 120
-  tau <- 0.1
-  theta <- 50
-  max_admm_iter = 100
+  psi <- 400
+  tau <- 0.01
+  theta <- 200
+  max_admm_iter = 50
   max_outer_iter = 2
   start <- Sys.time()
-  #Rprof("test.out", interval = .02)
+  Rprof("test.out", interval = .02)
   res <- cleverly(Y = Y,
                   Z = Z,
                   subject_ids = individual,
                   lp = 0,
                   time = time,
-                  gammas = c(1, 1), # controls smoothness
+                  gammas = c(5, 5), # controls smoothness
                   tau = tau, # Controls cuttoff for highest shrinkage
                   theta = theta, # for lambda, but also for d
                   psi = psi, # controls clustering
                   C = 100,
                   max_admm_iter = max_admm_iter,
                   max_outer_iter = max_outer_iter,
-                  max_2_iter = 10,
+                  max_2_iter = 100,
                   epsilon_r = .001,
                   epsilon_d = .05,
                   epsilon_b = .001,
                   epsilon_2 = .001)
   end <- Sys.time()
-  #Rprof(NULL)
-  #summaryRprof("test.out")$by.self[1:10,1:2]
+  Rprof(NULL)
+  summaryRprof("test.out")$by.self[1:10,1:2]
   (duration <- end - start)
   res$clusters$no
 
-
-
-  y_hat <- res$y_hat
+  # Cluster progress:
+  cluster_track <- res$cluster_list
+  purrr::imap_dfr(cluster_track,
+                  ~data.frame(cluster = purrr::map_dbl(.x, ~.x$no),
+                              run = .y)) %>%
+    dplyr::mutate(row = dplyr::row_number()) %>%
+    ggplot2::ggplot(ggplot2::aes(x = row, y = cluster, color = factor(run))) +
+    ggplot2::geom_line() +
+    ggplot2::geom_hline(yintercept = 3, linetype = 2) +
+    ggplot2::labs(x = "Overall Iteration",
+                  y = "Number of Clusters",
+                  title = "Cluster Progress",
+                  subtitle = paste("psi:",psi,
+                                   ",tau:",round(tau,2),
+                                   "theta:",theta,
+                                   ",admm_iter:",max_admm_iter,
+                                   "outer_iter:",max_outer_iter,
+                                   "time:", duration),
+                  color = "Outer iteration")
 
 # convergence
-  unlist(res$ts)
-  unlist(res$rs)
+  unlist(res$ts) #ADMM
+  unlist(res$rs) #alg2
 
   unlist(res$d_list)
   unlist(res$r_list)
   unlist(res$alg_2_beta_diff)
-  res$alg1_diff
+  unlist(res$alg1_diff)
 
 
-  qplot(unlist(res$alg_2_beta_diff))
+  # Initial fit:
+  y_hat_init <- res$y_hat_init
+  # plot clusters
+  y_hat_init %>%
+    dplyr::mutate(response = factor(response, levels = 1:12)) %>%
+    ggplot2::ggplot(ggplot2::aes(x = time)) +
+    ggplot2::geom_point(ggplot2::aes(y = y,
+                                     color = factor(Z),
+                                     shape = factor(Z)),
+                        size = .6, alpha = .8) +
+    ggplot2::geom_line(ggplot2::aes(y = yhat,
+                                    color = factor(Z),
+                                    group = factor(Z)),
+                       linewidth = 1) +
+    ggplot2::facet_wrap(~response) +
+    ggplot2::labs(subtitle   = paste0("psi:",psi,
+                                      ", tau:",round(tau,2),
+                                      ", theta:",theta,
+                                      ", admm_iter:",max_admm_iter,
+                                      ", outer_iter:",max_outer_iter))
+
 
 
   # # admm parts:
@@ -360,7 +396,7 @@ test_that("Simulation With Z", {
                   ~data.frame(cluster = unlist(.x),
                               run = .y)) %>%
     dplyr::mutate(row = dplyr::row_number()) %>%
-    dplyr::filter(!row %in% c(1,101)) %>%
+    dplyr::filter(!row %in% c(1,2,3,101)) %>%
     ggplot2::ggplot(ggplot2::aes(x = row, y = cluster, color = factor(run))) +
     ggplot2::geom_line() +
     ggplot2::labs(x = "Overall Iteration",
@@ -391,38 +427,15 @@ test_that("Simulation With Z", {
                                    "time:", duration),
                   color = "Outer iteration")
 
-  cluster_track <- res$cluster_list
-  # purrr::imap_dfr(cluster_track,
-  #                 ~data.frame(cluster = purrr::map_dbl(.x, ~.x$no),
-  #                             run = .y)) %>%
-  #   dplyr::filter(run == max_outer_iter)
 
-  # Cluster progress:
-  cluster_track <- res$cluster_list
-  purrr::imap_dfr(cluster_track,
-                           ~data.frame(cluster = purrr::map_dbl(.x, ~.x$no),
-                                       run = .y)) %>%
-    dplyr::mutate(row = dplyr::row_number()) %>%
-    ggplot2::ggplot(ggplot2::aes(x = row, y = cluster, color = factor(run))) +
-    ggplot2::geom_line() +
-    ggplot2::geom_hline(yintercept = 3, linetype = 2) +
-    ggplot2::labs(x = "Overall Iteration",
-                  y = "Number of Clusters",
-                  title = "Cluster Progress",
-                  subtitle = paste("psi:",psi,
-                                   ",tau:",round(tau,2),
-                                   "theta:",theta,
-                                   ",admm_iter:",max_admm_iter,
-                                   "outer_iter:",max_outer_iter,
-                                   "time:", duration),
-                  color = "Outer iteration")
+
 
   # Get cluster membership
   cluster_df <- data.frame(
     K = factor(1:12, levels = 1:12),
     cluster = factor(res$clusters$membership))
   knitr::kable(table(cluster_df$cluster, rep(1:3, each = 4)))
-
+  y_hat <- res$y_hat
   # plot clusters
   y_hat %>%
     dplyr::mutate(response = factor(response, levels = 1:12)) %>%
