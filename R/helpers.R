@@ -349,10 +349,11 @@ get_B <- function(time, order, nknots) {
 #' @export
 get_alpha_ijk <- function(i, j, k, beta, Z_ij, B_ij, i_index, P, L) {
   # Extract all beta_lk at once for efficiency
-  beta_k <- beta[((k - 1) * P + 1):(k * P), 1:(L + 1)]
+  beta_k <- beta[((k - 1) * P + 1):(k * P), ]
 
   # Compute the weighted sum efficiently
-  lsum <- Z_ij * (t(B_ij) %*% beta_k)
+  #lsum <- Z_ij * (t(B_ij) %*% beta_k)
+  lsum <- Z_ij * crossprod(B_ij,beta_k)
 
   # Compute alpha_ijk
   alpha_ijk <- exp(sum(lsum))

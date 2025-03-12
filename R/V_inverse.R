@@ -72,9 +72,9 @@ get_V_i <- function(i,
   }
   V_i_bdiag <- Matrix::bdiag(V_ij_list)
   V_i <- as.matrix(V_i_bdiag)
-  if (any(is.nan(V_i))) {
-    stop()
-  }
+  # if (any(is.nan(V_i))) {
+  #   stop()
+  # }
   return(V_i)
 }
 
@@ -133,9 +133,9 @@ get_Vi_inv <- function(i,
   V_i_bdiag_inv <- Matrix::bdiag(V_i_inv_list)
   V_i_inv <- as.matrix(V_i_bdiag_inv)
 
-  if (any(is.nan(V_i_inv))) {
-    stop("V_i_inv has NaNs")
-  }
+  # if (any(is.nan(V_i_inv))) {
+  #   stop("V_i_inv has NaNs")
+  # }
 
   # Invert entire matrix.
   # Needed for non-independent case
