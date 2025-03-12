@@ -18,6 +18,8 @@
 #' @param max_outer_iter Max number of iterations for the outer loop (Algorithm 1)
 #' @param max_admm_iter Max number of iterations for the ADMM loop
 #' @param C Constant for determining the hessian change.
+#' @param max_2_iter
+#' @param epsilon_2
 #'
 #' @returns List of beta, clusters, y_hat, v, admm_diffs, admm_beta_list, loop_list_beta, loop_list_diff, phis_list
 #' @export

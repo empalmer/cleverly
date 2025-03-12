@@ -21,6 +21,11 @@
 #' @param C Constant for determining the hessian change. Default is 10.
 #' @param max_outer_iter Number of iterations for the outer loop (Algorithm 1)
 #' @param max_admm_iter Number of iterations for the clustering step (Algorithm 3)
+#' @param epsilon_b
+#' @param epsilon_r
+#' @param epsilon_d
+#' @param max_2_iter
+#' @param epsilon_2
 #'
 #' @returns
 #' @export

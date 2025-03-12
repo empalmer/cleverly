@@ -5,12 +5,13 @@
 #' @param i subject index
 #' @param j time index
 #' @param l external variable index
-#' @param K Number of responses
-#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
 #' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
 #' @param B B spline basis matrix of dimension (N x P)
 #' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
+#' @param i_index
+#' @param Y0
+#' @param alpha_ij
 #'
 #' @returns Matrix of dimension PK x K
 #' @export
@@ -50,11 +51,15 @@ get_partials_ijl <- function(i,
 #'
 #' @param i subject index
 #' @param l external variable index
-#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
 #' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
 #' @param B B spline basis matrix of dimension (N x P)
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
+#' @param Y0
+#' @param alpha_i
+#' @param i_index
+#' @param P
+#' @param K
 #'
 #' @returns Matrix of dimension KP x Kmi
 #' @export
@@ -93,13 +98,16 @@ get_partials_il <- function(i,
 
 #' Partials list (of matrices) with respect to given l
 #'
-#' @param Y
 #' @param l
 #' @param mi_vec
 #' @param i_index
 #' @param beta
 #' @param Z
 #' @param B
+#' @param Y0
+#' @param alpha
+#' @param P
+#' @param K
 #'
 #' @returns
 #' @export

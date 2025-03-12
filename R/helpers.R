@@ -40,8 +40,8 @@ get_mi_vec <- function(Y, subject_ids, time_ids) {
 #' @param i subject index
 #' @param j time index
 #' @param l external variable index
+#' @param i_index
 #' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
-#' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #'
 #' @returns Scalar for the l-th external variable for subject i at time j
 #' @export
@@ -220,14 +220,7 @@ get_Y_i_vec <- function(i, mi_vec, Y, Y_mat) {
 #' Get the ijth values for mu
 #'
 #' @param Y_ij0 Total sum of counts across all K
-#' @param i subject index
-#' @param j time index
-#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
-#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
-#' @param B B spline basis matrix of dimension (N x P)
-#' @param K Number of responses
 #' @param alpha_ij Vector of DM parameters for i, j
-#' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #'
 #' @returns Vector of length K
 #' @export
@@ -244,6 +237,7 @@ get_mu_ij <- function(Y_ij0, alpha_ij) {
 #' @param i_index
 #' @param Y0
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
+#' @param K
 #'
 #' @returns Vector of length K*mi with each K first
 #' @export
@@ -273,6 +267,7 @@ get_mu_i <- function(i, alpha, mi_vec, i_index, Y0, K) {
 #' @param Y0
 #' @param alpha
 #' @param i_index
+#' @param K
 #'
 #' @returns Vector of length Kmi
 #' @export
@@ -305,8 +300,8 @@ get_Yi_minus_mui <- function(i,
 #'
 #' @param i subject index
 #' @param j time index
+#' @param i_index
 #' @param B B spline basis matrix of dimension (N x P)
-#' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #'
 #' @returns A vector of length P
 #' @export
@@ -369,34 +364,6 @@ get_alpha_ijk <- function(i, j, k, beta, Z_ij, B_ij, i_index, P, L) {
   }
   return(alpha_ijk)
 }
-
-
-
-# get_alpha_ijk2 <- function(i, j, k, beta, Z_ij, B_ij, i_index, P, L) {
-#   lsum <- numeric(L)
-#
-#   for (l in 0:L) {
-#     Z_ijl <- Z_ij[l + 1]
-#
-#     beta_lk <- get_beta_kl(k = k,
-#                            l = l,
-#                            beta = beta,
-#                            P = P)
-#     #lsum[l + 1] <- Z_ijl * t(B_ij) %*% beta_lk
-#     lsum[l + 1] <- Z_ijl * crossprod(B_ij, beta_lk)
-#   }
-#   alpha_ijk <- exp(sum(lsum))
-#   if (any(is.infinite(alpha_ijk))) {
-#     stop("Infinite alpha")
-#   }
-#   # removing rownames since that takes a long time!
-#   # names(alpha_ijk) <- paste0("i=", i, ",j=", j, ",k=", k)
-#
-#   if (sum(alpha_ijk < 0) != 0) {
-#     stop("Negative alpha")
-#   }
-#   return(alpha_ijk)
-# }
 
 
 

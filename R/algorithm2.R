@@ -10,8 +10,16 @@
 #' @param gammas Vector of dimension L + 1 for penalizing the D matrix
 #' @param phi Current value of overdispersion parameter
 #' @param C Constant for determining the hessian change.
+#' @param Y0
+#' @param max_2_iter
+#' @param epsilon_2
+#' @param time
+#' @param s
+#' @param L
+#' @param P
+#' @param K
+#' @param M
 #' @param i_index
-#' @param V_inv
 #'
 #' @returns Vector of length PK x L
 #' @export

@@ -23,6 +23,14 @@
 #' @param phi Current value of overdispersion parameter
 #' @param epsilon_r Tolerance for ADMM convergence
 #' @param epsilon_d Tolerance for ADMM convergence
+#' @param Y0
+#' @param lambda
+#' @param AtA
+#' @param i_index
+#' @param s
+#' @param L
+#' @param K
+#' @param M
 #'
 #' @returns List with the updated betas, updated vs, and lists tracking the betas, vs, and lambdas for each iteration
 #' @export
@@ -272,6 +280,13 @@ update_v <- function(beta,
 #' @param phi Current value of overdispersion parameter
 #' @param C Constant for determining the hessian change.
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
+#' @param Y0
+#' @param alpha
+#' @param AtA
+#' @param i_index
+#' @param K
+#' @param L
+#' @param P
 #'
 #' @returns matrix of updated betas
 #' @export
@@ -413,6 +428,18 @@ update_lambda <- function(beta_lp, v, lambda, A, theta){
 # Convergence criteria ----------------------------------------------------
 
 
+#' Title
+#'
+#' @param beta
+#' @param v
+#' @param Kappa
+#' @param P
+#' @param lp
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 get_r_norm <- function(beta, v, Kappa, P, lp){
   r_kappa <- c()
   for (kappa in 1:nrow(Kappa)) {
@@ -432,6 +459,19 @@ get_r_norm <- function(beta, v, Kappa, P, lp){
   return(norm)
 }
 
+#' Title
+#'
+#' @param v_new
+#' @param v
+#' @param theta
+#' @param Kappa
+#' @param K
+#' @param P
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 get_d_norm <- function(v_new, v, theta, Kappa, K, P){
   v_diff <- v_new - v
   diff_mat <- matrix(v_diff, nrow = P)

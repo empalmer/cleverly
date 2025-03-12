@@ -27,10 +27,12 @@ get_V_ijj <- function(Y_ij0,
 #' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
 #' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
 #' @param B B spline basis matrix of dimension (N x P)
-#' @param Y_ij0 Total sum of counts across all K
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #' @param K Number of responses
 #' @param i_index
+#' @param Y0
+#' @param L
+#' @param P
 #'
 #' @returns Diagonal matrix of Kmi x Kmi Each block is for a single j of block size K x K
 #' @export
@@ -157,6 +159,7 @@ get_Vi_inv <- function(i,
 #' @param B
 #' @param K
 #' @param alpha
+#' @param Y0
 #'
 #' @returns
 #' @export

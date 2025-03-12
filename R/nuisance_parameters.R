@@ -8,6 +8,10 @@
 #' @param B B spline basis matrix of dimension (N x P)
 #' @param K Number of responses
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
+#' @param Y0
+#' @param alpha
+#' @param i_index
+#' @param M
 #'
 #' @returns scalar phi
 #' @export
@@ -38,6 +42,10 @@ get_phi <- function(Y, Y0, beta, alpha, Z, B, K, mi_vec, i_index, M){
 #' @param B B spline basis matrix of dimension (N x P)
 #' @param K Number of responses
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
+#' @param Y0
+#' @param alpha
+#' @param i_index
+#' @param M
 #'
 #' @returns Pearson residuals vector for all i, j, k
 #' @export
@@ -73,13 +81,15 @@ get_pearson_residuals <- function(Y,
 #' Get the pearson residual for a given i
 #'
 #' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
-#' @param phi Current value of overdispersion parameter
 #' @param i subject index
 #' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
 #' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
 #' @param B B spline basis matrix of dimension (N x P)
 #' @param K Number of responses
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
+#' @param Y0
+#' @param alpha
+#' @param i_index
 #'
 #' @returns pearson residual vector for each i
 #' @export

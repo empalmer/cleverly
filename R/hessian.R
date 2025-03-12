@@ -4,7 +4,6 @@
 #'
 #' @param i subject index
 #' @param l external variable index
-#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
 #' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
 #' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
 #' @param B B spline basis matrix of dimension (N x P)
@@ -13,6 +12,10 @@
 #' @param i_index
 #' @param Vi_inv (optional) Vi inverse If supplied is faster
 #' @param partials_il
+#' @param Y0
+#' @param alpha_i
+#' @param K
+#' @param P
 #'
 #' @returns Matrix of dimension KP times KP
 #' @export
@@ -70,7 +73,6 @@ get_dHessian_il <- function(i,
 #' Get hessian with respect to the lth external variable
 #'
 #' @param l external variable index
-#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
 #' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
 #' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
 #' @param B B spline basis matrix of dimension (N x P)
@@ -79,6 +81,11 @@ get_dHessian_il <- function(i,
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #' @param i_index
 #' @param V_inv (optional) List of V inverses for each i. If supplied is faster
+#' @param Y0
+#' @param partials_l
+#' @param alpha
+#' @param P
+#' @param K
 #'
 #' @returns Matrix of dimension KP times KP
 #' @export
