@@ -72,7 +72,7 @@ algorithm3 <- function(Y,
   diff_admm <- numeric(max_admm_iter)
   phi_track <- numeric(max_admm_iter)
 
-  cat(paste0("\n","ADMM iteration: ", s, "\n"))
+  cat(paste0("ADMM iteration: ", s, "\n"))
 
   # Initialize progress bar
   pb_admm <- utils::txtProgressBar(min = 0,
@@ -192,6 +192,7 @@ algorithm3 <- function(Y,
   return(list(beta = beta,
               lambda = lambda,
               v = v,
+              t = t,
               beta_admm_track = beta_admm_track,
               lambda_admm_track = lambda_admm_track,
               v_admm_track = v_admm_track,

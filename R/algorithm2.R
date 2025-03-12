@@ -43,9 +43,9 @@ algorithm2 <- function(Y,
                        P,
                        K,
                        M){
-  # L <- ncol(Z) - 1
-  # K <- ncol(Y)
+
   lp_minus <- NULL
+  beta_diffs <- list()
 
   # Loop only through non-clustering values
   l_loop <- setdiff(0:L , lp)
@@ -138,17 +138,23 @@ algorithm2 <- function(Y,
 
       # function of beta_l_list not beta_l
       first_term <- -Hessian_l + gamma_l*D
+      first_term_inv <- MASS::ginv(first_term)
+
       second_term <- gradient_l - Hessian_l %*% beta_l
 
+
+      #beta_l_s <- Matrix::Matrix(first_term_inv, sparse = T) %*% second_term
       beta_l_s <- MASS::ginv(first_term) %*% second_term
 
+
       # Update:
-      beta[,l + 1] <- beta_l_s
+      beta[,l + 1] <- as.numeric(beta_l_s)
 
 
 
     }
-    beta_diff <- sum(beta - beta_old)^2
+    beta_diff <- sum((beta - beta_old)^2)
+    beta_diffs[[r]] <- beta_diff
     if (beta_diff < epsilon_2) {
       break
     }
@@ -157,6 +163,8 @@ algorithm2 <- function(Y,
   utils::setTxtProgressBar(pb_alg2, max_2_iter)
   close(pb_alg2)
 
-  return(beta)
+  return(list(beta = beta,
+              r = r,
+              beta_diffs = beta_diffs))
 }
 

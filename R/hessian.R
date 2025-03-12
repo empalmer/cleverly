@@ -49,24 +49,14 @@ get_dHessian_il <- function(i,
 
   if (missing(Vi_inv)) {
     stop("Missing Vi inverse argument")
-    # Vi_inv <- get_Vi_inv(i = i,
-    #                      Y = Y,
-    #                      mi_vec = mi_vec,
-    #                      i_index = i_index,
-    #                      phi = phi,
-    #                      beta = beta,
-    #                      Z = Z,
-    #                      B = B,
-    #                      K = K)
   }
-  #slower
-  #hessian_il <- -partials_il %*% Vi_inv %*% t(partials_il)
 
-  #faster
+
   hessian_il <- -partials_il %*% tcrossprod(Vi_inv, partials_il)
 
   d_hessian_il <- diag(hessian_il)
   return(d_hessian_il)
+  return(hessian_il)
 }
 
 
@@ -127,8 +117,11 @@ get_Hessian_l <- function(l,
     d_hessian_l <- d_hessian_l + dhessian_il
   }
 
+  #browser()
+  #diag(d_hessian_l) <- -pmax(-diag(d_hessian_l), C)
   diag_hessian <- -pmax(-d_hessian_l, C)
   C_hessian <- diag(diag_hessian)
 
   return(C_hessian)
+  #return(d_hessian_l)
 }

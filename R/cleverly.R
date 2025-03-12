@@ -26,6 +26,7 @@
 #' @param epsilon_d
 #' @param max_2_iter
 #' @param epsilon_2
+#' @param cor_str
 #'
 #' @returns
 #' @export
@@ -37,6 +38,7 @@ cleverly <- function(Y,
                      time,
                      lp = 0,
                      response_type = "counts",
+                     cor_str = "independent",
                      gammas,
                      psi,
                      tau = 8/100,
@@ -163,12 +165,15 @@ cleverly <- function(Y,
               clusters = result$clusters,
               y_hat = result$y_hat,
               v = result$v,
+              ts = result$ts,
+              rs = result$rs,
               admm_diffs = result$admm_diffs,
               admm_beta_list = result$admm_beta_list,
               phis_list = result$phis_list,
               admm_beta_list = result$admm_beta_list,
               loop_list_beta = result$loop_list_beta,
-              loop_list_diff = result$loop_list_diff,
+              alg1_diff = result$alg1_diff,
+              alg_2_beta_diff = result$alg_2_beta_diff,
               cluster_list = result$cluster_list,
               r_list = result$r_list,
               d_list = result$d_list,

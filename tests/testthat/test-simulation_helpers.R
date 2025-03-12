@@ -281,13 +281,13 @@ test_that("Simulation With Z", {
 
 
 
-  psi <- 250
-  tau <- 8/1000
-  theta <- 250
-  max_admm_iter = 20
+  psi <- 120
+  tau <- 0.1
+  theta <- 50
+  max_admm_iter = 100
   max_outer_iter = 2
   start <- Sys.time()
-  Rprof("test.out", interval = .02)
+  #Rprof("test.out", interval = .02)
   res <- cleverly(Y = Y,
                   Z = Z,
                   subject_ids = individual,
@@ -300,42 +300,32 @@ test_that("Simulation With Z", {
                   C = 100,
                   max_admm_iter = max_admm_iter,
                   max_outer_iter = max_outer_iter,
-                  max_2_iter = 200,
+                  max_2_iter = 10,
                   epsilon_r = .001,
-                  epsilon_d = .005,
+                  epsilon_d = .05,
                   epsilon_b = .001,
                   epsilon_2 = .001)
   end <- Sys.time()
-  Rprof(NULL)
-  summaryRprof("test.out")$by.self[1:10,1:2]
+  #Rprof(NULL)
+  #summaryRprof("test.out")$by.self[1:10,1:2]
   (duration <- end - start)
   res$clusters$no
 
+
+
   y_hat <- res$y_hat
-  y_hat %>%
-    dplyr::mutate(response = factor(response, levels = 1:12)) %>%
-    ggplot2::ggplot(ggplot2::aes(x = time)) +
-    ggplot2::geom_point(ggplot2::aes(y = y,
-                                     color = factor(Z),
-                                     shape = factor(Z)),
-                        size = .6, alpha = .8) +
-    ggplot2::geom_line(ggplot2::aes(y = yhat,
-                                    color = factor(Z),
-                                    group = factor(Z)),
-                       linewidth = 1) +
-    ggplot2::facet_wrap(~response)
 
-
-  # Examine convergence:
-  # Algorithm 1 iterations
-  (s <- length(res$admm_beta_list))
-  # Algorithm 3 admm iterations
-  (t <- purrr::map_dbl(res$admm_beta_list, length))
-  res$clusters$no
+# convergence
+  unlist(res$ts)
+  unlist(res$rs)
 
   unlist(res$d_list)
   unlist(res$r_list)
-  res$admm_diffs
+  unlist(res$alg_2_beta_diff)
+  res$alg1_diff
+
+
+  qplot(unlist(res$alg_2_beta_diff))
 
 
   # # admm parts:
@@ -344,11 +334,33 @@ test_that("Simulation With Z", {
   # # backfitting parts:
   # unlist(res$loop_list_diff)
 
+
+  # alg2 convergence
+  purrr::imap_dfr(res$alg_2_beta_diff,
+                  ~data.frame(cluster = unlist(.x),
+                              run = .y)) %>%
+    dplyr::mutate(row = dplyr::row_number()) %>%
+    #dplyr::filter(!row %in% c(1,101)) %>%
+    ggplot2::ggplot(ggplot2::aes(x = row, y = cluster, color = factor(run))) +
+    ggplot2::geom_line() +
+    ggplot2::labs(x = "Overall Iteration",
+                  y = "ss beta",
+                  title = "Algorithm 2 beta diffs",
+                  subtitle = paste("psi:",psi,
+                                   ",tau:",round(tau,2),
+                                   "theta:",theta,
+                                   ",admm_iter:",max_admm_iter,
+                                   "outer_iter:",max_outer_iter,
+                                   "time:", duration),
+                  color = "Outer iteration")
+
+
   # D convergence
   purrr::imap_dfr(res$d_list,
                   ~data.frame(cluster = unlist(.x),
                               run = .y)) %>%
     dplyr::mutate(row = dplyr::row_number()) %>%
+    dplyr::filter(!row %in% c(1,101)) %>%
     ggplot2::ggplot(ggplot2::aes(x = row, y = cluster, color = factor(run))) +
     ggplot2::geom_line() +
     ggplot2::labs(x = "Overall Iteration",
