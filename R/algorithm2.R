@@ -16,6 +16,7 @@
 #' @returns Vector of length PK x L
 #' @export
 algorithm2 <- function(Y,
+                       Y0,
                        Z,
                        mi_vec,
                        i_index,
@@ -29,9 +30,13 @@ algorithm2 <- function(Y,
                        max_2_iter,
                        epsilon_2,
                        time,
-                       s){
-  L <- ncol(Z) - 1
-  K <- ncol(Y)
+                       s,
+                       L,
+                       P,
+                       K,
+                       M){
+  # L <- ncol(Z) - 1
+  # K <- ncol(Y)
   lp_minus <- NULL
 
   # Loop only through non-clustering values
@@ -55,9 +60,25 @@ algorithm2 <- function(Y,
                               B = B,
                               K = K,
                               i_index = i_index,
-                              mi_vec = mi_vec)
+                              mi_vec = mi_vec,
+                              L = L,
+                              P = P)
+
+      # Update dispersion parameter
+      phi <- get_phi(Y = Y,
+                     Y0 = Y0,
+                     beta = beta,
+                     alpha = alpha,
+                     Z = Z,
+                     B = B,
+                     K = K,
+                     mi_vec = mi_vec,
+                     i_index = i_index,
+                     M = M)
+
       # Get V inverse for all is (and ls... )
       V_inv <- get_V_inv(Y = Y,
+                         Y0 = Y0,
                          alpha = alpha,
                          mi_vec = mi_vec,
                          i_index = i_index,
@@ -65,29 +86,35 @@ algorithm2 <- function(Y,
                          beta = beta,
                          Z = Z,
                          B = B,
-                         K = ncol(Y))
-      partials_l <- get_partials_l_list(Y = Y,
+                         K = K)
+      partials_l <- get_partials_l_list(Y0 = Y0,
                                         l = l,
                                         mi_vec = mi_vec,
                                         i_index = i_index,
                                         beta = beta,
                                         Z = Z,
                                         B = B,
-                                        alpha = alpha)
+                                        alpha = alpha,
+                                        K = K,
+                                        P = P)
 
       # functions of beta_l_list not beta_l
       gradient_l <- get_gradient_l(Y = Y,
+                                   Y0 = Y0,
                                    mi_vec = mi_vec,
                                    i_index = i_index,
                                    l = l,
                                    phi = phi,
                                    beta = beta,
+                                   alpha = alpha,
                                    Z = Z,
                                    B = B,
                                    V_inv = V_inv,
-                                   partials_l = partials_l)
+                                   partials_l = partials_l,
+                                   K = K,
+                                   P = P)
       Hessian_l <- get_Hessian_l(l = l,
-                                 Y = Y,
+                                 Y0 = Y0,
                                  mi_vec = mi_vec,
                                  i_index = i_index,
                                  beta = beta,
@@ -97,7 +124,9 @@ algorithm2 <- function(Y,
                                  C = C,
                                  V_inv = V_inv,
                                  partials_l = partials_l,
-                                 alpha = alpha)
+                                 alpha = alpha,
+                                 P = P,
+                                 K = K)
 
       # function of beta_l_list not beta_l
       first_term <- -Hessian_l + gamma_l*D
@@ -108,14 +137,7 @@ algorithm2 <- function(Y,
       # Update:
       beta[,l + 1] <- beta_l_s
 
-      # Update dispersion parameter
-      phi <- get_phi(Y = Y,
-                     beta = beta,
-                     Z = Z,
-                     B = B,
-                     K = ncol(Y),
-                     mi_vec = mi_vec,
-                     i_index = i_index)
+
 
     }
     beta_diff <- sum(beta - beta_old)^2

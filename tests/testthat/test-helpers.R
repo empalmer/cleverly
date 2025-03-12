@@ -234,6 +234,14 @@ test_that("Check alpha_ij", {
                            B = B,
                            K = K,
                            i_index = i_index)
+
+  alpha_ij2 <- get_alpha_ij2(i = 1,
+                           beta = beta,
+                           Z = Z,
+                           B = B,
+                           K = K,
+                           i_index = i_index,
+                           mi = 3)
   # Should be of dimension K
   expect_length(alpha_ij, K)
 

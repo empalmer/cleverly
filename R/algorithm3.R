@@ -27,6 +27,7 @@
 #' @returns List with the updated betas, updated vs, and lists tracking the betas, vs, and lambdas for each iteration
 #' @export
 algorithm3 <- function(Y,
+                       Y0,
                        Z,
                        lp,
                        B,
@@ -48,9 +49,11 @@ algorithm3 <- function(Y,
                        max_admm_iter,
                        epsilon_r,
                        epsilon_d,
-                       s) {
+                       s,
+                       L,
+                       K,
+                       M) {
 
-  K <- ncol(Y)
   # Initialize all return lists
   beta_admm_track <- list()
   v_admm_track <- list()
@@ -58,8 +61,8 @@ algorithm3 <- function(Y,
   cluster_list <- list()
   r_list <- list()
   d_list <- list()
-  diff_admm <- c()
-  phi_track <- c()
+  diff_admm <- numeric(max_admm_iter)
+  phi_track <- numeric(max_admm_iter)
 
   cat(paste0("\n","ADMM iteration: ", s, "\n"))
 
@@ -74,14 +77,25 @@ algorithm3 <- function(Y,
 
   for (t in 1:max_admm_iter) {
 
+    alpha <- get_alpha_list(beta = beta,
+                            Z = Z,
+                            B = B,
+                            K = K,
+                            i_index = i_index,
+                            mi_vec = mi_vec,
+                            L = L,
+                            P = P)
     # Update dispersion parameter
     phi <- get_phi(Y = Y,
+                   Y0 = Y0,
                    beta = beta,
+                   alpha = alpha,
                    Z = Z,
                    B = B,
                    K = ncol(Y),
                    mi_vec = mi_vec,
-                   i_index = i_index)
+                   i_index = i_index,
+                   M = M)
 
     v_new <- update_v(beta = beta,
                       lp = lp,
@@ -92,9 +106,10 @@ algorithm3 <- function(Y,
                       tau = tau,
                       theta = theta,
                       psi = psi)
-
     beta_new <- update_beta_admm(Y = Y,
+                                 Y0 = Y0,
                                  beta = beta,
+                                 alpha = alpha,
                                  lp = lp,
                                  v = v_new,
                                  lambda = lambda,
@@ -108,9 +123,10 @@ algorithm3 <- function(Y,
                                  phi = phi,
                                  C = C,
                                  mi_vec = mi_vec,
-                                 i_index = i_index)
-
-    # CALCULATE NEW ALPHAS HERE!
+                                 i_index = i_index,
+                                 K = K,
+                                 P = P,
+                                 L = L)
     lambda_new <- update_lambda(beta_lp = beta_new[,lp + 1],
                                 v = v_new,
                                 lambda = lambda,
@@ -120,7 +136,7 @@ algorithm3 <- function(Y,
 
 
     # Keep track of loop
-    phi_track <- c(phi_track, phi)
+    phi_track[t] <- phi
     beta_admm_track[[t]] <- beta_new
     v_admm_track[[t]] <- v_new
     lambda_admm_track[[t]] <- lambda_new
@@ -128,8 +144,7 @@ algorithm3 <- function(Y,
 
 
     # Check for convergence
-    diff <- sum(abs(beta_new - beta))
-    diff_admm <- c(diff_admm, diff)
+    diff_admm[t] <- sum(abs(beta_new - beta))
 
     r_norm <- get_r_norm(
       beta = beta_new,
@@ -261,7 +276,9 @@ update_v <- function(beta,
 #' @returns matrix of updated betas
 #' @export
 update_beta_admm <- function(Y,
+                             Y0,
                              beta,
+                             alpha,
                              lp,
                              v,
                              lambda,
@@ -275,7 +292,10 @@ update_beta_admm <- function(Y,
                              phi,
                              C,
                              mi_vec,
-                             i_index){
+                             i_index,
+                             K,
+                             L,
+                             P){
 
 
   gamma <- gammas[lp + 1]
@@ -283,15 +303,16 @@ update_beta_admm <- function(Y,
 
   # Things to be calculated once per loop/beta update
   # Which are: alpha and V inverse and partials_l
-  alpha <- get_alpha_list(beta = beta,
-                          Z = Z,
-                          B = B,
-                          K = K,
-                          i_index = i_index,
-                          mi_vec = mi_vec)
+  # alpha <- get_alpha_list(beta = beta,
+  #                         Z = Z,
+  #                         B = B,
+  #                         K = K,
+  #                         i_index = i_index,
+  #                         mi_vec = mi_vec)
   # Get V inverse for all is
   # compute it just once first so we don't have to calculate it for both H and Q.
   V_inv <- get_V_inv(Y = Y,
+                     Y0 = Y0,
                      mi_vec = mi_vec,
                      i_index = i_index,
                      phi = phi,
@@ -300,18 +321,22 @@ update_beta_admm <- function(Y,
                      B = B,
                      K = ncol(Y),
                      alpha = alpha)
-  partials_l <- get_partials_l_list(Y = Y,
+  partials_l <- get_partials_l_list(Y0 = Y0,
                                     l = lp,
                                     mi_vec = mi_vec,
                                     i_index = i_index,
                                     beta = beta,
                                     alpha = alpha,
                                     Z = Z,
-                                    B = B)
+                                    B = B,
+                                    K = K,
+                                    P = P)
+
+
 
   # Things we need to calculate new beta:
   H <- get_Hessian_l(l = lp,
-                     Y = Y,
+                     Y0 = Y0,
                      mi_vec = mi_vec,
                      i_index = i_index,
                      beta = beta,
@@ -321,18 +346,24 @@ update_beta_admm <- function(Y,
                      C = C,
                      V_inv = V_inv,
                      partials_l = partials_l,
-                     alpha = alpha)
+                     alpha = alpha,
+                     K = K,
+                     P = P)
 
   Q <- get_gradient_l(Y = Y,
+                      Y0 = Y0,
                       mi_vec = mi_vec,
                       i_index = i_index,
                       l = lp,
                       phi = phi,
                       beta = beta,
+                      alpha = alpha,
                       Z = Z,
                       B = B,
                       V_inv = V_inv,
-                      partials_l = partials_l)
+                      partials_l = partials_l,
+                      K = K,
+                      P = P)
   v_tilde <- v - lambda/theta
   beta_lp <- beta[,lp + 1]
 

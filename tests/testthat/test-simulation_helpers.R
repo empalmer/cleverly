@@ -284,8 +284,8 @@ test_that("Simulation With Z", {
   psi <- 250
   tau <- 8/1000
   theta <- 250
-  max_admm_iter = 1
-  max_outer_iter = 1
+  max_admm_iter = 20
+  max_outer_iter = 2
   start <- Sys.time()
   Rprof("test.out", interval = .02)
   res <- cleverly(Y = Y,
@@ -293,14 +293,14 @@ test_that("Simulation With Z", {
                   subject_ids = individual,
                   lp = 0,
                   time = time,
-                  gammas = c(5, 5), # controls smoothness
+                  gammas = c(1, 1), # controls smoothness
                   tau = tau, # Controls cuttoff for highest shrinkage
                   theta = theta, # for lambda, but also for d
                   psi = psi, # controls clustering
                   C = 100,
                   max_admm_iter = max_admm_iter,
                   max_outer_iter = max_outer_iter,
-                  max_2_iter = 50,
+                  max_2_iter = 200,
                   epsilon_r = .001,
                   epsilon_d = .005,
                   epsilon_b = .001,
@@ -336,6 +336,7 @@ test_that("Simulation With Z", {
   unlist(res$d_list)
   unlist(res$r_list)
   res$admm_diffs
+
 
   # # admm parts:
   # purrr::map(res$r_list, unlist) # beta - beta - v
@@ -379,10 +380,10 @@ test_that("Simulation With Z", {
                   color = "Outer iteration")
 
   cluster_track <- res$cluster_list
-  purrr::imap_dfr(cluster_track,
-                  ~data.frame(cluster = purrr::map_dbl(.x, ~.x$no),
-                              run = .y)) %>%
-    dplyr::filter(run == max_outer_iter)
+  # purrr::imap_dfr(cluster_track,
+  #                 ~data.frame(cluster = purrr::map_dbl(.x, ~.x$no),
+  #                             run = .y)) %>%
+  #   dplyr::filter(run == max_outer_iter)
 
   # Cluster progress:
   cluster_track <- res$cluster_list

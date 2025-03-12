@@ -20,25 +20,16 @@ get_partials_ijl <- function(i,
                              l,
                              mi_vec,
                              i_index,
-                             K,
-                             Y,
+                             Y0,
                              Z,
                              B,
                              beta,
                              alpha_ij){
   Y_ij0 <- get_Y_ij0(i = i,
                      j = j,
-                     Y = Y,
+                     Y0 = Y0,
                      i_index = i_index)
   U_ij <- get_U_ij(alpha_ij = alpha_ij)
-  # U_ij <- get_U_ij(i = i,
-  #                  j = j,
-  #                  beta = beta,
-  #                  Z = Z,
-  #                  B = B,
-  #                  K = K,
-  #                  i_index = i_index,
-  #                  alpha_ij = alpha_ij)
   Z_ijl <- get_Z_ijl(i = i,
                      j = j,
                      l = l,
@@ -70,31 +61,30 @@ get_partials_ijl <- function(i,
 #'
 get_partials_il <- function(i,
                             l,
-                            Y,
+                            Y0,
                             Z,
                             B,
                             beta,
                             alpha_i,
                             mi_vec,
-                            i_index){
-  P <- ncol(B)
-  K <- ncol(Y)
+                            i_index,
+                            P,
+                            K){
   mi <- mi_vec[i]
   partials_il <- matrix(nrow = K*P, ncol = K*mi)
+
   for (j in 1:mi) {
     alpha_ij <- alpha_i[[j]]
-    partials_il[, ((j - 1)*K + 1):(j*K)] <-
-      get_partials_ijl(i = i,
-                       j = j,
-                       l = l,
-                       i_index = i_index,
-                       mi_vec = mi_vec,
-                       K = K,
-                       Y = Y,
-                       Z = Z,
-                       B = B,
-                       beta = beta,
-                       alpha_ij = alpha_ij)
+    partials_il[, ((j - 1)*K + 1):(j*K)] <- get_partials_ijl(i = i,
+                                                             j = j,
+                                                             l = l,
+                                                             i_index = i_index,
+                                                             mi_vec = mi_vec,
+                                                             Y0 = Y0,
+                                                             Z = Z,
+                                                             B = B,
+                                                             beta = beta,
+                                                             alpha_ij = alpha_ij)
   }
   return(partials_il)
 }
@@ -113,30 +103,32 @@ get_partials_il <- function(i,
 #'
 #' @returns
 #' @export
-get_partials_l_list <- function(Y,
+get_partials_l_list <- function(Y0,
                                 l,
                                 mi_vec,
                                 i_index,
                                 beta,
                                 alpha,
                                 Z,
-                                B){
-  M <- nrow(Y)
-  L <- ncol(Z) - 1
-  K <- ncol(Y)
+                                B,
+                                P,
+                                K){
   n <- length(mi_vec)
   partials_list <- list()
+
 
   for (i in 1:n) {
     partials_list[[i]] <- get_partials_il(i = i,
                                           l = l,
-                                          Y = Y,
+                                          Y0 = Y0,
                                           Z = Z,
                                           B = B,
                                           beta = beta,
                                           alpha_i = alpha[[i]],
                                           mi_vec = mi_vec,
-                                          i_index = i_index)
+                                          i_index = i_index,
+                                          P = P,
+                                          K = K)
   }
 
   return(partials_list)

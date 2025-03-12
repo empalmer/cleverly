@@ -48,6 +48,7 @@ algorithm1 <- function(Y,
   K <- ncol(Y)
   M <- nrow(Y)
 
+
   # Get indices for the non-cluster responses
   lp_minus <- setdiff(0:L , lp)
 
@@ -71,18 +72,17 @@ algorithm1 <- function(Y,
              P = P)
   #pre-calculate for computation speed.
   AtA <- crossprod(A)
+  Y0 <- rowSums(Y)
+
 
   # Initialize phi to be 1
   #Dirichlet Multinomial over dispersion parameter.
   phi <- 1
 
-  # Initialize beta vector to 0s.
-  # beta <- initialize_beta_count(K = K, L = L,
-  #                               P = P, B = B,
-  #                               Y = Y, Z = Z)
   # Initialize using Algorithm 2 for ALL responses
   zeros_beta <- matrix(0, nrow = K * P, ncol = L + 1)
   beta <- algorithm2(Y = Y,
+                     Y0 = Y0,
                      Z = Z,
                      mi_vec = mi_vec,
                      i_index = i_index,
@@ -96,7 +96,11 @@ algorithm1 <- function(Y,
                      max_2_iter = max_2_iter,
                      epsilon_2 = epsilon_2,
                      time = time,
-                     s = "Initial fit")
+                     s = "Initial fit",
+                     L = L,
+                     P = P,
+                     K = K,
+                     M = M)
 
   # y_hat_init <- estimate_y(beta = beta,
   #                          B = B,
@@ -136,32 +140,15 @@ algorithm1 <- function(Y,
   s <- 1
 
 
-  # hyperparameters <- get_hyperparameters(
-  #   Y = Y,
-  #   Z, mi_vec, lp, B, D, K, P)
 
-  # pb_outer <- utils::txtProgressBar(min = 0,
-  #                             max = max_outer_iter,
-  #                             style = 3)
-  # pb_outer <- progress::progress_bar$new(
-  #   format = "Outer Loop [:bar] :percent (:current/:total)",
-  #   total = max_outer_iter, clear = FALSE, width = 50
-  # )
-  #
-  # pb_admm <- progress::progress_bar$new(
-  #   format = "  Inner Loop [:bar] :percent (:current/:total)",
-  #   total = max_admm_iter, clear = TRUE, width = 50
-  # )
-
-  #pb_outer$tick(0)
   for (s in 1:max_outer_iter) {
 
     # Go straight to ADMM code if there is no external variables
     if (L > 0) {
       # Solution for l_p minus, with l_p fixed
-
       beta_lp_minus <- tryCatch({
         algorithm2(Y = Y,
+                   Y0 = Y0,
                    Z = Z,
                    mi_vec = mi_vec,
                    i_index = i_index,
@@ -175,7 +162,10 @@ algorithm1 <- function(Y,
                    max_2_iter = max_2_iter,
                    epsilon_2 = epsilon_2,
                    time = time,
-                   s = s)
+                   s = s,
+                   L = L,
+                   P = P,
+                   K = K)
       }, error = function(e) {
         print(paste0("ERROR!!!!: ", e$message))
         return(e$message)
@@ -192,6 +182,7 @@ algorithm1 <- function(Y,
     # Solution for l p (ADMM) with beta l_p minus fixed
     alg3 <- tryCatch({
       algorithm3(Y = Y,
+                 Y0 = Y0,
                  Z = Z,
                  lp = lp,
                  B = B,
@@ -213,7 +204,10 @@ algorithm1 <- function(Y,
                  epsilon_r = epsilon_r,
                  epsilon_d = epsilon_d,
                  max_admm_iter = max_admm_iter,
-                 s = s)
+                 s = s,
+                 K = K,
+                 L = L,
+                 M = M)
     }, error = function(e) {
       print(paste0("ERROR!!!!: ", e$message))
       return(e$message)
@@ -227,13 +221,25 @@ algorithm1 <- function(Y,
       break
     }
 
+    alpha <- get_alpha_list(beta = beta,
+                            Z = Z,
+                            B = B,
+                            K = K,
+                            i_index = i_index,
+                            mi_vec = mi_vec,
+                            L = L,
+                            P = P)
+
     phi <- get_phi(Y = Y,
+                   Y0 = Y0,
                    beta = beta,
+                   alpha = alpha,
                    Z = Z,
                    B = B,
                    K = ncol(Y),
                    mi_vec = mi_vec,
-                   i_index = i_index)
+                   i_index = i_index,
+                   M = M)
 
 
     beta_lp <- alg3$beta

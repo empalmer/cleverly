@@ -19,7 +19,7 @@
 #'
 get_dHessian_il <- function(i,
                             l,
-                            Y,
+                            Y0,
                             mi_vec,
                             i_index,
                             beta,
@@ -28,18 +28,21 @@ get_dHessian_il <- function(i,
                             phi,
                             Vi_inv,
                             partials_il,
-                            alpha_i){
+                            alpha_i,
+                            K,
+                            P){
   # Third term:
-  K <- ncol(Y)
   partials_il <- get_partials_il(i = i,
                                 l = l,
-                                Y = Y,
+                                Y0 = Y0,
                                 mi_vec = mi_vec,
                                 i_index = i_index,
                                 beta = beta,
                                 Z = Z,
                                 B = B,
-                                alpha_i = alpha_i)
+                                K = K,
+                                alpha_i = alpha_i,
+                                P = P)
 
   if (missing(Vi_inv)) {
     stop("Missing Vi inverse argument")
@@ -81,7 +84,7 @@ get_dHessian_il <- function(i,
 #' @export
 #'
 get_Hessian_l <- function(l,
-                          Y,
+                          Y0,
                           mi_vec,
                           i_index,
                           beta,
@@ -91,15 +94,18 @@ get_Hessian_l <- function(l,
                           C,
                           V_inv,
                           partials_l,
-                          alpha) {
+                          alpha,
+                          P,
+                          K) {
   n <- length(mi_vec)
   #hessian_l <- matrix(0, nrow = nrow(beta), ncol = nrow(beta))
-  d_hessian_l <- numeric(nrow(beta))
+  d_hessian_l <- numeric(P * K)
+
   # Hessian will be diagonalized, so we can treat it as a vector
   for (i in 1:n) {
     dhessian_il <- get_dHessian_il(i = i,
                                    l = l,
-                                   Y = Y,
+                                   Y0 = Y0,
                                    mi_vec = mi_vec,
                                    i_index = i_index,
                                    beta = beta,
@@ -108,7 +114,9 @@ get_Hessian_l <- function(l,
                                    phi = phi,
                                    Vi_inv = V_inv[[i]],
                                    partials_il = partials_l[[i]],
-                                   alpha_i = alpha[[i]])
+                                   alpha_i = alpha[[i]],
+                                   P = P,
+                                   K = K)
     d_hessian_l <- d_hessian_l + dhessian_il
   }
 
