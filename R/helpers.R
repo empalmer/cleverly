@@ -389,11 +389,10 @@ get_alpha_ij <- function(i, j, beta, Z, B, K, i_index, L, P) {
                    i_index = i_index)
 
   # Z_ij is a vector of length L
-  Z_ij <- purrr::map_dbl(0:L, ~get_Z_ijl(i = i,
-                                        j = j,
-                                        l = .x,
-                                        Z = Z,
-                                        i_index = i_index))
+  Z_ij <- numeric(L + 1)
+  for (l in 0:L) {
+    Z_ij[l + 1] <- get_Z_ijl(i = i, j = j, l = l, Z = Z, i_index = i_index)
+  }
   alphas <- numeric(K)
   for (k in 1:K) {
     alphas[k] <- get_alpha_ijk(i = i,

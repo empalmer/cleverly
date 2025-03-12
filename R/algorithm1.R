@@ -104,33 +104,12 @@ algorithm1 <- function(Y,
                      K = K,
                      M = M)
 
-  # y_hat_init <- estimate_y(beta = beta,
-  #                          B = B,
-  #                          Z = Z,
-  #                          K = K,
-  #                          Y = Y,
-  #                          time = time)
-  # browser()
-  # y_hat_init %>%
-  #   dplyr::mutate(response = factor(response, levels = 1:12)) %>%
-  #   ggplot2::ggplot(ggplot2::aes(x = time)) +
-  #   ggplot2::geom_point(ggplot2::aes(y = y,
-  #                                    color = factor(Z),
-  #                                    shape = factor(Z)),
-  #                       size = .6, alpha = .8) +
-  #   ggplot2::geom_line(ggplot2::aes(y = yhat,
-  #                                   color = factor(Z),
-  #                                   group = factor(Z)),
-  #                      linewidth = 1) +
-  #   ggplot2::facet_wrap(~response)
-
-
 
   # Initialize lambda to all 0
   lambda <- numeric(nrow(Kappa)*P)
   # loop initialization
   error <- NULL
-  loop_list_beta <- list()
+  alg1_beta <- list()
   loop_list_diff <- list()
   admm_beta_list <- list()
   admm_diffs <- list()
@@ -145,41 +124,6 @@ algorithm1 <- function(Y,
 
   for (s in 1:max_outer_iter) {
 
-    # Go straight to ADMM code if there is no external variables
-    if (L > 0) {
-      # Solution for l_p minus, with l_p fixed
-      beta_lp_minus <- tryCatch({
-        algorithm2(Y = Y,
-                   Y0 = Y0,
-                   Z = Z,
-                   mi_vec = mi_vec,
-                   i_index = i_index,
-                   lp = lp,
-                   B = B,
-                   beta = beta,
-                   D = D,
-                   gammas = gammas,
-                   phi = phi,
-                   C = C,
-                   max_2_iter = max_2_iter,
-                   epsilon_2 = epsilon_2,
-                   time = time,
-                   s = s,
-                   L = L,
-                   P = P,
-                   K = K)
-      }, error = function(e) {
-        print(paste0("ERROR!!!!: ", e$message))
-        return(e$message)
-      })
-    } else {
-      beta_lp_minus <- beta
-    }
-    # If there is an error, exit out of the loop
-    if (is.character(beta_lp_minus)) {
-      error <- beta_lp_minus
-      break
-    }
 
     # Solution for l p (ADMM) with beta l_p minus fixed
     alg3 <- tryCatch({
@@ -188,7 +132,7 @@ algorithm1 <- function(Y,
                  Z = Z,
                  lp = lp,
                  B = B,
-                 beta = beta_lp_minus,
+                 beta = beta,
                  lambda = lambda,
                  A = A,
                  AtA = AtA,
@@ -218,12 +162,48 @@ algorithm1 <- function(Y,
       error <- alg3
       break
     }
+
+
+
+    # Go straight to ADMM code if there is no external variables
+    if (L > 0) {
+      # Solution for l_p minus, with l_p fixed
+      beta_lp_minus <- tryCatch({
+        algorithm2(Y = Y,
+                   Y0 = Y0,
+                   Z = Z,
+                   mi_vec = mi_vec,
+                   i_index = i_index,
+                   lp = lp,
+                   B = B,
+                   beta = alg3$beta,
+                   D = D,
+                   gammas = gammas,
+                   phi = phi,
+                   C = C,
+                   max_2_iter = max_2_iter,
+                   epsilon_2 = epsilon_2,
+                   time = time,
+                   s = s,
+                   L = L,
+                   P = P,
+                   K = K,
+                   M = M)
+      }, error = function(e) {
+        print(paste0("ERROR!!!!: ", e$message))
+        return(e$message)
+      })
+    } else {
+      beta_lp_minus <- beta
+    }
+    # If there is an error, exit out of the loop
     if (is.character(beta_lp_minus)) {
       error <- beta_lp_minus
       break
     }
 
-    alpha <- get_alpha_list(beta = beta,
+
+    alpha <- get_alpha_list(beta = beta_lp_minus,
                             Z = Z,
                             B = B,
                             K = K,
@@ -234,7 +214,7 @@ algorithm1 <- function(Y,
 
     phi <- get_phi(Y = Y,
                    Y0 = Y0,
-                   beta = beta,
+                   beta = beta_lp_minus,
                    alpha = alpha,
                    Z = Z,
                    B = B,
@@ -244,18 +224,20 @@ algorithm1 <- function(Y,
                    M = M)
 
 
-    beta_lp <- alg3$beta
-    admm_beta_list[[s]] <- alg3$beta_admm_track
+
+
+
+    # Difference in betas between this loop and the last
+    diff <- sum(abs(alg3$beta - beta)) # matrix difference
+
+    beta <- alg3$beta
     lambda <- alg3$lambda
     v <- alg3$v
 
-    # Difference in betas between this loop and the last
-    diff <- sum(abs(beta_lp - beta)) # matrix difference
-    beta <- beta_lp
-
-    loop_list_beta[[s]] <- beta
+    alg1_beta[[s]] <- beta
     loop_list_diff[[s]] <- diff
     admm_diffs[[s]] <- alg3$diff_admm
+    admm_beta_list[[s]] <- alg3$beta_admm_track
     phis_list[[s]] <- alg3$phi_track
     r_list[[s]] <- alg3$r_list
     d_list[[s]] <- alg3$d_list
@@ -281,7 +263,7 @@ algorithm1 <- function(Y,
                       time = time)
 
 
-  BIC <- BIC_cluster(y_ra_df= y_hat,
+  BIC <- BIC_cluster(y_ra_df = y_hat,
                      K = K,
                      n_clusters = clusters$no,
                      mi_vec = mi_vec,
@@ -295,7 +277,7 @@ algorithm1 <- function(Y,
               B = B,
               admm_diffs = admm_diffs,
               admm_beta_list = admm_beta_list,
-              loop_list_beta = loop_list_beta,
+              alg1_beta = alg1_beta,
               loop_list_diff = loop_list_diff,
               cluster_list = cluster_list,
               phis_list = phis_list,
