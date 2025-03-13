@@ -351,7 +351,7 @@ update_beta_admm <- function(Y,
 
 
   # Things we need to calculate new beta:
-  H <- get_Hessian_l(l = lp,
+  H <- get_DHessian_l(l = lp,
                      Y0 = Y0,
                      mi_vec = mi_vec,
                      i_index = i_index,

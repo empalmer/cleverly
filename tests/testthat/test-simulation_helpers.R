@@ -281,11 +281,11 @@ test_that("Simulation With Z", {
 
 
 
-  psi <- 400
+  psi <- 450
   tau <- 0.01
   theta <- 200
-  max_admm_iter = 50
-  max_outer_iter = 2
+  max_admm_iter = 100
+  max_outer_iter = 3
   start <- Sys.time()
   Rprof("test.out", interval = .02)
   res <- cleverly(Y = Y,
@@ -489,13 +489,32 @@ test_that("psi BIC", {
     "Z"))
   Z <- sim$Z
 
-  try <- data.frame(x = 1:3, y = 4:6, z = 7:9)
-  test <- furrr::future_pmap(try, ~mean(c(..1, ..2, ..3)))
 
 
+  start <- Sys.time()
+  #future::plan(multisession, workers = 8)
+  psis <- seq(100, 600, by = 50)
+  future::plan(multisession, workers = 8)
+  res_list <- furrr::future_map(psis, ~cleverly(Y = Y,
+                                         Z = Z,
+                                         subject_ids = individual,
+                                         lp = 0,
+                                         time = time,
+                                         gammas = c(5,5),
+                                         tau = 0.01,
+                                         theta = 200,
+                                         psi = .x,
+                                         C = 100,
+                                         max_outer_iter = 3,
+                                         max_admm_iter = 100,
+                                         epsilon_r = .001,
+                                         epsilon_d = .05,
+                                         epsilon_b = .001))
+  end <- Sys.time()
+  (duration <- end - start)
 
-  psis <- c(1100, 1200)
-  taus <- c(.2, .25)
+  psis <- c(200, 400, 500)
+  taus <- c(.001, .01, .05)
   thetas <- c(150, 200)
   max_admm_iter = 100
   max_outer_iter = 60
@@ -534,21 +553,13 @@ test_that("psi BIC", {
   psi <- hyps[best,1]
   theta <- hyps[best, 3]
 
+  purrr::map_dbl(res_list, ~.x$clusters$no)
+  purrr::map_dbl(res_list, ~.x$clusters$no)[best]
+  psis[best]
+
   y_hat <- res$y_hat
-  # Examine convergence:
-  # Algorithm 1 iterations
-  (s <- length(res$admm_beta_list))
-  # Algorithm 3 admm iterations
-  (t <- purrr::map_dbl(res$admm_beta_list, length))
 
-  # # admm parts:
-  # purrr::map(res$r_list, unlist) # beta - beta - v
-  # purrr::map(res$d_list, unlist) # sum of vs
-  # # backfitting parts:
-  # unlist(res$loop_list_diff)
-
-
-
+  res <- res_list[[11]]
 
   # D convergence
   purrr::imap_dfr(res$d_list,
