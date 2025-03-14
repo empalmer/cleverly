@@ -31,7 +31,7 @@ Dirichlet.multinomial <- function(Y0, alpha) {
 #' User defined correlation structure
 #'
 #' @param mi number of timepoints for ith sample
-#' @param user_var ??
+#' @param user_var 1: compound symmetry, 2: autoregressive, 3: indepdendent
 #' @param structure Type of correlation 1 for (?) 2 for (?)
 #' @param al ??
 #'
@@ -45,6 +45,9 @@ cor_user <- function(mi, user_var, structure, al) {
     need1 <- matrix(rep(1:mi, each = mi), nrow = mi)
     need2 <- matrix(rep(1:mi, each = mi), ncol = mi, byrow = TRUE)
     cor <- al^abs(need1 - need2) * user_var
+  }
+  if (structure == 3) {
+    cor <- diag(mi) * user_var
   }
   return(cor)
 }
@@ -286,8 +289,9 @@ sim_Z_longitudinal <- function(n = 20,
                                K = 12,
                                order = 3,
                                user_var = 1000,
-                               structure = 1,
-                               al = 0.4
+                               structure = 3,
+                               al = 0.4,
+                               miss_p = 0.6
 ){
   # Time points are a sequence between 0 and 1
   time <- seq(0, 1, 0.05)
@@ -296,7 +300,7 @@ sim_Z_longitudinal <- function(n = 20,
   ranges <- range_start:range_end
 
   # How many missing times?
-  miss_n <- seq(0.6, 1, by = 0.1)
+  miss_n <- seq(miss_p, 1, by = 0.1)
 
   # Set up the longitudinal correlation structure
   # What are these numbers?

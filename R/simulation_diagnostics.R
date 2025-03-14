@@ -125,3 +125,142 @@ beta_path <- function(betas, K, B, Z, time){
                   y = "ra")
 
 }
+
+
+
+
+plot_clusters <- function(res, K, tau, psi, theta, max_admm_iter, max_outer_iter){
+  cluster_df <- data.frame(
+    K = factor(1:K, levels = 1:K),
+    cluster = factor(res$clusters$membership))
+
+  y_hat <- res$y_hat
+  # plot clusters
+  plot <- y_hat %>%
+    dplyr::mutate(response = factor(response, levels = 1:K)) %>%
+    dplyr::left_join(cluster_df, by = c("response" = "K")) %>%
+    dplyr::mutate(clusterZ = ifelse(Z == 1, "EV", cluster)) %>%
+    ggplot2::ggplot(ggplot2::aes(x = time)) +
+    ggplot2::geom_point(ggplot2::aes(y = y,
+                                     color = factor(Z),
+                                     shape = factor(Z)),
+                        size = .6, alpha = .8) +
+    ggnewscale::new_scale_color() +
+    ggplot2::geom_line(ggplot2::aes(y = yhat,
+                                    color = clusterZ,
+                                    group = factor(Z)),
+                       linewidth = 1) +
+    ggplot2::facet_wrap(~response) +
+    ggplot2::scale_color_manual(
+      # values = c(RColorBrewer::brewer.pal(n = length(unique(cluster_df$cluster)),
+      #                       name = "Set1"),
+      #            "grey50"),
+      #values = c(rcartocolor::carto_pal(length(unique(cluster_df$cluster)),
+      #                                  "Safe"),
+      #           "grey50"),
+      values = c(viridis::viridis(length(unique(cluster_df$cluster))), "grey50"),
+      name = "Cluster"
+    ) +
+    ggplot2::labs(subtitle   = paste0("psi:",psi,
+                                      ", tau:",round(tau,2),
+                                      ", theta:",theta,
+                                      ", admm_iter:",max_admm_iter,
+                                      ", outer_iter:",max_outer_iter))
+
+  return(plot)
+
+}
+
+
+plot_initial_fit <- function(res, K, gammas){
+  # Initial fit:
+  y_hat_init <- res$y_hat_init
+  # plot clusters
+  plot <- y_hat_init %>%
+    dplyr::mutate(response = factor(response, levels = 1:K)) %>%
+    ggplot2::ggplot(ggplot2::aes(x = time)) +
+    ggplot2::geom_point(ggplot2::aes(y = y,
+                                     color = factor(Z),
+                                     shape = factor(Z)),
+                        size = .6, alpha = .8) +
+    ggplot2::geom_line(ggplot2::aes(y = yhat,
+                                    color = factor(Z),
+                                    group = factor(Z)),
+                       linewidth = 1) +
+    ggplot2::facet_wrap(~response) +
+    ggplot2::labs(subtitle   = paste0("gammas:",gammas))
+
+  return(plot)
+}
+
+
+plot_cluster_path <- function(res, psi, tau, theta, max_admm_iter, max_outer_iter, duration){
+  # Cluster progress:
+  cluster_track <- res$cluster_list
+  plot <- purrr::imap_dfr(cluster_track,
+                  ~data.frame(cluster = purrr::map_dbl(.x, ~.x$no),
+                              run = .y)) %>%
+    dplyr::mutate(row = dplyr::row_number()) %>%
+    ggplot2::ggplot(ggplot2::aes(x = row, y = cluster, color = factor(run))) +
+    ggplot2::geom_line() +
+    ggplot2::geom_hline(yintercept = 3, linetype = 2) +
+    ggplot2::labs(x = "Overall Iteration",
+                  y = "Number of Clusters",
+                  title = "Cluster Progress",
+                  subtitle = paste("psi:",psi,
+                                   ",tau:",round(tau,2),
+                                   "theta:",theta,
+                                   ",admm_iter:",max_admm_iter,
+                                   "outer_iter:",max_outer_iter,
+                                   "time:", duration),
+                  color = "Outer iteration")
+
+  return(plot)
+}
+
+
+plot_alg2_convergence <- function(res){
+  # alg2 convergence
+  plot <- purrr::imap_dfr(res$alg_2_beta_diff,
+                  ~data.frame(cluster = unlist(.x),
+                              run = .y)) %>%
+    dplyr::mutate(row = dplyr::row_number()) %>%
+    ggplot2::ggplot(ggplot2::aes(x = row, y = cluster, color = factor(run))) +
+    ggplot2::geom_line() +
+    ggplot2::labs(x = "Overall Iteration",
+                  y = "ss beta",
+                  title = "Algorithm 2 beta diffs",
+                  color = "Outer iteration")
+
+  return(plot)
+}
+
+
+plot_d_convergence <- function(res){
+  plot <- purrr::imap_dfr(res$d_list,
+                  ~data.frame(cluster = unlist(.x),
+                              run = .y)) %>%
+    dplyr::mutate(row = dplyr::row_number()) %>%
+    ggplot2::ggplot(ggplot2::aes(x = row, y = cluster, color = factor(run))) +
+    ggplot2::geom_line() +
+    ggplot2::labs(x = "Overall Iteration",
+                  y = "d ",
+                  title = "ADMM: d (differnce in v between s and s+1)",
+                  color = "Outer iteration")
+  return(plot)
+}
+
+plot_r_convergence <- function(res){
+  plot <- purrr::imap_dfr(res$r_list,
+                  ~data.frame(cluster = unlist(.x),
+                              run = .y)) %>%
+    dplyr::mutate(row = dplyr::row_number()) %>%
+    ggplot2::ggplot(ggplot2::aes(x = row, y = cluster, color = factor(run))) +
+    ggplot2::geom_line() +
+    ggplot2::labs(x = "Overall Iteration",
+                  y = "r",
+                  title = "ADMM: r = beta_k - beta_k' - v_kappa",
+                  color = "Outer iteration")
+
+  return(plot)
+}
