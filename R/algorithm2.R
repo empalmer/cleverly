@@ -121,7 +121,7 @@ algorithm2 <- function(Y,
                                    partials_l = partials_l,
                                    K = K,
                                    P = P)
-      Hessian_l <- get_DHessian_l(l = l,
+      Hessian_l <- get_Hessian_l(l = l,
                                  Y0 = Y0,
                                  mi_vec = mi_vec,
                                  i_index = i_index,
@@ -142,16 +142,11 @@ algorithm2 <- function(Y,
 
       second_term <- gradient_l - Hessian_l %*% beta_l
 
-
       #beta_l_s <- Matrix::Matrix(first_term_inv, sparse = T) %*% second_term
       beta_l_s <- MASS::ginv(first_term) %*% second_term
 
-
       # Update:
       beta[,l + 1] <- as.numeric(beta_l_s)
-
-
-
     }
     beta_diff <- sum((beta - beta_old)^2)
     beta_diffs[[r]] <- beta_diff

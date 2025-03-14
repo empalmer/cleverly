@@ -105,6 +105,7 @@ algorithm1 <- function(Y,
                      M = M)
   beta <- beta_init$beta
 
+
   # Initialize lambda to all 0
   lambda <- numeric(nrow(Kappa)*P)
   # loop initialization
@@ -207,10 +208,6 @@ algorithm1 <- function(Y,
       stop("Error in algorithm 3")
     }
 
-
-
-
-
     beta <- alg3$beta
     lambda <- alg3$lambda
     v <- alg3$v
@@ -220,7 +217,7 @@ algorithm1 <- function(Y,
     # admm_diffs[[s]] <- alg3$diff_admm
     # admm_beta_list[[s]] <- alg3$beta_admm_track
     # phis_list[[s]] <- alg3$phi_track
-    rs[[s+1]] <- alg2$r
+    rs[[s + 1]] <- alg2$r
     ts[[s]] <- alg3$t
     r_list[[s]] <- alg3$r_list
     d_list[[s]] <- alg3$d_list
@@ -257,6 +254,7 @@ algorithm1 <- function(Y,
   }
 
 
+  #browser()
 
   # After loop:
   # Calculate v for the last time (since v is updated before beta in admm)
@@ -268,11 +266,12 @@ algorithm1 <- function(Y,
                 gammas = gammas,
                 tau = tau,
                 theta = theta,
-                psi = psi)
+                psi = psi)$v
   # Calculte estimated ys and clusters
   clusters <- get_clusters(v = v,
                            K = K,
                            P = P)
+
   # This is in relative abundance
   y_hat <- estimate_y(beta = beta,
                       B = B,
@@ -304,6 +303,7 @@ algorithm1 <- function(Y,
               B = B,
               rs = rs,
               ts = ts,
+              u_list = alg3$u_list,
               admm_diffs = admm_diffs,
               admm_beta_list = admm_beta_list,
               alg1_beta = alg1_beta,
@@ -410,7 +410,6 @@ get_clusters <- function(v, K, P) {
   j <- index[connected_ix, 2]
   A <- matrix(0, nrow = K, ncol = K)
   A[(j - 1) * K + i] <- 1
-
 
   # Make graph from adjacency matrix
   graph <- igraph::graph_from_adjacency_matrix(

@@ -68,6 +68,7 @@ algorithm3 <- function(Y,
   lambda_admm_track <- list()
   cluster_list <- list()
   r_list <- list()
+  u_list <- list()
   d_list <- list()
   diff_admm <- numeric(max_admm_iter)
   phi_track <- numeric(max_admm_iter)
@@ -105,6 +106,7 @@ algorithm3 <- function(Y,
                    i_index = i_index,
                    M = M)
 
+
     v_new <- update_v(beta = beta,
                       lp = lp,
                       lambda = lambda,
@@ -119,7 +121,7 @@ algorithm3 <- function(Y,
                                  beta = beta,
                                  alpha = alpha,
                                  lp = lp,
-                                 v = v_new,
+                                 v = v_new$v,
                                  lambda = lambda,
                                  theta = theta,
                                  gammas = gammas,
@@ -136,7 +138,7 @@ algorithm3 <- function(Y,
                                  P = P,
                                  L = L)
     lambda_new <- update_lambda(beta_lp = beta_new[,lp + 1],
-                                v = v_new,
+                                v = v_new$v,
                                 lambda = lambda,
                                 A = A,
                                 theta = theta)
@@ -148,20 +150,20 @@ algorithm3 <- function(Y,
     beta_admm_track[[t]] <- beta_new
     v_admm_track[[t]] <- v_new
     lambda_admm_track[[t]] <- lambda_new
-    cluster_list[[t]] <- get_clusters(v_new, K, P)
-
+    cluster_list[[t]] <- get_clusters(v_new$v, K, P)
+    u_list[[t]] <- v_new$u_list
 
     # Check for convergence
     diff_admm[t] <- sum(abs(beta_new - beta))
 
     r_norm <- get_r_norm(
       beta = beta_new,
-      v = v_new,
+      v = v_new$v,
       Kappa = Kappa,
       P = P,
       lp = lp)
 
-    d_norm <- get_d_norm(v_new = v_new,
+    d_norm <- get_d_norm(v_new = v_new$v,
                          v = v,
                          theta = theta,
                          Kappa = Kappa,
@@ -178,7 +180,7 @@ algorithm3 <- function(Y,
 
 
     # Prepare for next iteration
-    v <- v_new
+    v <- v_new$v
     beta <- beta_new
     lambda <- lambda_new
     utils::setTxtProgressBar(pb_admm, t)
@@ -200,7 +202,8 @@ algorithm3 <- function(Y,
               phi_track = phi_track,
               diff_admm = diff_admm,
               r_list = r_list,
-              d_list = d_list))
+              d_list = d_list,
+              u_list = u_list))
 }
 
 
@@ -236,8 +239,11 @@ update_v <- function(beta,
   mcp <- tau * theta / (tau * theta - 1)
   sigma <- psi/theta
   v <- numeric(nrow(Kappa) * P)
+  u_list <- list()
 
+  #browser()
   for (kappa in 1:nrow(Kappa)) {
+
     # Get the pairwise betas
     k1 <- Kappa[kappa, 1]
     k2 <- Kappa[kappa, 2]
@@ -249,6 +255,9 @@ update_v <- function(beta,
     u <- beta_k1 - beta_k2 + lambda_kappa/theta
 
     norm_u <- sum(u^2) # or norm(u, type = "2")
+
+    u_list[[kappa]] <- u
+
     # Also check if the norm is 0 to avoid dividing by zero
     if (norm_u >= tau * psi | norm_u == 0) {
       v[((kappa - 1) * P + 1):(kappa * P)] <- u
@@ -261,7 +270,8 @@ update_v <- function(beta,
     stop("v is NaN")
   }
 
-  return(v)
+  return(list(v = v,
+              u_list = u_list))
 }
 
 
@@ -351,7 +361,7 @@ update_beta_admm <- function(Y,
 
 
   # Things we need to calculate new beta:
-  H <- get_DHessian_l(l = lp,
+  H <- get_Hessian_l(l = lp,
                      Y0 = Y0,
                      mi_vec = mi_vec,
                      i_index = i_index,

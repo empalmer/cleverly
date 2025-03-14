@@ -59,6 +59,9 @@ cleverly <- function(Y,
   if (tau * theta - 1 == 0) {
     stop("Tau and theta will cause MCP to be INF")
   }
+  if (tau <= (1/theta)) {
+    stop("No closed form solution for v with this tau theta combo")
+  }
   # Format Y
   Y_user <- Y
 
@@ -169,6 +172,7 @@ cleverly <- function(Y,
               v = result$v,
               ts = result$ts,
               rs = result$rs,
+              u_list = result$u_list,
               admm_diffs = result$admm_diffs,
               admm_beta_list = result$admm_beta_list,
               phis_list = result$phis_list,

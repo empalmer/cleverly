@@ -281,19 +281,20 @@ test_that("Simulation With Z", {
 
 
 
-  psi <- 300
-  tau <- 0.001
-  theta <- 200
-  max_admm_iter = 50
-  max_outer_iter = 1
+  #psi <- 10
+  tau <- 0.1
+  theta <- 3000
+  psi <- 1 * theta
+  max_admm_iter = 100
+  max_outer_iter = 10
   start <- Sys.time()
-  Rprof("test.out", interval = .02)
+  #Rprof("test.out", interval = .02)
   res <- cleverly(Y = Y,
                   Z = Z,
                   subject_ids = individual,
                   lp = 0,
                   time = time,
-                  gammas = c(5, 5), # controls smoothness
+                  gammas = c(100, 1000), # controls smoothness
                   tau = tau, # Controls cuttoff for highest shrinkage
                   theta = theta, # for lambda, but also for d
                   psi = psi, # controls clustering
@@ -304,12 +305,17 @@ test_that("Simulation With Z", {
                   epsilon_r = .001,
                   epsilon_d = .05,
                   epsilon_b = .001,
-                  epsilon_2 = .00001)
+                  epsilon_2 = .001)
   end <- Sys.time()
-  Rprof(NULL)
-  summaryRprof("test.out")$by.self[1:10,1:2]
+  #Rprof(NULL)
+  #summaryRprof("test.out")$by.self[1:10,1:2]
   (duration <- end - start)
   res$clusters$no
+
+  # check u values for this combo of psi, tau, theta
+  (mcp <- tau * theta / (tau * theta - 1))
+  (sigma <- psi/theta)
+  #purrr::map_dfc(res$u_list[[40]], ~ mcp * max(0, ( 1 - sigma/sum(.x^2))) * .x)
 
   # Cluster progress:
   cluster_track <- res$cluster_list
@@ -369,7 +375,6 @@ test_that("Simulation With Z", {
   # purrr::map(res$d_list, unlist) # sum of vs
   # # backfitting parts:
   # unlist(res$loop_list_diff)
-
 
   # alg2 convergence
   purrr::imap_dfr(res$alg_2_beta_diff,
@@ -492,26 +497,53 @@ test_that("psi BIC", {
 
 
   start <- Sys.time()
-  #future::plan(multisession, workers = 8)
-  psis <- seq(200, 600, by = 50)
-  future::plan(multisession, workers = 8)
-  res_list <- furrr::future_map(psis, ~cleverly(Y = Y,
+  psis <- seq(2500, 3000, by = 75)
+  res_list <- purrr::map(psis, ~cleverly(Y = Y,
                                          Z = Z,
                                          subject_ids = individual,
                                          lp = 0,
                                          time = time,
-                                         gammas = c(5,5),
-                                         tau = 0.01,
-                                         theta = 200,
-                                         psi = .x,
+                                         gammas = c(100, 1000), # controls smoothness
+                                         tau = .1, # Controls cuttoff for highest shrinkage
+                                         theta = 3000, # for lambda, but also for d
+                                         psi = .x, # controls clustering
                                          C = 100,
-                                         max_outer_iter = 3,
                                          max_admm_iter = 100,
+                                         max_outer_iter = 20,
+                                         max_2_iter = 100,
                                          epsilon_r = .001,
                                          epsilon_d = .05,
-                                         epsilon_b = .001))
+                                         epsilon_b = .001,
+                                         epsilon_2 = .001))
   end <- Sys.time()
   (duration <- end - start)
+
+
+  start <- Sys.time()
+  psis <- seq(3000, 3300, by = 75)
+  gammas <- c(5000, 10000)
+  hyps <- expand.grid(psi = psis,
+                      gammas = gammas)
+  res_list <- purrr::pmap(hyps, ~cleverly(Y = Y,
+                                         Z = Z,
+                                         subject_ids = individual,
+                                         lp = 0,
+                                         time = time,
+                                         gammas = c(.1*..2, ..2), # controls smoothness
+                                         tau = .1, # Controls cuttoff shrinkage
+                                         theta = 3000, # for lambda, but also for d
+                                         psi = ..1, # controls clustering
+                                         C = 100,
+                                         max_admm_iter = 100,
+                                         max_outer_iter = 10,
+                                         max_2_iter = 100,
+                                         epsilon_r = .001,
+                                         epsilon_d = .05,
+                                         epsilon_b = .001,
+                                         epsilon_2 = .001))
+  end <- Sys.time()
+  (duration <- end - start)
+
 
   psis <- c(200, 400, 500)
   taus <- c(.001, .01, .05)
@@ -559,7 +591,7 @@ test_that("psi BIC", {
   (psi <- psis[best])
 
   y_hat <- res$y_hat
-
+ß
   res <- res_list[[5]]
 
   # D convergence
@@ -591,11 +623,12 @@ test_that("psi BIC", {
     ggplot2::labs(x = "Overall Iteration",
                   y = "Number of Clusters",
                   title = "r = beta_k - beta_k' - v_kappa",
-                  subtitle = paste("psi:",psi,
-                                   ",tau:",round(tau,2),
-                                   "theta:",theta,
-                                   ",admm_iter:",max_admm_iter,
-                                   "outer_iter:",max_outer_iter,
+                  subtitle = paste("\u03A8: ", psi,
+                                   ",\u03C4:",round(tau,2),
+                                   ",\u03B8:",theta,
+                                   "gamma: ", gamma,
+                                   ",admm",max_admm_iter,
+                                   "outer",max_outer_iter,
                                    "time:", duration),
                   color = "Outer iteration")
 
