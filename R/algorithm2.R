@@ -121,7 +121,7 @@ algorithm2 <- function(Y,
                                    partials_l = partials_l,
                                    K = K,
                                    P = P)
-      Hessian_l <- get_Hessian_l(l = l,
+      Hessian_l <- get_DHessian_l(l = l,
                                  Y0 = Y0,
                                  mi_vec = mi_vec,
                                  i_index = i_index,

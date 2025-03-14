@@ -207,7 +207,7 @@ test_that("Simulation With Z", {
                            Capture.Number,
                            total_n, Z)) %>%
     dplyr::mutate(name = factor(name,
-                         levels = paste0("Taxa.", 1:12) )) %>%
+                         levels = paste0("Taxa.", 1:12))) %>%
     ggplot2::ggplot(ggplot2::aes(x = time,
                                  y = value,
                                  color = factor(Z))) +
@@ -262,9 +262,9 @@ test_that("Simulation With Z", {
   function_c()
   function_d <- function(){
     for (i in 1:n) {
-      for(j in 1:mi_vec[i])
-        for(l in 1:2){
-          val <- if(l == 1){1} else {get_Z_ijl(i, j, l - 1, Z_f, i_index)}
+      for (j in 1:mi_vec[i])
+        for (l in 1:2) {
+          val <- if (l == 1) {1} else {get_Z_ijl(i, j, l - 1, Z_f, i_index)}
           print(val)
         }
     }
@@ -281,11 +281,11 @@ test_that("Simulation With Z", {
 
 
 
-  psi <- 450
-  tau <- 0.01
+  psi <- 300
+  tau <- 0.001
   theta <- 200
-  max_admm_iter = 100
-  max_outer_iter = 3
+  max_admm_iter = 50
+  max_outer_iter = 1
   start <- Sys.time()
   Rprof("test.out", interval = .02)
   res <- cleverly(Y = Y,
@@ -304,7 +304,7 @@ test_that("Simulation With Z", {
                   epsilon_r = .001,
                   epsilon_d = .05,
                   epsilon_b = .001,
-                  epsilon_2 = .001)
+                  epsilon_2 = .00001)
   end <- Sys.time()
   Rprof(NULL)
   summaryRprof("test.out")$by.self[1:10,1:2]
@@ -493,7 +493,7 @@ test_that("psi BIC", {
 
   start <- Sys.time()
   #future::plan(multisession, workers = 8)
-  psis <- seq(100, 600, by = 50)
+  psis <- seq(200, 600, by = 50)
   future::plan(multisession, workers = 8)
   res_list <- furrr::future_map(psis, ~cleverly(Y = Y,
                                          Z = Z,
@@ -521,7 +521,6 @@ test_that("psi BIC", {
   hyps <- expand.grid(psi = psis,
                       taus = taus,
                       theta = thetas)
-
   start <- Sys.time()
   future::plan(multisession, workers = 8)
   res_list <- furrr::future_pmap(hyps, ~cleverly(Y = Y,
@@ -529,7 +528,7 @@ test_that("psi BIC", {
                                                  subject_ids = individual,
                                                  lp = 0,
                                                  time = time,
-                                                 gammas = c(100,100),
+                                                 gammas = c(5,5),
                                                  tau = ..2,
                                                  theta = ..3,
                                                  psi = ..1,
@@ -543,23 +542,25 @@ test_that("psi BIC", {
   (duration <- end - start)
 
 
-  purrr::map_dbl(res_list, ~.x$BIC)
-
-  best <- which.min(purrr::map_dbl(res_list, ~.x$BIC))
   hyps[best,]
+  psi <- hyps[best,1]
+  tau <- hyps[best,2]
+  theta <- hyps[best, 3]
+
+
+  purrr::map_dbl(res_list, ~.x$BIC)
+  best <- which.min(purrr::map_dbl(res_list, ~.x$BIC))
 
   res <- res_list[[best]]
-  tau <- hyps[best,2]
-  psi <- hyps[best,1]
-  theta <- hyps[best, 3]
+
 
   purrr::map_dbl(res_list, ~.x$clusters$no)
   purrr::map_dbl(res_list, ~.x$clusters$no)[best]
-  psis[best]
+  (psi <- psis[best])
 
   y_hat <- res$y_hat
 
-  res <- res_list[[11]]
+  res <- res_list[[5]]
 
   # D convergence
   purrr::imap_dfr(res$d_list,
