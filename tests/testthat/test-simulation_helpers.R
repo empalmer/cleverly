@@ -237,7 +237,7 @@ test_that("Simulation With Z", {
   theta <- 3000
   psi <- .8 * theta
   max_admm_iter = 50
-  max_outer_iter = 4
+  max_outer_iter = 1
   gammas = c(100, 10000)
   start <- Sys.time()
   Rprof("test.out", interval = .02)

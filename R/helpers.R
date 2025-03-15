@@ -357,6 +357,15 @@ get_alpha_ijk <- function(i, j, k, beta, Z_ij, B_ij, i_index, P, L) {
 
   # Compute alpha_ijk
   alpha_ijk <- exp(sum(lsum))
+
+
+  # alpha_ijk_cpp <- compute_alpha_ijk(beta,
+  #                                    k = k,
+  #                                    P = P,
+  #                                    Z_ij = Z_ij,
+  #                                    B_ij = B_ij)
+
+
   if (any(is.infinite(alpha_ijk))) {
     stop("Infinite alpha")
   }

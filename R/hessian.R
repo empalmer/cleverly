@@ -51,12 +51,12 @@ get_dHessian_il <- function(i,
     stop("Missing Vi inverse argument")
   }
 
-
+  hessian_il <- -fast_mat_mult3(partials_il, Vi_inv, t(partials_il))
   hessian_il <- -partials_il %*% tcrossprod(Vi_inv, partials_il)
 
   d_hessian_il <- diag(hessian_il)
   return(d_hessian_il)
-  #return(hessian_il)
+
 }
 
 #' Get hessian elements
@@ -113,7 +113,11 @@ get_Hessian_il <- function(i,
   }
 
 
-  hessian_il <- -partials_il %*% tcrossprod(Vi_inv, partials_il)
+
+  #hessian_il <- -partials_il %*% tcrossprod(Vi_inv, partials_il)
+  hessian_il <- -fast_mat_mult3(partials_il, Vi_inv, t(partials_il))
+
+
 
   return(hessian_il)
 }

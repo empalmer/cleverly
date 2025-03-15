@@ -59,7 +59,8 @@ algorithm2 <- function(Y,
     beta_old <- beta
     for (l in l_loop) {
       gamma_l <- gammas[l + 1]
-      beta_l <- beta[, l + 1]
+
+      beta_l <- beta[, l + 1, drop = F]
 
       # Things to be calculated once per loop/beta update
       # Which are: alpha, V inverse, and partials
@@ -136,14 +137,21 @@ algorithm2 <- function(Y,
                                  P = P,
                                  K = K)
 
-      # function of beta_l_list not beta_l
-      first_term <- -Hessian_l + gamma_l*D
-      first_term_inv <- MASS::ginv(first_term)
+      # # function of beta_l_list not beta_l
+      # first_term <- -Hessian_l + gamma_l*D
+      # first_term_inv <- MASS::ginv(first_term)
+      # #second_term <- gradient_l - Hessian_l %*% beta_l
+      # second_term <- gradient_l - fast_mat_mult2(Hessian_l,beta_l)
+      # #beta_l_s <- Matrix::Matrix(first_term_inv, sparse = T) %*% second_term
+      # #beta_l_s <- MASS::ginv(first_term) %*% second_term
+      # beta_l_s <- fast_mat_mult2(MASS::ginv(first_term), second_term)
 
-      second_term <- gradient_l - Hessian_l %*% beta_l
+      beta_l_s <- calculate_alg2(H = Hessian_l,
+                                 gamma = gamma_l,
+                                 D = D,
+                                 Q = gradient_l,
+                                 beta_l = beta_l)
 
-      #beta_l_s <- Matrix::Matrix(first_term_inv, sparse = T) %*% second_term
-      beta_l_s <- MASS::ginv(first_term) %*% second_term
 
       # Update:
       beta[,l + 1] <- as.numeric(beta_l_s)

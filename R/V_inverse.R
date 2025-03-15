@@ -13,6 +13,7 @@ get_V_ijj <- function(Y_ij0,
                       alpha_ij) {
 
   U_ij <- get_U_ij(alpha_ij = alpha_ij)
+
   V_ijj <- phi * Y_ij0 * U_ij
   return(V_ijj)
 }

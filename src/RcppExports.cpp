@@ -11,6 +11,21 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// calculate_alg2
+arma::vec calculate_alg2(const arma::mat& H, double gamma, const arma::mat& D, const arma::mat& Q, const arma::mat& beta_l);
+RcppExport SEXP _cleverly_calculate_alg2(SEXP HSEXP, SEXP gammaSEXP, SEXP DSEXP, SEXP QSEXP, SEXP beta_lSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type H(HSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type D(DSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Q(QSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type beta_l(beta_lSEXP);
+    rcpp_result_gen = Rcpp::wrap(calculate_alg2(H, gamma, D, Q, beta_l));
+    return rcpp_result_gen;
+END_RCPP
+}
 // fast_mat_mult2
 arma::mat fast_mat_mult2(const arma::mat& A, const arma::mat& B);
 RcppExport SEXP _cleverly_fast_mat_mult2(SEXP ASEXP, SEXP BSEXP) {
@@ -23,22 +38,72 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// fast_mat_mult
-arma::mat fast_mat_mult(const arma::mat& A, const arma::mat& B);
-RcppExport SEXP _cleverly_fast_mat_mult(SEXP ASEXP, SEXP BSEXP) {
+// calculate_beta_lp_new
+arma::vec calculate_beta_lp_new(const arma::mat& H, double gamma, const arma::mat& D, double theta, const arma::mat& AtA, const arma::mat& Q, const arma::mat& beta_lp, const arma::mat& A, const arma::mat& v_tilde);
+RcppExport SEXP _cleverly_calculate_beta_lp_new(SEXP HSEXP, SEXP gammaSEXP, SEXP DSEXP, SEXP thetaSEXP, SEXP AtASEXP, SEXP QSEXP, SEXP beta_lpSEXP, SEXP ASEXP, SEXP v_tildeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type H(HSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type D(DSEXP);
+    Rcpp::traits::input_parameter< double >::type theta(thetaSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type AtA(AtASEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Q(QSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type beta_lp(beta_lpSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type v_tilde(v_tildeSEXP);
+    rcpp_result_gen = Rcpp::wrap(calculate_beta_lp_new(H, gamma, D, theta, AtA, Q, beta_lp, A, v_tilde));
+    return rcpp_result_gen;
+END_RCPP
+}
+// compute_alpha_ijk
+double compute_alpha_ijk(const arma::mat& beta, int k, int P, const arma::vec& Z_ij, const arma::vec& B_ij);
+RcppExport SEXP _cleverly_compute_alpha_ijk(SEXP betaSEXP, SEXP kSEXP, SEXP PSEXP, SEXP Z_ijSEXP, SEXP B_ijSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    Rcpp::traits::input_parameter< int >::type P(PSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type Z_ij(Z_ijSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type B_ij(B_ijSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_alpha_ijk(beta, k, P, Z_ij, B_ij));
+    return rcpp_result_gen;
+END_RCPP
+}
+// get_U_ij_cpp
+arma::mat get_U_ij_cpp(const arma::vec& alpha_ij);
+RcppExport SEXP _cleverly_get_U_ij_cpp(SEXP alpha_ijSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type alpha_ij(alpha_ijSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_U_ij_cpp(alpha_ij));
+    return rcpp_result_gen;
+END_RCPP
+}
+// fast_mat_mult3
+arma::mat fast_mat_mult3(const arma::mat& A, const arma::mat& B, const arma::mat& C);
+RcppExport SEXP _cleverly_fast_mat_mult3(SEXP ASEXP, SEXP BSEXP, SEXP CSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type B(BSEXP);
-    rcpp_result_gen = Rcpp::wrap(fast_mat_mult(A, B));
+    Rcpp::traits::input_parameter< const arma::mat& >::type C(CSEXP);
+    rcpp_result_gen = Rcpp::wrap(fast_mat_mult3(A, B, C));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_cleverly_calculate_alg2", (DL_FUNC) &_cleverly_calculate_alg2, 5},
     {"_cleverly_fast_mat_mult2", (DL_FUNC) &_cleverly_fast_mat_mult2, 2},
-    {"_cleverly_fast_mat_mult", (DL_FUNC) &_cleverly_fast_mat_mult, 2},
+    {"_cleverly_calculate_beta_lp_new", (DL_FUNC) &_cleverly_calculate_beta_lp_new, 9},
+    {"_cleverly_compute_alpha_ijk", (DL_FUNC) &_cleverly_compute_alpha_ijk, 5},
+    {"_cleverly_get_U_ij_cpp", (DL_FUNC) &_cleverly_get_U_ij_cpp, 1},
+    {"_cleverly_fast_mat_mult3", (DL_FUNC) &_cleverly_fast_mat_mult3, 3},
     {NULL, NULL, 0}
 };
 

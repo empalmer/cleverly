@@ -342,9 +342,10 @@ estimate_y <- function(beta, B, Z, K, Y, time){
     y_k <- numeric(M)
     for (l in 0:L) {
 
-      beta_k <- beta[((k - 1)*P + 1):(k*P), l + 1]
+      beta_k <- beta[((k - 1)*P + 1):(k*P), l + 1, drop = F]
       Z_l <- diag(Z[,l + 1])
-      y_k <- y_k + Z_l %*% B %*% beta_k
+      #y_k <- y_k + Z_l %*% B %*% beta_k
+      y_k <- y_k + fast_mat_mult3(Z_l, B, beta_k)
     }
     yhat[,k] <- y_k
 
