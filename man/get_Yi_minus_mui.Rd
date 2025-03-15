@@ -4,7 +4,7 @@
 \alias{get_Yi_minus_mui}
 \title{Get the Yi minus mui term of the gradient}
 \usage{
-get_Yi_minus_mui(i, Y, mi_vec, i_index, beta, Z, B, K)
+get_Yi_minus_mui(i, Y, Y0, alpha, mi_vec, i_index, K)
 }
 \arguments{
 \item{i}{subject index}
@@ -13,13 +13,7 @@ get_Yi_minus_mui(i, Y, mi_vec, i_index, beta, Z, B, K)
 
 \item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
 
-\item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
-
-\item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
-
-\item{B}{B spline basis matrix of dimension (N x P)}
-
-\item{K}{Number of responses}
+\item{K}{}
 }
 \value{
 Vector of length Kmi

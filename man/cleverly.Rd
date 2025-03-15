@@ -11,6 +11,7 @@ cleverly(
   time,
   lp = 0,
   response_type = "counts",
+  cor_str = "independent",
   gammas,
   psi,
   tau = 8/100,
@@ -19,11 +20,13 @@ cleverly(
   d = 2,
   nknots = 3,
   order = 3,
-  epsilon_b = 1e-06,
-  epsilon_r = 1e-06,
-  epsilon_d = 1e-06,
+  epsilon_b = 0.001,
+  epsilon_r = 0.001,
+  epsilon_d = 0.001,
   max_outer_iter = 10,
-  max_admm_iter = 100
+  max_admm_iter = 100,
+  max_2_iter = 100,
+  epsilon_2 = 0.001
 )
 }
 \arguments{
@@ -38,6 +41,8 @@ cleverly(
 \item{lp}{either a numeric index of which external variable to cluster on, or the name of the column of Z that contains the clustering variable. Specify numeric 0 to cluster via baseline.}
 
 \item{response_type}{Counts or continuous response?}
+
+\item{cor_str}{}
 
 \item{gammas}{Vector of dimension L + 1 for penalizing the D matrix}
 

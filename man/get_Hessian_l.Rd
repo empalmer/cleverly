@@ -4,12 +4,25 @@
 \alias{get_Hessian_l}
 \title{Get hessian with respect to the lth external variable}
 \usage{
-get_Hessian_l(l, Y, mi_vec, i_index, beta, Z, B, phi, C, V_inv)
+get_Hessian_l(
+  l,
+  Y0,
+  mi_vec,
+  i_index,
+  beta,
+  Z,
+  B,
+  phi,
+  C,
+  V_inv,
+  partials_l,
+  alpha,
+  P,
+  K
+)
 }
 \arguments{
 \item{l}{external variable index}
-
-\item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
 
 \item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
 
@@ -24,6 +37,8 @@ get_Hessian_l(l, Y, mi_vec, i_index, beta, Z, B, phi, C, V_inv)
 \item{C}{Constant for determining the hessian change.}
 
 \item{V_inv}{(optional) List of V inverses for each i. If supplied is faster}
+
+\item{K}{}
 }
 \value{
 Matrix of dimension KP times KP

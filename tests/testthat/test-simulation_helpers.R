@@ -235,12 +235,13 @@ test_that("Simulation With Z", {
   #psi <- 10
   tau <- 0.1
   theta <- 3000
-  psi <- .7 * theta
-  max_admm_iter = 100
-  max_outer_iter = 10
-  gammas = c(100, 1000)
+  psi <- .8 * theta
+  max_admm_iter = 50
+  max_outer_iter = 4
+  gammas = c(100, 10000)
   start <- Sys.time()
-  #Rprof("test.out", interval = .02)
+  Rprof("test.out", interval = .02)
+ #profvis::profvis({
   res <- cleverly(Y = Y,
                   Z = Z,
                   subject_ids = individual,
@@ -258,11 +259,20 @@ test_that("Simulation With Z", {
                   epsilon_d = .05,
                   epsilon_b = .001,
                   epsilon_2 = .001)
+  #})
   end <- Sys.time()
-  #Rprof(NULL)
-  #summaryRprof("test.out")$by.self[1:10,1:2]
+  Rprof(NULL)
+  summaryRprof("test.out")$by.self[1:10,1:2]
   (duration <- end - start)
   res$clusters$no
+
+
+
+  A <- matrix(rnorm(9), 3, 3)
+  B <- matrix(rnorm(9), 3, 3)
+
+  fast_mat_mult2(A, B)
+
 
   # check u values for this combo of psi, tau, theta
   (mcp <- tau * theta / (tau * theta - 1))

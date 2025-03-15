@@ -4,7 +4,7 @@
 \alias{get_alpha_ijk}
 \title{Calculate alpha for a single \eqn{i = 1, j = 1, k = 1} from \eqn{\beta}}
 \usage{
-get_alpha_ijk(i, j, k, beta, Z, B, i_index)
+get_alpha_ijk(i, j, k, beta, Z_ij, B_ij, i_index, P, L)
 }
 \arguments{
 \item{i}{subject index}
@@ -15,11 +15,7 @@ get_alpha_ijk(i, j, k, beta, Z, B, i_index)
 
 \item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
 
-\item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
-
-\item{B}{B spline basis matrix of dimension (N x P)}
-
-\item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
+\item{Z_ij}{vector of length l.}
 }
 \value{
 Numeric (1x1)

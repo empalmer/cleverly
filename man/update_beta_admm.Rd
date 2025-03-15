@@ -6,7 +6,9 @@
 \usage{
 update_beta_admm(
   Y,
+  Y0,
   beta,
+  alpha,
   lp,
   v,
   lambda,
@@ -20,7 +22,10 @@ update_beta_admm(
   phi,
   C,
   mi_vec,
-  i_index
+  i_index,
+  K,
+  L,
+  P
 )
 }
 \arguments{
@@ -51,6 +56,8 @@ update_beta_admm(
 \item{C}{Constant for determining the hessian change.}
 
 \item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
+
+\item{P}{}
 }
 \value{
 matrix of updated betas

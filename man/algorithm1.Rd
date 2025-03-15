@@ -22,7 +22,9 @@ algorithm1(
   epsilon_r,
   epsilon_d,
   max_outer_iter,
-  max_admm_iter
+  max_admm_iter,
+  max_2_iter,
+  epsilon_2
 )
 }
 \arguments{
@@ -61,6 +63,8 @@ algorithm1(
 \item{max_outer_iter}{Max number of iterations for the outer loop (Algorithm 1)}
 
 \item{max_admm_iter}{Max number of iterations for the ADMM loop}
+
+\item{epsilon_2}{}
 }
 \value{
 List of beta, clusters, y_hat, v, admm_diffs, admm_beta_list, loop_list_beta, loop_list_diff, phis_list

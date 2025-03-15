@@ -4,7 +4,7 @@
 \alias{get_alpha_ij}
 \title{Calculate alpha for all k for a single i and j.}
 \usage{
-get_alpha_ij(i, j, beta, Z, B, K, i_index)
+get_alpha_ij(i, j, beta, Z, B, K, i_index, L, P)
 }
 \arguments{
 \item{i}{subject index}
@@ -19,7 +19,7 @@ get_alpha_ij(i, j, beta, Z, B, K, i_index)
 
 \item{K}{Number of responses}
 
-\item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
+\item{P}{}
 }
 \value{
 Vector of length K

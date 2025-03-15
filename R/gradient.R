@@ -45,6 +45,8 @@ get_gradient_il <- function(i,
                                    K = K)
 
   gradient_il <-  partials_il %*% Vi_inv %*% Yi_minus_mui
+  #term1 <- matrix_mult:::fast_mat_mult(partials_il, Vi_inv)
+  #gradient_il <- fast_mat_mult(term1, Yi_minus_mui)
 
   return(gradient_il)
 }

@@ -4,7 +4,22 @@
 \alias{get_gradient_il}
 \title{Get gradient for a given i, l}
 \usage{
-get_gradient_il(i, l, Y, mi_vec, i_index, phi, beta, Z, B)
+get_gradient_il(
+  i,
+  l,
+  Y,
+  Y0,
+  mi_vec,
+  i_index,
+  phi,
+  beta,
+  alpha,
+  Z,
+  B,
+  Vi_inv,
+  partials_il,
+  K
+)
 }
 \arguments{
 \item{i}{subject index}
@@ -24,6 +39,8 @@ get_gradient_il(i, l, Y, mi_vec, i_index, phi, beta, Z, B)
 \item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
 
 \item{B}{B spline basis matrix of dimension (N x P)}
+
+\item{K}{}
 }
 \value{
 Vector of length PK

@@ -9,7 +9,7 @@ cor_user(mi, user_var, structure, al)
 \arguments{
 \item{mi}{number of timepoints for ith sample}
 
-\item{user_var}{??}
+\item{user_var}{1: compound symmetry, 2: autoregressive, 3: indepdendent}
 
 \item{structure}{Type of correlation 1 for (?) 2 for (?)}
 

@@ -4,10 +4,10 @@
 \alias{get_V_inv}
 \title{Get overal V inverse}
 \usage{
-get_V_inv(Y, mi_vec, i_index, phi, beta, Z, B, K)
+get_V_inv(Y, Y0, alpha, mi_vec, i_index, phi, beta, Z, B, K)
 }
 \arguments{
-\item{K}{}
+\item{Y0}{}
 }
 \description{
 Get overal V inverse

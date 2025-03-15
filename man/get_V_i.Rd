@@ -4,14 +4,12 @@
 \alias{get_V_i}
 \title{Get Vi diagonal matrix of all js.}
 \usage{
-get_V_i(i, Y, Y_ij0, phi, beta, Z, B, K, mi_vec, i_index)
+get_V_i(i, Y, Y0, phi, beta, Z, B, K, mi_vec, i_index, L, P)
 }
 \arguments{
 \item{i}{subject index}
 
 \item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
-
-\item{Y_ij0}{Total sum of counts across all K}
 
 \item{phi}{Current value of overdispersion parameter}
 
@@ -24,6 +22,8 @@ get_V_i(i, Y, Y_ij0, phi, beta, Z, B, K, mi_vec, i_index)
 \item{K}{Number of responses}
 
 \item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
+
+\item{P}{}
 }
 \value{
 Diagonal matrix of Kmi x Kmi Each block is for a single j of block size K x K

@@ -12,8 +12,9 @@ sim_Z_longitudinal(
   K = 12,
   order = 3,
   user_var = 1000,
-  structure = 1,
-  al = 0.4
+  structure = 3,
+  al = 0.4,
+  miss_p = 0.6
 )
 }
 \value{

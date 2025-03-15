@@ -4,7 +4,28 @@
 \alias{algorithm2}
 \title{Algorithm 2: Updating the non clustering betas}
 \usage{
-algorithm2(Y, Z, mi_vec, i_index, lp, B, beta, D, gammas, phi, C)
+algorithm2(
+  Y,
+  Y0,
+  Z,
+  mi_vec,
+  i_index,
+  lp,
+  B,
+  beta,
+  D,
+  gammas,
+  phi,
+  C,
+  max_2_iter,
+  epsilon_2,
+  time,
+  s,
+  L,
+  P,
+  K,
+  M
+)
 }
 \arguments{
 \item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
@@ -12,6 +33,8 @@ algorithm2(Y, Z, mi_vec, i_index, lp, B, beta, D, gammas, phi, C)
 \item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
 
 \item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
+
+\item{i_index}{}
 
 \item{lp}{clustering index (integer between 0 and L)}
 

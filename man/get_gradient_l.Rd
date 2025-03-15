@@ -4,7 +4,22 @@
 \alias{get_gradient_l}
 \title{Get the gradient for a given l}
 \usage{
-get_gradient_l(Y, mi_vec, i_index, l, phi, beta, Z, B)
+get_gradient_l(
+  Y,
+  Y0,
+  mi_vec,
+  i_index,
+  l,
+  phi,
+  beta,
+  alpha,
+  Z,
+  B,
+  V_inv,
+  partials_l,
+  K,
+  P
+)
 }
 \arguments{
 \item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
@@ -20,6 +35,8 @@ get_gradient_l(Y, mi_vec, i_index, l, phi, beta, Z, B)
 \item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
 
 \item{B}{B spline basis matrix of dimension (N x P)}
+
+\item{P}{}
 }
 \value{
 vector of length PK x 1

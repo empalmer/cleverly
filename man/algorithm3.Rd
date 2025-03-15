@@ -6,6 +6,7 @@
 \usage{
 algorithm3(
   Y,
+  Y0,
   Z,
   lp,
   B,
@@ -26,7 +27,11 @@ algorithm3(
   phi,
   max_admm_iter,
   epsilon_r,
-  epsilon_d
+  epsilon_d,
+  s,
+  L,
+  K,
+  M
 )
 }
 \arguments{
@@ -67,6 +72,8 @@ algorithm3(
 \item{epsilon_r}{Tolerance for ADMM convergence}
 
 \item{epsilon_d}{Tolerance for ADMM convergence}
+
+\item{M}{}
 }
 \value{
 List with the updated betas, updated vs, and lists tracking the betas, vs, and lambdas for each iteration

@@ -28,10 +28,12 @@ Imports:
     purrr,
     rcartocolor,
     Rcpp,
+    RcppArmadillo,
     rlang,
     stats,
     tidyr,
     utils,
     viridis
 LinkingTo: 
-    Rcpp
+    Rcpp,
+    RcppArmadillo
