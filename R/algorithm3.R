@@ -266,7 +266,8 @@ update_v <- function(beta,
     }
   }
 
-  if (any(is.nan(v))) {
+  #if (any(is.nan(v))) {
+  if (anyNA(v)) {
     stop("v is NaN")
   }
 
@@ -414,9 +415,9 @@ update_beta_admm <- function(Y,
   beta[,lp + 1] <- beta_lp_new
 
 
-  if (any(is.nan(beta_lp_new))) {
-    stop("Beta ADMM is NaN")
-  }
+  # if (any(is.nan(beta_lp_new))) {
+  #   stop("Beta ADMM is NaN")
+  # }
 
   return(beta)
 }
@@ -435,9 +436,9 @@ update_beta_admm <- function(Y,
 update_lambda <- function(beta_lp, v, lambda, A, theta){
   lambda_new <- lambda + theta * (A %*% beta_lp - v)
 
-  if (any(is.nan(lambda_new))) {
-    stop("Lambda is NaN")
-  }
+  # if (any(is.nan(lambda_new))) {
+  #   stop("Lambda is NaN")
+  # }
   return(lambda_new)
 }
 

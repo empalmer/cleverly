@@ -131,6 +131,7 @@ get_Vi_inv <- function(i,
 
   # Invert each diagonal first!
   #V_i_inv_list <- purrr::map(V_ij_list, MASS::ginv)
+  #V_i_inv <- Matrix::bdiag(V_i_inv_list)
   V_i_bdiag_inv <- Matrix::bdiag(V_i_inv_list)
   V_i_inv <- as.matrix(V_i_bdiag_inv)
 

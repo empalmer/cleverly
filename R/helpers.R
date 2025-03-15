@@ -55,6 +55,7 @@ get_Z_ijl <- function(i, j, l, Z, i_index) {
   # i_start <- i_index[i] + 1
   # Z_ijl <- Z[i_start + j - 1, (l + 1)]
 
+
   return(Z_ijl)
 }
 
@@ -366,12 +367,12 @@ get_alpha_ijk <- function(i, j, k, beta, Z_ij, B_ij, i_index, P, L) {
   #                                    B_ij = B_ij)
 
 
-  if (any(is.infinite(alpha_ijk))) {
-    stop("Infinite alpha")
-  }
-  if (sum(alpha_ijk < 0) != 0) {
-    stop("Negative alpha")
-  }
+  # if (any(is.infinite(alpha_ijk))) {
+  #   stop("Infinite alpha")
+  # }
+  # if (sum(alpha_ijk < 0) != 0) {
+  #   stop("Negative alpha")
+  # }
   return(alpha_ijk)
 }
 
@@ -398,10 +399,9 @@ get_alpha_ij <- function(i, j, beta, Z, B, K, i_index, L, P) {
                    i_index = i_index)
 
   # Z_ij is a vector of length L
-  Z_ij <- numeric(L + 1)
-  for (l in 0:L) {
-    Z_ij[l + 1] <- get_Z_ijl(i = i, j = j, l = l, Z = Z, i_index = i_index)
-  }
+  Z_ij <- Z[i_index[i] + j, 0:L + 1]
+
+
   alphas <- numeric(K)
   for (k in 1:K) {
     alphas[k] <- get_alpha_ijk(i = i,

@@ -237,11 +237,11 @@ test_that("Simulation With Z", {
   theta <- 3000
   psi <- .8 * theta
   max_admm_iter = 50
-  max_outer_iter = 1
+  max_outer_iter = 2
   gammas = c(100, 10000)
   start <- Sys.time()
   Rprof("test.out", interval = .02)
- #profvis::profvis({
+ profvis::profvis({
   res <- cleverly(Y = Y,
                   Z = Z,
                   subject_ids = individual,
@@ -259,7 +259,7 @@ test_that("Simulation With Z", {
                   epsilon_d = .05,
                   epsilon_b = .001,
                   epsilon_2 = .001)
-  #})
+  })
   end <- Sys.time()
   Rprof(NULL)
   summaryRprof("test.out")$by.self[1:10,1:2]
