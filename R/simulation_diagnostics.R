@@ -129,7 +129,7 @@ beta_path <- function(betas, K, B, Z, time){
 
 
 
-plot_clusters <- function(res, K, tau, psi, theta, max_admm_iter, max_outer_iter){
+plot_clusters <- function(res, K, tau, psi, gammas, theta, max_admm_iter, max_outer_iter){
   cluster_df <- data.frame(
     K = factor(1:K, levels = 1:K),
     cluster = factor(res$clusters$membership))
@@ -161,11 +161,12 @@ plot_clusters <- function(res, K, tau, psi, theta, max_admm_iter, max_outer_iter
       values = c(viridis::viridis(length(unique(cluster_df$cluster))), "grey50"),
       name = "Cluster"
     ) +
-    ggplot2::labs(subtitle   = paste0("psi:",psi,
-                                      ", tau:",round(tau,2),
-                                      ", theta:",theta,
-                                      ", admm_iter:",max_admm_iter,
-                                      ", outer_iter:",max_outer_iter))
+    ggplot2::labs(subtitle = paste0("psi:",psi,
+                                    ", tau:",round(tau,2),
+                                    ", theta:",theta,
+                                    ", gamma:", gammas[1],",", gammas[2],
+                                    ", admm:",max_admm_iter,
+                                    ", outer:",max_outer_iter))
 
   return(plot)
 
@@ -194,7 +195,7 @@ plot_initial_fit <- function(res, K, gammas){
 }
 
 
-plot_cluster_path <- function(res, psi, tau, theta, max_admm_iter, max_outer_iter, duration){
+plot_cluster_path <- function(res, psi, tau, theta, gammas, max_admm_iter, max_outer_iter, duration){
   # Cluster progress:
   cluster_track <- res$cluster_list
   plot <- purrr::imap_dfr(cluster_track,
@@ -210,6 +211,7 @@ plot_cluster_path <- function(res, psi, tau, theta, max_admm_iter, max_outer_ite
                   subtitle = paste("psi:",psi,
                                    ",tau:",round(tau,2),
                                    "theta:",theta,
+                                   ", gamma:", gammas[1],",", gammas[2],
                                    ",admm_iter:",max_admm_iter,
                                    "outer_iter:",max_outer_iter,
                                    "time:", duration),

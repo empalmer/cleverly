@@ -348,9 +348,11 @@ get_B <- function(time, order, nknots) {
 #'
 #' @returns Numeric (1x1)
 #' @export
-get_alpha_ijk <- function(i, j, k, beta, Z_ij, B_ij, i_index, P, L) {
+get_alpha_ijk <- function(i, j, k, beta_ks, Z_ij, B_ij, i_index, P, L) {
   # Extract all beta_lk at once for efficiency
-  beta_k <- beta[((k - 1) * P + 1):(k * P), ]
+  #beta_k <- beta[((k - 1) * P + 1):(k * P), ]
+
+  beta_k <- beta_ks[[k]]
 
   # Compute the weighted sum efficiently
   #lsum <- Z_ij * (t(B_ij) %*% beta_k)
@@ -392,7 +394,7 @@ get_alpha_ijk <- function(i, j, k, beta, Z_ij, B_ij, i_index, P, L) {
 #'
 #' @returns Vector of length K
 #' @export
-get_alpha_ij <- function(i, j, beta, Z, B, K, i_index, L, P) {
+get_alpha_ij <- function(i, j, beta_ks, Z, B, K, i_index, L, P) {
   B_ij <- get_B_ij(i = i,
                    j = j,
                    B = B,
@@ -401,13 +403,12 @@ get_alpha_ij <- function(i, j, beta, Z, B, K, i_index, L, P) {
   # Z_ij is a vector of length L
   Z_ij <- Z[i_index[i] + j, 0:L + 1]
 
-
   alphas <- numeric(K)
   for (k in 1:K) {
     alphas[k] <- get_alpha_ijk(i = i,
                                j = j,
                                k = k,
-                               beta = beta,
+                               beta_ks = beta_ks,
                                Z_ij = Z_ij,
                                B_ij = B_ij,
                                i_index = i_index,
@@ -434,13 +435,13 @@ get_alpha_ij <- function(i, j, beta, Z, B, K, i_index, L, P) {
 #' @export
 #'
 #' @examples
-get_alpha_i <- function(i, beta, Z, B, K, i_index, mi_vec, L, P){
+get_alpha_i <- function(i, beta_ks, Z, B, K, i_index, mi_vec, L, P){
   # L <- ncol(Z) - 1
   # P <- length(B_ij)
   mi <- mi_vec[i]
   alpha_i <- purrr::map(1:mi, ~get_alpha_ij(i = i,
                                            j = .x,
-                                           beta = beta,
+                                           beta_ks = beta_ks,
                                            Z = Z,
                                            B = B,
                                            K = K,
@@ -467,8 +468,14 @@ get_alpha_i <- function(i, beta, Z, B, K, i_index, mi_vec, L, P){
 #' @examples
 get_alpha_list <- function(beta, Z, B, K, i_index, mi_vec, L, P){
   n <- length(mi_vec)
+
+  beta_ks <- list()
+  for(k in 1:K){
+    beta_ks[[k]] <- beta[rep(1:12, each = 6) == k, ]
+  }
+
   alpha_list <- purrr::map(1:n, ~get_alpha_i(i = .x,
-                                             beta = beta,
+                                             beta_ks = beta_ks,
                                              Z = Z,
                                              B = B,
                                              K = K,

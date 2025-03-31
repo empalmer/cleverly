@@ -199,7 +199,7 @@ test_that("Simulation With Z", {
 
   skip("Skip")
   # Generate simulation data
-  set.seed(123)
+  set.seed(127)
   sim <- sim_Z_longitudinal(n = 20,
                             range_start = 5000,
                             range_end = 20000,
@@ -235,13 +235,13 @@ test_that("Simulation With Z", {
   #psi <- 10
   tau <- 0.1
   theta <- 3000
-  psi <- .8 * theta
-  max_admm_iter = 50
-  max_outer_iter = 2
-  gammas = c(100, 10000)
+  psi <- 2300
+  max_admm_iter = 20
+  max_outer_iter = 5
+  gammas = c(1, 1)
   start <- Sys.time()
-  Rprof("test.out", interval = .02)
- profvis::profvis({
+  #Rprof("test.out", interval = .02)
+ #profvis::profvis({
   res <- cleverly(Y = Y,
                   Z = Z,
                   subject_ids = individual,
@@ -257,27 +257,15 @@ test_that("Simulation With Z", {
                   max_2_iter = 100,
                   epsilon_r = .001,
                   epsilon_d = .05,
-                  epsilon_b = .001,
+                  epsilon_b = .01,
                   epsilon_2 = .001)
-  })
+  #})
   end <- Sys.time()
-  Rprof(NULL)
-  summaryRprof("test.out")$by.self[1:10,1:2]
+  #Rprof(NULL)
+  #summaryRprof("test.out")$by.self[1:10,1:2]
   (duration <- end - start)
   res$clusters$no
 
-
-
-  A <- matrix(rnorm(9), 3, 3)
-  B <- matrix(rnorm(9), 3, 3)
-
-  fast_mat_mult2(A, B)
-
-
-  # check u values for this combo of psi, tau, theta
-  (mcp <- tau * theta / (tau * theta - 1))
-  (sigma <- psi/theta)
-  #purrr::map_dfc(res$u_list[[40]], ~ mcp * max(0, ( 1 - sigma/sum(.x^2))) * .x)
 
   # Diagnostic plots:
   plot_clusters(res = res,
@@ -285,10 +273,11 @@ test_that("Simulation With Z", {
                 tau = tau,
                 psi = psi,
                 theta = theta,
+                gammas = gammas,
                 max_admm_iter = max_admm_iter,
                 max_outer_iter = max_outer_iter)
 
-  plot_cluster_path(res, psi, tau, theta, max_admm_iter, max_outer_iter, duration)
+  plot_cluster_path(res, psi, tau, theta,gammas, max_admm_iter, max_outer_iter, duration)
   plot_initial_fit(res, K = 12, gammas = gammas)
 
   plot_alg2_convergence(res)
@@ -297,7 +286,7 @@ test_that("Simulation With Z", {
 
   # Get cluster membership
   cluster_df <- data.frame(
-    K = factor(1:K, levels = 1:K),
+    K = factor(1:12, levels = 1:12),
     cluster = factor(res$clusters$membership))
   knitr::kable(table(cluster_df$cluster, rep(1:3, each = 4)))
 
@@ -330,27 +319,7 @@ test_that("psi BIC", {
 
 
 
-  start <- Sys.time()
-  psis <- seq(2500, 3000, by = 75)
-  res_list <- purrr::map(psis, ~cleverly(Y = Y,
-                                         Z = Z,
-                                         subject_ids = individual,
-                                         lp = 0,
-                                         time = time,
-                                         gammas = c(100, 1000), # controls smoothness
-                                         tau = .1, # Controls cuttoff for highest shrinkage
-                                         theta = 3000, # for lambda, but also for d
-                                         psi = .x, # controls clustering
-                                         C = 100,
-                                         max_admm_iter = 100,
-                                         max_outer_iter = 20,
-                                         max_2_iter = 100,
-                                         epsilon_r = .001,
-                                         epsilon_d = .05,
-                                         epsilon_b = .001,
-                                         epsilon_2 = .001))
-  end <- Sys.time()
-  (duration <- end - start)
+
 
 
   start <- Sys.time()
