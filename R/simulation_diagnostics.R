@@ -129,6 +129,21 @@ beta_path <- function(betas, K, B, Z, time){
 
 
 
+#' Title
+#'
+#' @param res
+#' @param K
+#' @param tau
+#' @param psi
+#' @param gammas
+#' @param theta
+#' @param max_admm_iter
+#' @param max_outer_iter
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 plot_clusters <- function(res, K, tau, psi, gammas, theta, max_admm_iter, max_outer_iter){
   cluster_df <- data.frame(
     K = factor(1:K, levels = 1:K),
@@ -173,6 +188,16 @@ plot_clusters <- function(res, K, tau, psi, gammas, theta, max_admm_iter, max_ou
 }
 
 
+#' Title
+#'
+#' @param res
+#' @param K
+#' @param gammas
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 plot_initial_fit <- function(res, K, gammas){
   # Initial fit:
   y_hat_init <- res$y_hat_init
@@ -195,6 +220,21 @@ plot_initial_fit <- function(res, K, gammas){
 }
 
 
+#' Title
+#'
+#' @param res
+#' @param psi
+#' @param tau
+#' @param theta
+#' @param gammas
+#' @param max_admm_iter
+#' @param max_outer_iter
+#' @param duration
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 plot_cluster_path <- function(res, psi, tau, theta, gammas, max_admm_iter, max_outer_iter, duration){
   # Cluster progress:
   cluster_track <- res$cluster_list
@@ -221,6 +261,14 @@ plot_cluster_path <- function(res, psi, tau, theta, gammas, max_admm_iter, max_o
 }
 
 
+#' Title
+#'
+#' @param res
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 plot_alg2_convergence <- function(res){
   # alg2 convergence
   plot <- purrr::imap_dfr(res$alg_2_beta_diff,
@@ -238,6 +286,14 @@ plot_alg2_convergence <- function(res){
 }
 
 
+#' Title
+#'
+#' @param res
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 plot_d_convergence <- function(res){
   plot <- purrr::imap_dfr(res$d_list,
                   ~data.frame(cluster = unlist(.x),
@@ -252,6 +308,14 @@ plot_d_convergence <- function(res){
   return(plot)
 }
 
+#' Title
+#'
+#' @param res
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 plot_r_convergence <- function(res){
   plot <- purrr::imap_dfr(res$r_list,
                   ~data.frame(cluster = unlist(.x),
