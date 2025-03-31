@@ -4,7 +4,7 @@
 \alias{get_alpha_ijk}
 \title{Calculate alpha for a single \eqn{i = 1, j = 1, k = 1} from \eqn{\beta}}
 \usage{
-get_alpha_ijk(i, j, k, beta, Z_ij, B_ij, i_index, P, L)
+get_alpha_ijk(i, j, k, beta_ks, Z_ij, B_ij, i_index, P, L)
 }
 \arguments{
 \item{i}{subject index}
@@ -13,9 +13,9 @@ get_alpha_ijk(i, j, k, beta, Z_ij, B_ij, i_index, P, L)
 
 \item{k}{response index}
 
-\item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
-
 \item{Z_ij}{vector of length l.}
+
+\item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
 }
 \value{
 Numeric (1x1)

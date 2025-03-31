@@ -4,7 +4,7 @@
 \alias{get_alpha_i}
 \title{Title}
 \usage{
-get_alpha_i(i, beta, Z, B, K, i_index, mi_vec, L, P)
+get_alpha_i(i, beta_ks, Z, B, K, i_index, mi_vec, L, P)
 }
 \arguments{
 \item{P}{}
