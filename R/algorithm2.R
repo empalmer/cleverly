@@ -42,7 +42,8 @@ algorithm2 <- function(Y,
                        L,
                        P,
                        K,
-                       M){
+                       M,
+                       corstr = "CON"){
 
   lp_minus <- NULL
   beta_diffs <- list()
@@ -85,6 +86,20 @@ algorithm2 <- function(Y,
                      i_index = i_index,
                      M = M)
 
+
+
+
+      rho_cor <- get_rho_con(Y,
+                              Y0,
+                              beta,
+                              alpha,
+                              Z,
+                              B,
+                              K,
+                              mi_vec,
+                              i_index,
+                              M)
+
       # Get V inverse for all is (and ls... )
       V_inv <- get_V_inv(Y = Y,
                          Y0 = Y0,
@@ -95,7 +110,9 @@ algorithm2 <- function(Y,
                          beta = beta,
                          Z = Z,
                          B = B,
-                         K = K)
+                         K = K,
+                         corstr = corstr,
+                         rho_cor = rho_cor)
       partials_l <- get_partials_l_list(Y0 = Y0,
                                         l = l,
                                         mi_vec = mi_vec,
