@@ -11,7 +11,7 @@ cleverly(
   time,
   lp = 0,
   response_type = "counts",
-  cor_str = "independent",
+  cor_str = "CON",
   gammas,
   psi,
   tau = 8/100,

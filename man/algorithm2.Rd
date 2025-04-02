@@ -24,7 +24,8 @@ algorithm2(
   L,
   P,
   K,
-  M
+  M,
+  cor_str
 )
 }
 \arguments{

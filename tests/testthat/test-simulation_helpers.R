@@ -254,11 +254,12 @@ test_that("Simulation With Z", {
                   C = 100,
                   max_admm_iter = max_admm_iter,
                   max_outer_iter = max_outer_iter,
-                  max_2_iter = 100,
+                  max_2_iter = 10,
                   epsilon_r = .001,
                   epsilon_d = .05,
                   epsilon_b = .01,
-                  epsilon_2 = .001)
+                  epsilon_2 = .001,
+                  cor_str = "CON")
   #})
   end <- Sys.time()
   #Rprof(NULL)

@@ -4,7 +4,21 @@
 \alias{get_Vi_inv}
 \title{Get Vi inverse}
 \usage{
-get_Vi_inv(i, Y, Y0, alpha, mi_vec, i_index, phi, beta, Z, B, K)
+get_Vi_inv(
+  i,
+  Y,
+  Y0,
+  alpha,
+  mi_vec,
+  i_index,
+  phi,
+  beta,
+  Z,
+  B,
+  K,
+  cor_str,
+  rho_cor
+)
 }
 \arguments{
 \item{i}{subject index}

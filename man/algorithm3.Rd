@@ -31,7 +31,8 @@ algorithm3(
   s,
   L,
   K,
-  M
+  M,
+  cor_str
 )
 }
 \arguments{

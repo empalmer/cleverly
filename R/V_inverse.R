@@ -110,12 +110,12 @@ get_Vi_inv <- function(i,
                        Z,
                        B,
                        K,
-                       corstr,
+                       cor_str,
                        rho_cor){
 
 
 
-  if (corstr == "IND") {
+  if (cor_str == "IND") {
     V_i_inv_list <- list()
     mi <- mi_vec[i]
     for (j in 1:mi) {
@@ -153,7 +153,7 @@ get_Vi_inv <- function(i,
     # V_i_inv_big <- MASS::ginv(V_i)
     # print(proc.time() - start_time)
   }
-  else if (corstr == "CON") {
+  else if (cor_str == "CON") {
     V_i_list <- list()
     R_i_list <- list()
     mi <- mi_vec[i]
@@ -222,7 +222,7 @@ get_V_inv <- function(Y,
                       Z,
                       B,
                       K,
-                      corstr,
+                      cor_str,
                       rho_cor){
 
   V_inv <- list()
@@ -238,7 +238,7 @@ get_V_inv <- function(Y,
                              Z = Z,
                              B = B,
                              K = K,
-                             corstr = corstr,
+                             cor_str = cor_str,
                              rho_cor = rho_cor)
   }
   return(V_inv)

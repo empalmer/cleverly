@@ -4,7 +4,7 @@
 \alias{get_V_inv}
 \title{Get overal V inverse}
 \usage{
-get_V_inv(Y, Y0, alpha, mi_vec, i_index, phi, beta, Z, B, K)
+get_V_inv(Y, Y0, alpha, mi_vec, i_index, phi, beta, Z, B, K, cor_str, rho_cor)
 }
 \arguments{
 \item{Y0}{}

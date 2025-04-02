@@ -60,7 +60,8 @@ algorithm3 <- function(Y,
                        s,
                        L,
                        K,
-                       M) {
+                       M,
+                       cor_str) {
 
   # Initialize all return lists
   beta_admm_track <- list()
@@ -116,6 +117,7 @@ algorithm3 <- function(Y,
                       tau = tau,
                       theta = theta,
                       psi = psi)
+
     beta_new <- update_beta_admm(Y = Y,
                                  Y0 = Y0,
                                  beta = beta,
@@ -136,7 +138,9 @@ algorithm3 <- function(Y,
                                  i_index = i_index,
                                  K = K,
                                  P = P,
-                                 L = L)
+                                 L = L,
+                                 cor_str = cor_str)
+
     lambda_new <- update_lambda(beta_lp = beta_new[,lp + 1],
                                 v = v_new$v,
                                 lambda = lambda,
@@ -322,7 +326,8 @@ update_beta_admm <- function(Y,
                              i_index,
                              K,
                              L,
-                             P){
+                             P,
+                             cor_str){
 
 
   gamma <- gammas[lp + 1]
@@ -338,6 +343,18 @@ update_beta_admm <- function(Y,
   #                         mi_vec = mi_vec)
   # Get V inverse for all is
   # compute it just once first so we don't have to calculate it for both H and Q.
+
+  rho_cor <- get_rho_con(Y,
+                         Y0,
+                         beta,
+                         alpha,
+                         Z,
+                         B,
+                         K,
+                         mi_vec,
+                         i_index,
+                         M)
+  browser()
   V_inv <- get_V_inv(Y = Y,
                      Y0 = Y0,
                      mi_vec = mi_vec,
@@ -347,7 +364,10 @@ update_beta_admm <- function(Y,
                      Z = Z,
                      B = B,
                      K = ncol(Y),
-                     alpha = alpha)
+                     alpha = alpha,
+                     cor_str = cor_str,
+                     rho_cor = rho_cor)
+
   partials_l <- get_partials_l_list(Y0 = Y0,
                                     l = lp,
                                     mi_vec = mi_vec,
@@ -358,8 +378,6 @@ update_beta_admm <- function(Y,
                                     B = B,
                                     K = K,
                                     P = P)
-
-
 
   # Things we need to calculate new beta:
   H <- get_Hessian_l(l = lp,

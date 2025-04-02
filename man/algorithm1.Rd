@@ -24,7 +24,8 @@ algorithm1(
   max_outer_iter,
   max_admm_iter,
   max_2_iter,
-  epsilon_2
+  epsilon_2,
+  cor_str
 )
 }
 \arguments{

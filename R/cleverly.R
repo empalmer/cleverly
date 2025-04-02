@@ -38,7 +38,7 @@ cleverly <- function(Y,
                      time,
                      lp = 0,
                      response_type = "counts",
-                     cor_str = "independent",
+                     cor_str = "CON",
                      gammas,
                      psi,
                      tau = 8/100,
@@ -157,7 +157,8 @@ cleverly <- function(Y,
                          max_outer_iter = max_outer_iter,
                          max_admm_iter = max_admm_iter,
                          max_2_iter = max_2_iter,
-                         epsilon_2 = epsilon_2)
+                         epsilon_2 = epsilon_2,
+                         cor_str = cor_str)
   } else {
     stop("Invalid response type or type not yet implemented.")
   }

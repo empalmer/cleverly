@@ -42,7 +42,8 @@ algorithm1 <- function(Y,
                        max_outer_iter,
                        max_admm_iter,
                        max_2_iter,
-                       epsilon_2) {
+                       epsilon_2,
+                       cor_str) {
 
   # Get algorithm constants.
   P <- nknots + order
@@ -102,7 +103,8 @@ algorithm1 <- function(Y,
                      L = L,
                      P = P,
                      K = K,
-                     M = M)
+                     M = M,
+                     cor_str = cor_str)
   beta <- beta_init$beta
 
 
@@ -152,7 +154,8 @@ algorithm1 <- function(Y,
                    L = L,
                    P = P,
                    K = K,
-                   M = M)
+                   M = M,
+                   cor_str = cor_str)
       }, error = function(e) {
         print(paste0("ERROR!!!!: ", e$message))
         return(e$message)
@@ -195,7 +198,8 @@ algorithm1 <- function(Y,
                  s = s,
                  K = K,
                  L = L,
-                 M = M)
+                 M = M,
+                 cor_str = cor_str)
     }, error = function(e) {
       print(paste0("ERROR!!!!: ", e$message))
       return(e$message)
