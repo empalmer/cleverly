@@ -207,7 +207,7 @@ test_that("Simulation With Z", {
                             K = 12,
                             order = 3,
                             user_var = 1000,
-                            structure = 3,
+                            cor_str = "IND",
                             al = 0.4)
   sim %>%
     tidyr::pivot_longer(-c(individual,
@@ -226,6 +226,8 @@ test_that("Simulation With Z", {
                   y = "Count",
                   x = "Time")
 
+
+
   Y <- dplyr::select(sim, -c(
                         "total_n",
                         "Capture.Number",
@@ -235,12 +237,12 @@ test_that("Simulation With Z", {
   #psi <- 10
   tau <- 0.1
   theta <- 3000
-  psi <- 2300
-  max_admm_iter = 20
+  psi <- 3000
+  max_admm_iter = 50
   max_outer_iter = 5
   gammas = c(1, 1)
   start <- Sys.time()
-  #Rprof("test.out", interval = .02)
+  Rprof("test.out", interval = .02)
  #profvis::profvis({
   res <- cleverly(Y = Y,
                   Z = Z,
@@ -254,18 +256,19 @@ test_that("Simulation With Z", {
                   C = 100,
                   max_admm_iter = max_admm_iter,
                   max_outer_iter = max_outer_iter,
-                  max_2_iter = 10,
+                  max_2_iter = 100,
                   epsilon_r = .001,
                   epsilon_d = .05,
                   epsilon_b = .01,
                   epsilon_2 = .001,
-                  cor_str = "CON")
+                  cor_str = "IND")
   #})
   end <- Sys.time()
   #Rprof(NULL)
-  #summaryRprof("test.out")$by.self[1:10,1:2]
+  summaryRprof("test.out")$by.self[1:10,1:2]
   (duration <- end - start)
   res$clusters$no
+  res$rho_cor
 
 
   # Diagnostic plots:

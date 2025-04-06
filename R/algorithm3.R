@@ -245,7 +245,6 @@ update_v <- function(beta,
   v <- numeric(nrow(Kappa) * P)
   u_list <- list()
 
-  #browser()
   for (kappa in 1:nrow(Kappa)) {
 
     # Get the pairwise betas
@@ -353,8 +352,9 @@ update_beta_admm <- function(Y,
                          K,
                          mi_vec,
                          i_index,
-                         M)
-  browser()
+                         M,
+                         cor_str = cor_str)
+
   V_inv <- get_V_inv(Y = Y,
                      Y0 = Y0,
                      mi_vec = mi_vec,

@@ -193,5 +193,6 @@ cleverly <- function(Y,
               time = time,
               subject_ids = subject_ids,
               Z = Z,
-              lp = lp))
+              lp = lp,
+              rho_cor = result$rho_cor))
 }

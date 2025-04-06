@@ -95,7 +95,8 @@ algorithm2 <- function(Y,
                              K,
                              mi_vec,
                              i_index,
-                             M)
+                             M,
+                             cor_str = cor_str)
 
       # Get V inverse for all is (and ls... )
       V_inv <- get_V_inv(Y = Y,

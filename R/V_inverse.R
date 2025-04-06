@@ -166,11 +166,14 @@ get_Vi_inv <- function(i,
                          i_index)
       alpha_ij <- alpha[[i]][[j]]
 
+
       V_ijj <- get_V_ijj(Y_ij0 = Y_ij0,
                          phi = phi,
                          alpha_ij = alpha_ij)
-      R_ijj <- diag(1/sqrt(diag(V_ijj))) %*% V_ijj %*% diag(1/sqrt(diag(V_ijj)))
+      A_ijj <- diag(1/sqrt(diag(V_ijj)))
 
+      #R_ijj <- A_ijj %*% V_ijj %*% A_ijj
+      R_ijj <- fast_mat_mult3(A_ijj, V_ijj, A_ijj)
 
       V_i <- magic::adiag(V_i, V_ijj)
       R_i <- magic::adiag(R_i, R_ijj)
@@ -184,8 +187,8 @@ get_Vi_inv <- function(i,
     corR <- rho_cor * kronecker(matrix(1, nrow = mi, ncol = mi) - diag(mi),
                                 matrix(1, nrow = K, ncol = K))
 
-    V_i_inv <- (1/phi) * A_inv %*% MASS::ginv(R_i + corR) %*% A_inv
-
+    #V_i_inv <- (1/phi) * A_inv %*% MASS::ginv(R_i + corR) %*% A_inv
+    V_i_inv <- (1/phi) * fast_mat_mult3(A_inv, MASS::ginv(R_i + corR), A_inv)
   }
   else{
     stop("Invalid corstr")
@@ -293,62 +296,88 @@ get_rho_con <- function(Y,
                         K,
                         mi_vec,
                         i_index,
-                        M){
-
+                        M,
+                        cor_str){
+  if(cor_str == "IND"){
+    return(0)
+  }
 
   regressiondata <- NULL
-  #for (subject in unique(individual_time$individual)){
-  for (i in 1:length(mi_vec)) {
+  regression_data_list <- vector("list", length(mi_vec))
+
+  for (i in seq_along(mi_vec)) {
 
     mi <- mi_vec[i]
     capture_number <- 1:mi_vec[i]
 
 
-    j1minusj2 <- matrix(1, nrow = mi*K, ncol = mi*K)
+    # j1minusj2 <- matrix(1, nrow = mi*K, ncol = mi*K)
+    #
+    # diagnal2 <- kronecker(matrix(capture_number,nrow = 1),
+    #                       matrix(rep(1,K),nrow = 1))
+    # diagnal3 <- matrix(rep(diagnal2,each=length(diagnal2)),
+    #                    nrow=length(diagnal2)) -
+    #   t(matrix(rep(diagnal2,each=length(diagnal2)),
+    #            nrow=length(diagnal2)))
+    #
+    #
+    # pearson_residual_i <- get_pearson_residual_i(Y,
+    #                                              Y0,
+    #                                              i,
+    #                                              beta,
+    #                                              alpha = alpha,
+    #                                              Z,
+    #                                              B,
+    #                                              K,
+    #                                              mi_vec,
+    #                                              i_index)
 
+    # pearson_resid_sq <- tcrossprod(pearson_residual_i)
+    # matrix_pearson_residual <- pearson_resid_sq
+    #
+    # matrix_pearson_residual[round(diagnal3) == 0] = NA
+    # matrix_pearson_residual[lower.tri(matrix_pearson_residual)] = NA
+    #
+    #
+    # Rijkl <- as.vector( matrix_pearson_residual)
+    # newRijkl <- Rijkl[is.na(Rijkl) == FALSE]
+    #
+    # abs_j1_j2 <- round(abs(as.vector( j1minusj2))[is.na(Rijkl) == FALSE],0)
+    # fordata <- data.frame(newRijkl ,abs_j1_j2)
+    # regressiondata <- rbind(regressiondata, fordata)
 
-    ####diagonal matrix#####
-    diagnal2 <- kronecker(matrix(capture_number,nrow = 1),
-                          matrix(rep(1,K),nrow = 1))
-    diagnal3 <- matrix(rep(diagnal2,each=length(diagnal2)),
-                       nrow=length(diagnal2)) -
-      t(matrix(rep(diagnal2,each=length(diagnal2)),
-               nrow=length(diagnal2)))
-
-
-    ###response######
+    # Compute the difference matrix efficiently
+    diag_values <- rep(capture_number, each = K)
+    diagnal3 <- outer(diag_values, diag_values, "-")
+    # Compute Pearson residual matrix
     pearson_residual_i <- get_pearson_residual_i(Y,
                                                  Y0,
                                                  i,
                                                  beta,
-                                                 alpha = alpha,
+                                                 alpha,
                                                  Z,
                                                  B,
                                                  K,
                                                  mi_vec,
                                                  i_index)
-    pearson_residual <- pearson_residual_i
+    matrix_pearson_residual <- tcrossprod(pearson_residual_i)
 
-    matrix_pearson_residual <- matrix(pearson_residual,ncol = 1) %*%
-      matrix(pearson_residual,nrow = 1)
+    # Apply conditions directly without redundant NA assignment
+    matrix_pearson_residual[round(diagnal3) == 0 | lower.tri(matrix_pearson_residual)] <- NA
 
-    pearson_resid_sq <- pearson_residual %*% t(pearson_residual)
+    # Extract non-NA values
+    newRijkl <- na.omit(as.vector(matrix_pearson_residual))
+
+    # Store data in a list instead of rbind in a loop
+    regression_data_list[[i]] <- newRijkl
 
 
-    matrix_pearson_residual[round(diagnal3) == 0] = NA
-    matrix_pearson_residual[lower.tri(matrix_pearson_residual)] = NA
-
-
-    Rijkl <- as.vector( matrix_pearson_residual)
-    newRijkl <- Rijkl[is.na(Rijkl) == FALSE]
-
-    abs_j1_j2 <- round(abs(as.vector( j1minusj2))[is.na(Rijkl) == FALSE],0)
-    fordata <- data.frame(newRijkl ,abs_j1_j2)
-    regressiondata <- rbind(regressiondata, fordata)
   }
 
+  # Combine all dataframes at the end for efficiency
+  regressiondata <- unlist(regression_data_list)
   # This is how we calculate it for the CON structure.
-  rho_cor <- mean(regressiondata$newRijkl)
+  rho_cor <- mean(regressiondata)
   if (rho_cor == 1) {
     rho_cor <- -1
   }

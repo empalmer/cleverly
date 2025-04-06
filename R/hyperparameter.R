@@ -22,8 +22,6 @@ get_gammas <- function(Y, Z, mi_vec, lp, B, beta, D, K, P){
   bic <- numeric(length(gamma_grid))
 
   for (g in 1:length(gamma_grid)) {
-
-    #browser()
     gammas <- rep(gamma_grid[g], ncol(Z))
     fit <- algorithm2(Y = Y,
                       Z = Z,

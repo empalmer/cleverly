@@ -257,8 +257,18 @@ algorithm1 <- function(Y,
     }
   }
 
+  rho_cor <- get_rho_con(Y,
+                         Y0,
+                         beta,
+                         alpha,
+                         Z,
+                         B,
+                         K,
+                         mi_vec,
+                         i_index,
+                         M,
+                         cor_str = cor_str)
 
-  #browser()
 
   # After loop:
   # Calculate v for the last time (since v is updated before beta in admm)
@@ -318,7 +328,8 @@ algorithm1 <- function(Y,
               r_list = r_list,
               d_list = d_list,
               BIC = BIC,
-              error = error))
+              error = error,
+              rho_cor = rho_cor))
 }
 
 

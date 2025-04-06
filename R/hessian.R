@@ -52,7 +52,7 @@ get_dHessian_il <- function(i,
   }
 
   hessian_il <- -fast_mat_mult3(partials_il, Vi_inv, t(partials_il))
-  hessian_il <- -partials_il %*% tcrossprod(Vi_inv, partials_il)
+  #hessian_il <- -partials_il %*% tcrossprod(Vi_inv, partials_il)
 
   d_hessian_il <- diag(hessian_il)
   return(d_hessian_il)
