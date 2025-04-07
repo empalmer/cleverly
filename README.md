@@ -17,6 +17,7 @@ You can install the development version of cleverly from
 ``` r
 # install.packages("pak")
 pak::pak("empalmer/cleverly")
+library(cleverly)
 ```
 
 ``` r
