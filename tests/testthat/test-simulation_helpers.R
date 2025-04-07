@@ -234,7 +234,7 @@ test_that("Simulation With Z", {
                         "Z"))
   Z <- sim$Z
 
-  #psi <- 10
+
   tau <- 0.1
   theta <- 3000
   psi <- 3000
@@ -242,7 +242,7 @@ test_that("Simulation With Z", {
   max_outer_iter = 5
   gammas = c(1, 1)
   start <- Sys.time()
-  Rprof("test.out", interval = .02)
+  #Rprof("test.out", interval = .02)
  #profvis::profvis({
   res <- cleverly(Y = Y,
                   Z = Z,
@@ -265,7 +265,7 @@ test_that("Simulation With Z", {
   #})
   end <- Sys.time()
   #Rprof(NULL)
-  summaryRprof("test.out")$by.self[1:10,1:2]
+  #summaryRprof("test.out")$by.self[1:10,1:2]
   (duration <- end - start)
   res$clusters$no
   res$rho_cor

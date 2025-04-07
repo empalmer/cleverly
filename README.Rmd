@@ -32,7 +32,47 @@ pak::pak("empalmer/cleverly")
 
 
 
+```r
+set.seed(127)
+  sim <- sim_Z_longitudinal(n = 20,
+                            range_start = 5000,
+                            range_end = 20000,
+                            nknots = 3,
+                            K = 12,
+                            order = 3,
+                            user_var = 1000,
+                            cor_str = "IND",
+                            al = 0.4)
 
+  Y <- dplyr::select(sim, -c(
+                        "total_n",
+                        "Capture.Number",
+                        "Z"))
+  Z <- sim$Z
+
+  start <- Sys.time()
+  res <- cleverly(Y = Y,
+                  Z = Z,
+                  subject_ids = individual,
+                  lp = 0,
+                  time = time,
+                  gammas = c(1, 1), # controls smoothness
+                  tau = 0.1, # Controls cuttoff for highest shrinkage
+                  theta = 3000, # for lambda, but also for d
+                  psi = 2900, # controls clustering
+                  C = 100,
+                  max_admm_iter = 50,
+                  max_outer_iter = 5,
+                  max_2_iter = 100,
+                  epsilon_r = .001,
+                  epsilon_d = .05,
+                  epsilon_b = .01,
+                  epsilon_2 = .001,
+                  cor_str = "IND")
+  end <- Sys.time()
+  (duration <- end - start)
+  res$clusters$no
+```
 
 
 <!--
