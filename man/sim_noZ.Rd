@@ -11,7 +11,7 @@ sim_noZ(
   nknots = 3,
   order = 3,
   user_var = 1000,
-  structure = 1,
+  cor_str = "IND",
   al = 0.4
 )
 }

@@ -281,70 +281,36 @@ get_R_ijjp <- function(corstr, rho, K){
 
 
 
-#' Title
+#' Get rho
 #'
 #' @returns
 #' @export
 #'
 #' @examples
-get_rho_con <- function(Y,
-                        Y0,
-                        beta,
-                        alpha,
-                        Z,
-                        B,
-                        K,
-                        mi_vec,
-                        i_index,
-                        M,
-                        cor_str){
-  if(cor_str == "IND"){
+
+get_rho <- function(Y,
+                    Y0,
+                    beta,
+                    alpha,
+                    Z,
+                    B,
+                    K,
+                    mi_vec,
+                    i_index,
+                    M,
+                    cor_str){
+
+  if (cor_str == "IND") {
     return(0)
   }
+
 
   regressiondata <- NULL
   regression_data_list <- vector("list", length(mi_vec))
 
   for (i in seq_along(mi_vec)) {
-
     mi <- mi_vec[i]
     capture_number <- 1:mi_vec[i]
-
-
-    # j1minusj2 <- matrix(1, nrow = mi*K, ncol = mi*K)
-    #
-    # diagnal2 <- kronecker(matrix(capture_number,nrow = 1),
-    #                       matrix(rep(1,K),nrow = 1))
-    # diagnal3 <- matrix(rep(diagnal2,each=length(diagnal2)),
-    #                    nrow=length(diagnal2)) -
-    #   t(matrix(rep(diagnal2,each=length(diagnal2)),
-    #            nrow=length(diagnal2)))
-    #
-    #
-    # pearson_residual_i <- get_pearson_residual_i(Y,
-    #                                              Y0,
-    #                                              i,
-    #                                              beta,
-    #                                              alpha = alpha,
-    #                                              Z,
-    #                                              B,
-    #                                              K,
-    #                                              mi_vec,
-    #                                              i_index)
-
-    # pearson_resid_sq <- tcrossprod(pearson_residual_i)
-    # matrix_pearson_residual <- pearson_resid_sq
-    #
-    # matrix_pearson_residual[round(diagnal3) == 0] = NA
-    # matrix_pearson_residual[lower.tri(matrix_pearson_residual)] = NA
-    #
-    #
-    # Rijkl <- as.vector( matrix_pearson_residual)
-    # newRijkl <- Rijkl[is.na(Rijkl) == FALSE]
-    #
-    # abs_j1_j2 <- round(abs(as.vector( j1minusj2))[is.na(Rijkl) == FALSE],0)
-    # fordata <- data.frame(newRijkl ,abs_j1_j2)
-    # regressiondata <- rbind(regressiondata, fordata)
 
     # Compute the difference matrix efficiently
     diag_values <- rep(capture_number, each = K)
@@ -362,22 +328,20 @@ get_rho_con <- function(Y,
                                                  i_index)
     matrix_pearson_residual <- tcrossprod(pearson_residual_i)
 
-    # Apply conditions directly without redundant NA assignment
+    # We only want the upper non-block triangle of the matrix
     matrix_pearson_residual[round(diagnal3) == 0 | lower.tri(matrix_pearson_residual)] <- NA
 
     # Extract non-NA values
     newRijkl <- na.omit(as.vector(matrix_pearson_residual))
 
-    # Store data in a list instead of rbind in a loop
     regression_data_list[[i]] <- newRijkl
-
-
   }
 
   # Combine all dataframes at the end for efficiency
   regressiondata <- unlist(regression_data_list)
   # This is how we calculate it for the CON structure.
   rho_cor <- mean(regressiondata)
+  # logic for edge cases, mean might not give a valid structure.
   if (rho_cor == 1) {
     rho_cor <- -1
   }

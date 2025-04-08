@@ -65,7 +65,7 @@ algorithm1(
 
 \item{max_admm_iter}{Max number of iterations for the ADMM loop}
 
-\item{epsilon_2}{}
+\item{cor_str}{}
 }
 \value{
 List of beta, clusters, y_hat, v, admm_diffs, admm_beta_list, loop_list_beta, loop_list_diff, phis_list

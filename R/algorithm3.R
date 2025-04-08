@@ -343,17 +343,17 @@ update_beta_admm <- function(Y,
   # Get V inverse for all is
   # compute it just once first so we don't have to calculate it for both H and Q.
 
-  rho_cor <- get_rho_con(Y,
-                         Y0,
-                         beta,
-                         alpha,
-                         Z,
-                         B,
-                         K,
-                         mi_vec,
-                         i_index,
-                         M,
-                         cor_str = cor_str)
+  rho_cor <- get_rho(Y,
+                     Y0,
+                     beta,
+                     alpha,
+                     Z,
+                     B,
+                     K,
+                     mi_vec,
+                     i_index,
+                     M,
+                     cor_str = cor_str)
 
   V_inv <- get_V_inv(Y = Y,
                      Y0 = Y0,

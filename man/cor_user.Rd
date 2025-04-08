@@ -4,16 +4,14 @@
 \alias{cor_user}
 \title{User defined correlation structure}
 \usage{
-cor_user(mi, user_var, structure, al)
+cor_user(mi, user_var, cor_str, al)
 }
 \arguments{
 \item{mi}{number of timepoints for ith sample}
 
-\item{user_var}{1: compound symmetry, 2: autoregressive, 3: indepdendent}
+\item{al}{rho?}
 
-\item{structure}{Type of correlation 1 for (?) 2 for (?)}
-
-\item{al}{??}
+\item{structure}{Type of correlation 1 for (?) 2 for (?) 1: compound symmetry, 2: autoregressive, 3: indepdendent}
 }
 \value{
 User defined correlation matrix.

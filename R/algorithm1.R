@@ -20,6 +20,7 @@
 #' @param C Constant for determining the hessian change.
 #' @param max_2_iter
 #' @param epsilon_2
+#' @param cor_str
 #'
 #' @returns List of beta, clusters, y_hat, v, admm_diffs, admm_beta_list, loop_list_beta, loop_list_diff, phis_list
 #' @export
@@ -257,7 +258,7 @@ algorithm1 <- function(Y,
     }
   }
 
-  rho_cor <- get_rho_con(Y,
+  rho_cor <- get_rho(Y,
                          Y0,
                          beta,
                          alpha,

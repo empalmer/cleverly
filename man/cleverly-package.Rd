@@ -22,6 +22,6 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: First Last \email{first.last@example.com}
+\strong{Maintainer}: Emily Palmer \email{palmerem@oregonstate.edu}
 
 }

@@ -1,8 +1,8 @@
 Package: cleverly
 Title: (Cl)ustering with (E)xternal (V)ariables in (R) with (L)ongitudinal (Y)s
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
+    person("Emily", "Palmer", , "palmerem@oregonstate.edu", role = c("aut", "cre"))
 Description: (Cl)ustering with (E)xternal (V)ariables in (R) with (L)ongitudinal (Y)s.
 License: MIT + file LICENSE
 Encoding: UTF-8

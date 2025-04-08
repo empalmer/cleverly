@@ -86,7 +86,7 @@ algorithm2 <- function(Y,
                      i_index = i_index,
                      M = M)
 
-      rho_cor <- get_rho_con(Y,
+      rho_cor <- get_rho(Y,
                              Y0,
                              beta,
                              alpha,

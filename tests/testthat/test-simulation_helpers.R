@@ -208,7 +208,10 @@ test_that("Simulation With Z", {
                             order = 3,
                             user_var = 1000,
                             cor_str = "IND",
-                            al = 0.4)
+                            al = 0.4,
+                            slope_base = "cluster_base_alldiff_slope")
+
+  # Visualize simulated data
   sim %>%
     tidyr::pivot_longer(-c(individual,
                            time,
@@ -235,28 +238,24 @@ test_that("Simulation With Z", {
   Z <- sim$Z
 
 
-  tau <- 0.1
-  theta <- 3000
-  psi <- 3000
-  max_admm_iter = 50
-  max_outer_iter = 5
-  gammas = c(1, 1)
   start <- Sys.time()
   #Rprof("test.out", interval = .02)
- #profvis::profvis({
+  #profvis::profvis({
   res <- cleverly(Y = Y,
                   Z = Z,
                   subject_ids = individual,
                   lp = 0,
                   time = time,
-                  gammas = gammas, # controls smoothness
-                  tau = tau, # Controls cuttoff for highest shrinkage
-                  theta = theta, # for lambda, but also for d
-                  psi = psi, # controls clustering
+                  gammas = c(1, 1),
+                  tau = 0.1,
+                  theta = 3000,
+                  psi = 3000,
                   C = 100,
-                  max_admm_iter = max_admm_iter,
-                  max_outer_iter = max_outer_iter,
+
+                  max_admm_iter = 50,
+                  max_outer_iter = 5,
                   max_2_iter = 100,
+
                   epsilon_r = .001,
                   epsilon_d = .05,
                   epsilon_b = .01,

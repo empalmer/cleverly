@@ -207,6 +207,8 @@ generate_data_longitudinal_compositionalZ <- function(n,
   return(simulate_data_new)
 }
 
+
+
 #' Generating data simulation function
 #'
 #' @param n n constant of number of individuals
@@ -218,41 +220,59 @@ generate_data_longitudinal_compositionalZ <- function(n,
 #'
 #' @returns Simulated data frame
 #' @export
-generate_data_longitudinal_compositionalZ2 <- function(n,
-                                                      time,
-                                                      miss_n,
-                                                      cor_matrix,
-                                                      ranges) {
-  simulate_data_new <- list()
+sim_data_same_base_different_slope <- function(n,
+                                               time,
+                                               miss_n,
+                                               cor_matrix,
+                                               ranges) {
+  sim_data_missing <- list()
+
+
+
+  # Assign cluster types to each a column
+  cluster_assignments <- c(1, 1, 1, 1,
+                           2, 2, 2, 2,
+                           3, 3, 3, 3)
+  # Cluster baseline functions
+  baseline_fxns <- list(
+    fxn1 = function(t) cos(2 * pi * t),
+    fxn2 = function(t) 1 - 2 * exp(-6 * t),
+    fxn3 = function(t) -1.5 * t
+  )
+  # Slope functions
+  slope_fxns <- list(
+    function(t) 2 * t,
+    function(t) 3 * t,
+    function(t) 4 * t,
+    function(t) 5 * t,
+    function(t) -1 * t,
+    function(t) -2 * t,
+    function(t) -3 * t,
+    function(t) -4 * t,
+    function(t) t^2,
+    function(t) sqrt(t),
+    function(t) log1p(t),
+    function(t) sin(pi * t)
+  )
+
+  # Generate data for all i.
   for (i in 1:n) {
-    simulate_data <- NULL
-
-    # Three possible clusters with given
-    fxn1 <- cos(2 * pi * time)
-    fxn2 <- 1 - 2 * exp(-6 * time)
-    fxn3 <- -1.5 * time
-
-    fxnZ <- 4 * time
-
-
+    sim_data <- NULL
 
     Z <- stats::rbinom(n = length(time),
                        size = 1,
                        prob = 0.6)
 
+    alpha <- data.frame(matrix(ncol = 12, nrow = length(time)))
+    for (k in 1:12) {
+      baseline_cluster <- cluster_assignments[k]
+      baseline_value <- baseline_fxns[[baseline_cluster]](time)
+      slope_value  <- slope_fxns[[k]](time)
+      alpha[,k] <- exp(baseline_value + Z * slope_value)
 
-    alpha <- data.frame(a1 = exp(fxn1 + Z*fxnZ),
-                        a2 = exp(fxn1 + Z*fxnZ),
-                        a3 = exp(fxn1 + Z*fxnZ),
-                        a4 = exp(fxn1 + Z*fxnZ),
-                        a5 = exp(fxn2 + Z*fxnZ),
-                        a6 = exp(fxn2 + Z*fxnZ),
-                        a7 = exp(fxn2 + Z*fxnZ),
-                        a8 = exp(fxn2 + Z*fxnZ),
-                        a9 = exp(fxn3 + Z*fxnZ),
-                        a10 = exp(fxn3 + Z*fxnZ),
-                        a11 = exp(fxn3 + Z*fxnZ),
-                        a12 = exp(fxn3 + Z*fxnZ))
+    }
+    names(alpha) <- paste0("a", 1:12)
+
 
     # Get the error matrix representing the longitudinal correlation
     error_matrix <- t(MASS::mvrnorm(n = ncol(alpha),
@@ -283,19 +303,21 @@ generate_data_longitudinal_compositionalZ2 <- function(n,
 
       # Return data with the total n and id.
       dm_new <- c(dm_witherror, total_n, i, Z[j])
-      simulate_data <- rbind(simulate_data, dm_new)
+      sim_data <- rbind(sim_data, dm_new)
     }
 
     # Include missingness.
     # Set missingness
     miss_rate <- sample(miss_n, 1)
     newtime <- sort(sample(1:length(time), ceiling(miss_rate * length(time))))
-    simulate_data_new[[i]] <- data.frame(time, simulate_data)[newtime, ]
+    sim_data_missing[[i]] <- data.frame(time, sim_data)[newtime, ]
 
-    rownames(simulate_data_new[[i]]) <- NULL
+    rownames(sim_data_missing[[i]]) <- NULL
   }
-  return(simulate_data_new)
+  return(sim_data_missing)
 }
+
+
 
 #' Use Chenyangs setup to simulate count data wtih 3 clusters
 #'
@@ -381,9 +403,10 @@ sim_Z_longitudinal <- function(n = 20,
                                K = 12,
                                order = 3,
                                user_var = 1000,
-                               cor_str = "IND",
+                               cor_str,
                                al = 0.4,
-                               miss_p = 0.6
+                               miss_p = 0.6,
+                               slope_base = "cluster_base_alldiff_slope"
 ){
   # Time points are a sequence between 0 and 1
   time <- seq(0, 1, 0.05)
@@ -402,13 +425,23 @@ sim_Z_longitudinal <- function(n = 20,
                          al = al)
 
   # Simulate data.
-  generate.data <- generate_data_longitudinal_compositionalZ(n,
-                                                            time,
-                                                            miss_n,
-                                                            cor_matrix,
-                                                            ranges)
+  if (slope_base == "cluster_base_alldiff_slope") {
+    simulated_data <- sim_data_same_base_different_slope(n,
+                                                        time,
+                                                        miss_n,
+                                                        cor_matrix,
+                                                        ranges)
+  }
+  else if (slope_base == "cluster_base_same_slope") {
+    simulated_data <- generate_data_longitudinal_compositionalZ(n,
+                                                               time,
+                                                               miss_n,
+                                                               cor_matrix,
+                                                               ranges)
+  }
+
   # Organize data.
-  data <- dplyr::bind_rows(generate.data)
+  data <- dplyr::bind_rows(simulated_data)
   names(data) <- c("time",
                    paste0("Taxa.", 1:K),
                    "total_n",

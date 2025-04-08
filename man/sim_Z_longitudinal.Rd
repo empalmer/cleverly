@@ -12,9 +12,10 @@ sim_Z_longitudinal(
   K = 12,
   order = 3,
   user_var = 1000,
-  structure = 3,
+  cor_str,
   al = 0.4,
-  miss_p = 0.6
+  miss_p = 0.6,
+  slope_base = "cluster_base_alldiff_slope"
 )
 }
 \value{
