@@ -238,6 +238,10 @@ test_that("Simulation With Z", {
   Z <- sim$Z
 
 
+  tau = .1
+  theta = 3000
+  psi = 10000
+  gammas = c(1,1)
   start <- Sys.time()
   #Rprof("test.out", interval = .02)
   #profvis::profvis({
@@ -246,16 +250,17 @@ test_that("Simulation With Z", {
                   subject_ids = individual,
                   lp = 0,
                   time = time,
+                  # Hyperparameters
                   gammas = c(1, 1),
-                  tau = 0.1,
-                  theta = 3000,
-                  psi = 3000,
+                  tau = tau,
+                  theta = theta,
+                  psi = psi,
                   C = 100,
-
-                  max_admm_iter = 50,
-                  max_outer_iter = 5,
+                  # Iterations max
+                  max_admm_iter = 200,
+                  max_outer_iter = 10,
                   max_2_iter = 100,
-
+                  # Convergence criteria
                   epsilon_r = .001,
                   epsilon_d = .05,
                   epsilon_b = .01,
@@ -267,7 +272,7 @@ test_that("Simulation With Z", {
   #summaryRprof("test.out")$by.self[1:10,1:2]
   (duration <- end - start)
   res$clusters$no
-  res$rho_cor
+
 
 
   # Diagnostic plots:

@@ -256,19 +256,32 @@ algorithm1 <- function(Y,
     if (diff < epsilon_b) {
       break
     }
+
+    # Exit if constant cluster results for the past 3 iterations
+    if (s >= 3) {
+      current <-  alg3$cluster_list[[length(alg3$cluster_list)]]$membership
+      past1 <- cluster_list[[s - 1]][[length(cluster_list[[s - 1]])]]$membership
+      past2 <- cluster_list[[s - 2]][[length(cluster_list[[s - 2]])]]$membership
+
+      if (identical(current, past1) && identical(current, past2)) {
+        # If the clusters are the same as the last two iterations, break
+        print("Clusters not changing, exiting")
+        break
+      }
+    }
   }
 
   rho_cor <- get_rho(Y,
-                         Y0,
-                         beta,
-                         alpha,
-                         Z,
-                         B,
-                         K,
-                         mi_vec,
-                         i_index,
-                         M,
-                         cor_str = cor_str)
+                     Y0,
+                     beta,
+                     alpha,
+                     Z,
+                     B,
+                     K,
+                     mi_vec,
+                     i_index,
+                     M,
+                     cor_str = cor_str)
 
 
   # After loop:
