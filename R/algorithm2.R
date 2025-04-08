@@ -51,10 +51,10 @@ algorithm2 <- function(Y,
   # Loop only through non-clustering values
   l_loop <- setdiff(0:L , lp)
   # Initialize progress bar
-  cat(paste0("Algorithm 2 iteration: ", s, "\n"))
-  pb_alg2 <- utils::txtProgressBar(min = 0,
-                                   max = max_2_iter,
-                                   style = 3)
+  # cat(paste0("Algorithm 2 iteration: ", s, "\n"))
+  # pb_alg2 <- utils::txtProgressBar(min = 0,
+  #                                  max = max_2_iter,
+  #                                  style = 3)
 
   for (r in 1:max_2_iter) {
     beta_old <- beta
@@ -176,10 +176,10 @@ algorithm2 <- function(Y,
     if (beta_diff < epsilon_2) {
       break
     }
-    utils::setTxtProgressBar(pb_alg2, r)
+    # utils::setTxtProgressBar(pb_alg2, r)
   }
-  utils::setTxtProgressBar(pb_alg2, max_2_iter)
-  close(pb_alg2)
+  # utils::setTxtProgressBar(pb_alg2, max_2_iter)
+  # close(pb_alg2)
 
   return(list(beta = beta,
               r = r,

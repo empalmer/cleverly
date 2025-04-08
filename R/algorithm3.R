@@ -74,12 +74,12 @@ algorithm3 <- function(Y,
   diff_admm <- numeric(max_admm_iter)
   phi_track <- numeric(max_admm_iter)
 
-  cat(paste0("ADMM iteration: ", s, "\n"))
-
-  # Initialize progress bar
-  pb_admm <- utils::txtProgressBar(min = 0,
-                                   max = max_admm_iter,
-                                   style = 3)
+  # cat(paste0("ADMM iteration: ", s, "\n"))
+  #
+  # # Initialize progress bar
+  # pb_admm <- utils::txtProgressBar(min = 0,
+  #                                  max = max_admm_iter,
+  #                                  style = 3)
   # Initialize v to be zero just for checking the difference
   # The first v will be based on the current beta.
   v <- numeric(nrow(Kappa)*P)
@@ -187,11 +187,11 @@ algorithm3 <- function(Y,
     v <- v_new$v
     beta <- beta_new
     lambda <- lambda_new
-    utils::setTxtProgressBar(pb_admm, t)
+    # utils::setTxtProgressBar(pb_admm, t)
 
   }
-  utils::setTxtProgressBar(pb_admm, max_admm_iter)
-  close(pb_admm)
+  # utils::setTxtProgressBar(pb_admm, max_admm_iter)
+  # close(pb_admm)
 
 
   #print(paste("Last ADMM Iteration: ", t - 1))
