@@ -64,7 +64,7 @@ cleverly_bestpsi <- function(psi_min,
   res <- res_list[[best]]
 
 
-  print(paste0("all clusters: psi:", psis,", cluster:", purrr::map_dbl(res_list, ~.x$clusters$no)))
+  print(paste0("all clusters: psi:", psis,", cluster:", purrr::map(res_list, ~.x$clusters)))
   print(paste0("chosen psi cluster", purrr::map_dbl(res_list, ~.x$clusters$no)[best]))
   print(paste0("chosen psi", psis[best]))
 

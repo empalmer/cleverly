@@ -616,3 +616,67 @@ base_sim <- function(seed = 124){
               K = K,
               P = P))
 }
+
+one_sim <- function(){
+  sim <- sim_Z_longitudinal(n = 20,
+                            range_start = 5000,
+                            range_end = 10000,
+                            nknots = 3,
+                            K = 12,
+                            order = 3,
+                            user_var = 500,
+                            cor_str = "IND",
+                            al = 0.4,
+                            slope_base = "cluster_base_alldiff_slope")
+  Y <- dplyr::select(sim, -c(
+    "total_n",
+    "Capture.Number",
+    "Z"))
+  Z <- sim$Z
+
+
+  start <- Sys.time()
+  res_psi <- cleverly_bestpsi(psi_min = 100,
+                              psi_max = 2000,
+                              npsi = 6,
+                              parralel = FALSE,
+                              Y = Y,
+                              Z = Z,
+                              lp = 0,
+                              time = time,
+                              # Hyperparameters
+                              gammas = c(1, 1),
+                              tau = 0.01,
+                              theta = 300,
+                              C = 100,
+                              # Iterations max
+                              max_admm_iter = 200,
+                              max_outer_iter = 10,
+                              max_2_iter = 100,
+                              # Convergence criteria
+                              epsilon_r = .001,
+                              epsilon_d = .05,
+                              epsilon_b = .01,
+                              epsilon_2 = .001,
+                              cor_str = "IND")
+  end <- Sys.time()
+  (duration <- end - start)
+
+  cluster <- res_psi$clusters$membership
+  true_cluster <- c(1, 1, 1, 1,
+                    2, 2, 2, 2,
+                    3, 3, 3, 3)
+
+  res_psi$cluster_result <- data.frame("rand" = fossil::rand.index(cluster, true_cluster),
+                                       "adj.rand" = mclust::adjustedRandIndex(cluster, true_cluster),
+                                       "jacc" = length(intersect(cluster, true_cluster)) /
+                                         length(union(cluster, true_cluster)))
+  return(res_psi)
+
+}
+
+
+my_method_sim <- function(nsim = 50){
+  res <- purrr::map(1:nsim, ~ one_sim())
+
+}

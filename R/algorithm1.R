@@ -259,7 +259,7 @@ algorithm1 <- function(Y,
     }
 
     # Exit if constant cluster results for the past 3 iterations
-    if (s >= 4) {
+    if (s >= 3) {
       current <-  alg3$cluster_list[[length(alg3$cluster_list)]]$membership
       past1 <- cluster_list[[s - 1]][[length(cluster_list[[s - 1]])]]$membership
       past2 <- cluster_list[[s - 2]][[length(cluster_list[[s - 2]])]]$membership

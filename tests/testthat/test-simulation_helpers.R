@@ -240,7 +240,7 @@ test_that("Simulation With Z", {
 
   tau = .01
   theta = 300
-  psi = 750
+  psi = 10000
   gammas = c(1,1)
   start <- Sys.time()
   #Rprof("test.out", interval = .02)
@@ -507,11 +507,11 @@ test_that("cleverly best psi", {
   set.seed(127)
   sim <- sim_Z_longitudinal(n = 20,
                             range_start = 5000,
-                            range_end = 20000,
+                            range_end = 10000,
                             nknots = 3,
                             K = 12,
                             order = 3,
-                            user_var = 1000,
+                            user_var = 500,
                             cor_str = "IND",
                             al = 0.4,
                             slope_base = "cluster_base_alldiff_slope")
@@ -543,16 +543,12 @@ test_that("cleverly best psi", {
   Z <- sim$Z
 
 
-  tau = .1
-  theta = 3000
-  psi = 10000
-  gammas = c(1,1)
   start <- Sys.time()
   #Rprof("test.out", interval = .02)
   #profvis::profvis({
-  res <- cleverly_bestpsi(psi_min = 10000,
-                          psi_max = 11000,
-                          npsi = 2,
+  res_psi <- cleverly_bestpsi(psi_min = 100,
+                          psi_max = 2000,
+                          npsi = 4,
                           parralel = FALSE,
                           Y = Y,
                           Z = Z,
@@ -560,8 +556,8 @@ test_that("cleverly best psi", {
                           time = time,
                           # Hyperparameters
                           gammas = c(1, 1),
-                          tau = tau,
-                          theta = theta,
+                          tau = 0.01,
+                          theta = 300,
                           C = 100,
                           # Iterations max
                           max_admm_iter = 200,
@@ -578,9 +574,9 @@ test_that("cleverly best psi", {
   #Rprof(NULL)
   #summaryRprof("test.out")$by.self[1:10,1:2]
   (duration <- end - start)
-  res$clusters$no
+  res_psi$clusters
 
-
+  res <- res_psi
 
   # Diagnostic plots:
   plot_clusters(res = res,
@@ -615,5 +611,15 @@ test_that("cleverly best psi", {
   unlist(res$alg_2_beta_diff)
   unlist(res$alg1_diff)
 
+
+})
+
+
+test_that("cleverly best psi", {
+  set.seed(127)
+
+  sim <- one_sim()
+
+  full_sim <- my_method_sim()
 
 })
