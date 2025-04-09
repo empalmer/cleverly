@@ -131,6 +131,7 @@ algorithm1 <- function(Y,
 
 
   for (s in 1:max_outer_iter) {
+    print(paste0("Outer loop iteration: ", s))
     beta_old <- beta
     # Go straight to ADMM code if there is no external variables
     if (L > 0) {
@@ -258,7 +259,7 @@ algorithm1 <- function(Y,
     }
 
     # Exit if constant cluster results for the past 3 iterations
-    if (s >= 3) {
+    if (s >= 4) {
       current <-  alg3$cluster_list[[length(alg3$cluster_list)]]$membership
       past1 <- cluster_list[[s - 1]][[length(cluster_list[[s - 1]])]]$membership
       past2 <- cluster_list[[s - 2]][[length(cluster_list[[s - 2]])]]$membership

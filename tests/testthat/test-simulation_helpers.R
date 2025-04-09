@@ -202,11 +202,11 @@ test_that("Simulation With Z", {
   set.seed(127)
   sim <- sim_Z_longitudinal(n = 20,
                             range_start = 5000,
-                            range_end = 20000,
+                            range_end = 10000,
                             nknots = 3,
                             K = 12,
                             order = 3,
-                            user_var = 1000,
+                            user_var = 500,
                             cor_str = "IND",
                             al = 0.4,
                             slope_base = "cluster_base_alldiff_slope")
@@ -238,9 +238,9 @@ test_that("Simulation With Z", {
   Z <- sim$Z
 
 
-  tau = .1
-  theta = 3000
-  psi = 10000
+  tau = .01
+  theta = 300
+  psi = 750
   gammas = c(1,1)
   start <- Sys.time()
   #Rprof("test.out", interval = .02)
@@ -257,7 +257,7 @@ test_that("Simulation With Z", {
                   psi = psi,
                   C = 100,
                   # Iterations max
-                  max_admm_iter = 200,
+                  max_admm_iter = 100,
                   max_outer_iter = 10,
                   max_2_iter = 100,
                   # Convergence criteria
@@ -272,8 +272,6 @@ test_that("Simulation With Z", {
   #summaryRprof("test.out")$by.self[1:10,1:2]
   (duration <- end - start)
   res$clusters$no
-
-
 
   # Diagnostic plots:
   plot_clusters(res = res,
@@ -324,10 +322,6 @@ test_that("psi BIC", {
     "Capture.Number",
     "Z"))
   Z <- sim$Z
-
-
-
-
 
 
   start <- Sys.time()
@@ -397,8 +391,7 @@ test_that("psi BIC", {
   res <- res_list[[best]]
 
 
-  purrr::map_dbl(res_list, ~.x$clusters$no)
-  purrr::map_dbl(res_list, ~.x$clusters$no)[best]
+  purrr::map_dbl(res_list, ~.x$BIC)
   (psi <- psis[best])
 
   y_hat <- res$y_hat
@@ -500,5 +493,127 @@ test_that("psi BIC", {
                                       ", theta:",theta,
                                       ", admm_iter:",max_admm_iter,
                                       ", outer_iter:",max_outer_iter))
+
+})
+
+
+
+
+
+test_that("cleverly best psi", {
+
+  skip("Skip")
+  # Generate simulation data
+  set.seed(127)
+  sim <- sim_Z_longitudinal(n = 20,
+                            range_start = 5000,
+                            range_end = 20000,
+                            nknots = 3,
+                            K = 12,
+                            order = 3,
+                            user_var = 1000,
+                            cor_str = "IND",
+                            al = 0.4,
+                            slope_base = "cluster_base_alldiff_slope")
+
+  # Visualize simulated data
+  sim %>%
+    tidyr::pivot_longer(-c(individual,
+                           time,
+                           Capture.Number,
+                           total_n, Z)) %>%
+    dplyr::mutate(name = factor(name,
+                                levels = paste0("Taxa.", 1:12))) %>%
+    ggplot2::ggplot(ggplot2::aes(x = time,
+                                 y = value,
+                                 color = factor(Z))) +
+    ggplot2::geom_point(size = 1) +
+    ggplot2::facet_wrap(~name) +
+    ggplot2::labs(title = "Simulated Data",
+                  color = "EV",
+                  y = "Count",
+                  x = "Time")
+
+
+
+  Y <- dplyr::select(sim, -c(
+    "total_n",
+    "Capture.Number",
+    "Z"))
+  Z <- sim$Z
+
+
+  tau = .1
+  theta = 3000
+  psi = 10000
+  gammas = c(1,1)
+  start <- Sys.time()
+  #Rprof("test.out", interval = .02)
+  #profvis::profvis({
+  res <- cleverly_bestpsi(psi_min = 10000,
+                          psi_max = 11000,
+                          npsi = 2,
+                          parralel = FALSE,
+                          Y = Y,
+                          Z = Z,
+                          lp = 0,
+                          time = time,
+                          # Hyperparameters
+                          gammas = c(1, 1),
+                          tau = tau,
+                          theta = theta,
+                          C = 100,
+                          # Iterations max
+                          max_admm_iter = 200,
+                          max_outer_iter = 10,
+                          max_2_iter = 100,
+                          # Convergence criteria
+                          epsilon_r = .001,
+                          epsilon_d = .05,
+                          epsilon_b = .01,
+                          epsilon_2 = .001,
+                          cor_str = "IND")
+  #})
+  end <- Sys.time()
+  #Rprof(NULL)
+  #summaryRprof("test.out")$by.self[1:10,1:2]
+  (duration <- end - start)
+  res$clusters$no
+
+
+
+  # Diagnostic plots:
+  plot_clusters(res = res,
+                K = 12,
+                tau = tau,
+                psi = psi,
+                theta = theta,
+                gammas = gammas,
+                max_admm_iter = max_admm_iter,
+                max_outer_iter = max_outer_iter)
+
+  plot_cluster_path(res, psi, tau, theta,gammas, max_admm_iter, max_outer_iter, duration)
+  plot_initial_fit(res, K = 12, gammas = gammas)
+
+  plot_alg2_convergence(res)
+  plot_d_convergence(res)
+  plot_r_convergence(res)
+
+  # Get cluster membership
+  cluster_df <- data.frame(
+    K = factor(1:12, levels = 1:12),
+    cluster = factor(res$clusters$membership))
+  knitr::kable(table(cluster_df$cluster, rep(1:3, each = 4)))
+
+
+  # number of iterations
+  unlist(res$ts) #ADMM
+  unlist(res$rs) #alg2
+  # convergence
+  unlist(res$d_list)
+  unlist(res$r_list)
+  unlist(res$alg_2_beta_diff)
+  unlist(res$alg1_diff)
+
 
 })

@@ -237,7 +237,7 @@ sim_data_same_base_different_slope <- function(n,
   baseline_fxns <- list(
     fxn1 = function(t) cos(2 * pi * t),
     fxn2 = function(t) 1 - 2 * exp(-6 * t),
-    fxn3 = function(t) -1.5 * t
+    fxn3 = function(t) -2 * t
   )
   # Slope functions
   slope_fxns <- list(

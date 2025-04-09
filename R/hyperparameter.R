@@ -1,9 +1,84 @@
 
+cleverly_bestpsi <- function(psi_min,
+                             psi_max,
+                             npsi,
+                             parralel = FALSE,
+                             Y,
+                             Z,
+                             time,
+                             lp = 0,
+                             response_type = "counts",
+                             cor_str = "IND",
+                             gammas,
+                             tau = 8/100,
+                             theta = 300,
+                             C = 10,
+                             d = 2,
+                             nknots = 3,
+                             order = 3,
+                             epsilon_b = 1e-3,
+                             epsilon_r = 1e-3,
+                             epsilon_d = 1e-3,
+                             max_outer_iter = 10,
+                             max_admm_iter = 100,
+                             max_2_iter = 100,
+                             epsilon_2 = 1e-3){
+
+  psis <- seq(psi_min, psi_max, length.out = npsi)
+
+
+  if (parralel) {
+    return( NULL)
+  } else {
+    res_list <- list()
+    for (p in 1:length(psis)) {
+      psi <- psis[p]
+
+      res_list[[p]] <- cleverly(Y = Y,
+                                Z = Z,
+                                subject_ids = individual,
+                                time = time,
+                                lp = lp,
+                                response_type = response_type,
+                                cor_str = cor_str,
+                                gammas = gammas,
+                                psi = psi,
+                                tau = tau,
+                                theta = theta,
+                                C = C,
+                                d = d,
+                                nknots = nknots,
+                                order = order,
+                                epsilon_b = epsilon_b,
+                                epsilon_r = epsilon_r,
+                                epsilon_d = epsilon_d,
+                                max_outer_iter = max_outer_iter,
+                                max_admm_iter = max_admm_iter,
+                                max_2_iter = max_2_iter,
+                                epsilon_2 = epsilon_2)
+    }
+  }
+
+
+  best <- which.min(purrr::map_dbl(res_list, ~.x$BIC))
+  res <- res_list[[best]]
+
+
+  print(paste0("all clusters: psi:", psis,", cluster:", purrr::map_dbl(res_list, ~.x$clusters$no)))
+  print(paste0("chosen psi cluster", purrr::map_dbl(res_list, ~.x$clusters$no)[best]))
+  print(paste0("chosen psi", psis[best]))
+
+
+  return(res)
+
+
+}
+
+
+
 
 
 # Get hyperparameters -----------------------------------------------------
-
-
 
 get_hyperparameters <- function(Y, Z, mi_vec, lp, B, D, K, P){
   L <- ncol(Z) - 1
