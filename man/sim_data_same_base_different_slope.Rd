@@ -16,8 +16,6 @@ sim_data_same_base_different_slope(n, time, miss_n, cor_matrix, ranges)
 \item{cor_matrix}{correlation matrix}
 
 \item{ranges}{ranges}
-
-\item{Z}{}
 }
 \value{
 Simulated data frame

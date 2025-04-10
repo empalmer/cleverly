@@ -18,6 +18,9 @@ sim_Z_longitudinal(
   slope_base = "cluster_base_alldiff_slope"
 )
 }
+\arguments{
+\item{slope_base}{}
+}
 \value{
 data Matrix with columns time, individual, capture number, totaln, counts
 }

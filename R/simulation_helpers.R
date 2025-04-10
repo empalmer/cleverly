@@ -216,7 +216,6 @@ generate_data_longitudinal_compositionalZ <- function(n,
 #' @param miss_n missingness
 #' @param cor_matrix correlation matrix
 #' @param ranges ranges
-#' @param Z
 #'
 #' @returns Simulated data frame
 #' @export
@@ -393,6 +392,18 @@ sim_noZ <- function(n = 20,
 #' Use Chenyangs setup to simulate count data wtih 3 clusters
 #'
 #' No external variables.
+#'
+#' @param n
+#' @param range_start
+#' @param range_end
+#' @param nknots
+#' @param K
+#' @param order
+#' @param user_var
+#' @param cor_str
+#' @param al
+#' @param miss_p
+#' @param slope_base
 #'
 #' @returns data Matrix with columns time, individual, capture number, totaln, counts
 #' @export
