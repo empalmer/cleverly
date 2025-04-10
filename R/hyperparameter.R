@@ -1,4 +1,35 @@
 
+#' Title
+#'
+#' @param psi_min
+#' @param psi_max
+#' @param npsi
+#' @param parralel
+#' @param Y
+#' @param Z
+#' @param time
+#' @param lp
+#' @param response_type
+#' @param cor_str
+#' @param gammas
+#' @param tau
+#' @param theta
+#' @param C
+#' @param d
+#' @param nknots
+#' @param order
+#' @param epsilon_b
+#' @param epsilon_r
+#' @param epsilon_d
+#' @param max_outer_iter
+#' @param max_admm_iter
+#' @param max_2_iter
+#' @param epsilon_2
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 cleverly_bestpsi <- function(psi_min,
                              psi_max,
                              npsi,
@@ -28,7 +59,27 @@ cleverly_bestpsi <- function(psi_min,
 
 
   if (parralel) {
-    return( NULL)
+    res_list <- furrr::future_map(psis, ~cleverly(Y = Y,
+                                                  Z = Z,
+                                                  subject_ids = individual,
+                                                  lp = 0,
+                                                  time = time,
+                                                  # Hyperparameters
+                                                  gammas = c(1, 1),
+                                                  tau = tau,
+                                                  theta = theta,
+                                                  psi = ..1,
+                                                  C = 100,
+                                                  # Iterations max
+                                                  max_admm_iter = 100,
+                                                  max_outer_iter = 10,
+                                                  max_2_iter = 100,
+                                                  # Convergence criteria
+                                                  epsilon_r = .001,
+                                                  epsilon_d = .05,
+                                                  epsilon_b = .01,
+                                                  epsilon_2 = .001,
+                                                  cor_str = "IND"))
   } else {
     res_list <- list()
     for (p in 1:length(psis)) {
@@ -62,6 +113,7 @@ cleverly_bestpsi <- function(psi_min,
 
   best <- which.min(purrr::map_dbl(res_list, ~.x$BIC))
   res <- res_list[[best]]
+  res$all_clusters_psi <- purrr::map(res_list, ~.x$clusters)
 
 
   print(paste0("all clusters: psi:", psis,", cluster:", purrr::map(res_list, ~.x$clusters)))

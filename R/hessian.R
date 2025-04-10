@@ -51,6 +51,7 @@ get_dHessian_il <- function(i,
     stop("Missing Vi inverse argument")
   }
 
+  browser()
   hessian_il <- -fast_mat_mult3(partials_il, Vi_inv, t(partials_il))
   #hessian_il <- -partials_il %*% tcrossprod(Vi_inv, partials_il)
 
@@ -95,29 +96,12 @@ get_Hessian_il <- function(i,
                             alpha_i,
                             K,
                             P){
-  # Third term:
-  partials_il <- get_partials_il(i = i,
-                                 l = l,
-                                 Y0 = Y0,
-                                 mi_vec = mi_vec,
-                                 i_index = i_index,
-                                 beta = beta,
-                                 Z = Z,
-                                 B = B,
-                                 K = K,
-                                 alpha_i = alpha_i,
-                                 P = P)
 
   if (missing(Vi_inv)) {
     stop("Missing Vi inverse argument")
   }
-
-
-
   #hessian_il <- -partials_il %*% tcrossprod(Vi_inv, partials_il)
   hessian_il <- -fast_mat_mult3(partials_il, Vi_inv, t(partials_il))
-
-
 
   return(hessian_il)
 }

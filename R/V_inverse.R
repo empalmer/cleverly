@@ -118,6 +118,7 @@ get_Vi_inv <- function(i,
   if (cor_str == "IND") {
     V_i_inv_list <- list()
     mi <- mi_vec[i]
+    V_i_inv_mat <- matrix(0, nrow = mi*K, ncol = mi*K)
     for (j in 1:mi) {
       Y_ij0 <- get_Y_ij0(i = i,
                          j = j,
@@ -131,20 +132,19 @@ get_Vi_inv <- function(i,
                          alpha_ij = alpha_ij)
 
 
-      V_i_inv_list[[j]] <- MASS::ginv(V_ijj)
+
+      #V_i_inv_list[[j]] <- MASS::ginv(V_ijj)
+      V_i_inv_mat[((j-1)*K + 1):(j*K), ((j-1)*K + 1):(j*K)] <- MASS::ginv(V_ijj)
       #V_ij_inv_list[[j]] <- V_ijj
     }
 
     # Invert each diagonal first!
     #V_i_inv_list <- purrr::map(V_ij_list, MASS::ginv)
     #V_i_inv <- Matrix::bdiag(V_i_inv_list)
-    V_i_bdiag_inv <- Matrix::bdiag(V_i_inv_list)
-    V_i_inv <- as.matrix(V_i_bdiag_inv)
+    # V_i_bdiag_inv <- Matrix::bdiag(V_i_inv_list)
+    # V_i_inv <- as.matrix(V_i_bdiag_inv)
 
-    # if (any(is.nan(V_i_inv))) {
-    #   stop("V_i_inv has NaNs")
-    # }
-
+    V_i_inv <- V_i_inv_mat
     # Invert entire matrix.
     # Needed for non-independent case
     # start_time <- proc.time()
@@ -193,7 +193,6 @@ get_Vi_inv <- function(i,
   else{
     stop("Invalid corstr")
   }
-
 
   return(V_i_inv)
 }

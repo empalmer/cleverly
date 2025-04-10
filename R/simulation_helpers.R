@@ -628,7 +628,16 @@ base_sim <- function(seed = 124){
               P = P))
 }
 
-one_sim <- function(){
+#' Title
+#'
+#' @param parralel
+#' @param max_outer_iter
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+one_sim <- function(parralel, max_outer_iter = 10){
   sim <- sim_Z_longitudinal(n = 20,
                             range_start = 5000,
                             range_end = 10000,
@@ -650,7 +659,7 @@ one_sim <- function(){
   res_psi <- cleverly_bestpsi(psi_min = 100,
                               psi_max = 2000,
                               npsi = 6,
-                              parralel = FALSE,
+                              parralel = parralel,
                               Y = Y,
                               Z = Z,
                               lp = 0,
@@ -662,7 +671,7 @@ one_sim <- function(){
                               C = 100,
                               # Iterations max
                               max_admm_iter = 200,
-                              max_outer_iter = 10,
+                              max_outer_iter = max_outer_iter,
                               max_2_iter = 100,
                               # Convergence criteria
                               epsilon_r = .001,
@@ -673,21 +682,36 @@ one_sim <- function(){
   end <- Sys.time()
   (duration <- end - start)
 
+  sim_result <- list("chosen_cluster" = res_psi$clusters,
+                     "possible_cluster" = res_psi$all_clusters_psi,
+                    "duration" = duration)
+
   cluster <- res_psi$clusters$membership
   true_cluster <- c(1, 1, 1, 1,
                     2, 2, 2, 2,
                     3, 3, 3, 3)
 
-  res_psi$cluster_result <- data.frame("rand" = fossil::rand.index(cluster, true_cluster),
+  sim_result$cluster_result <- data.frame("rand" = fossil::rand.index(cluster, true_cluster),
                                        "adj.rand" = mclust::adjustedRandIndex(cluster, true_cluster),
                                        "jacc" = length(intersect(cluster, true_cluster)) /
                                          length(union(cluster, true_cluster)))
-  return(res_psi)
+  return(sim_result)
 
 }
 
 
-my_method_sim <- function(nsim = 50){
-  res <- purrr::map(1:nsim, ~ one_sim())
+#' Title
+#'
+#' @param nsim
+#' @param parralel
+#' @param max_outer_iter
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+my_method_sim <- function(nsim = 50, parralel = F, max_outer_iter){
+  res <- purrr::map(1:nsim, ~ one_sim(parralel = parralel,
+                                      max_outer_iter = max_outer_iter))
 
 }

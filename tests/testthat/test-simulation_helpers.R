@@ -240,7 +240,7 @@ test_that("Simulation With Z", {
 
   tau = .01
   theta = 300
-  psi = 10000
+  psi = 500
   gammas = c(1,1)
   start <- Sys.time()
   #Rprof("test.out", interval = .02)
@@ -266,7 +266,7 @@ test_that("Simulation With Z", {
                   epsilon_b = .01,
                   epsilon_2 = .001,
                   cor_str = "IND")
-  #})
+ # })
   end <- Sys.time()
   #Rprof(NULL)
   #summaryRprof("test.out")$by.self[1:10,1:2]
@@ -545,7 +545,7 @@ test_that("cleverly best psi", {
 
   start <- Sys.time()
   #Rprof("test.out", interval = .02)
-  #profvis::profvis({
+  profvis::profvis({
   res_psi <- cleverly_bestpsi(psi_min = 100,
                           psi_max = 2000,
                           npsi = 4,
@@ -569,7 +569,7 @@ test_that("cleverly best psi", {
                           epsilon_b = .01,
                           epsilon_2 = .001,
                           cor_str = "IND")
-  #})
+  })
   end <- Sys.time()
   #Rprof(NULL)
   #summaryRprof("test.out")$by.self[1:10,1:2]
@@ -620,6 +620,12 @@ test_that("cleverly best psi", {
 
   sim <- one_sim()
 
-  full_sim <- my_method_sim()
+  full_sim <- my_method_sim(nsim = 2)
+  full_sim2 <- my_method_sim(nsim = 2)
+  purrr::map_dfr(full_sim, "cluster_result")
+  purrr::map(full_sim, "all_clusters_psi")
+
+
+  full_sim3 <- my_method_sim(nsim = 1, parralel = T)
 
 })
