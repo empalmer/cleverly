@@ -400,8 +400,11 @@ get_alpha_ij <- function(i, j, beta_ks, Z, B, K, i_index, L, P) {
                    B = B,
                    i_index = i_index)
 
+
+
   # Z_ij is a vector of length L
   Z_ij <- Z[i_index[i] + j, 0:L + 1]
+
 
   alphas <- numeric(K)
   for (k in 1:K) {

@@ -109,6 +109,7 @@ algorithm1 <- function(Y,
   beta <- beta_init$beta
 
 
+
   # Initialize lambda to all 0
   lambda <- numeric(nrow(Kappa)*P)
   # loop initialization
@@ -162,15 +163,19 @@ algorithm1 <- function(Y,
         print(paste0("ERROR!!!!: ", e$message))
         return(e$message)
       })
+      rs[[s + 1]] <- alg2$r
+      alg_2_beta_diff[[s]] <- alg2$beta_diff
+      # If there is an error, exit out of the loop
+      if (is.character(alg2)) {
+        error <- beta_lp_minus
+        break
+      }
+      beta_lp_minus <- alg2$beta
     } else {
       beta_lp_minus <- beta
     }
-    # If there is an error, exit out of the loop
-    if (is.character(alg2)) {
-      error <- beta_lp_minus
-      break
-    }
-    beta_lp_minus <- alg2$beta
+
+
 
     # Solution for l p (ADMM) with beta l_p minus fixed
     alg3 <- tryCatch({
@@ -218,17 +223,11 @@ algorithm1 <- function(Y,
     lambda <- alg3$lambda
     v <- alg3$v
 
-    # alg1_beta[[s]] <- beta
-    # loop_list_diff[[s]] <- diff
-    # admm_diffs[[s]] <- alg3$diff_admm
-    # admm_beta_list[[s]] <- alg3$beta_admm_track
-    # phis_list[[s]] <- alg3$phi_track
-    rs[[s + 1]] <- alg2$r
     ts[[s]] <- alg3$t
     r_list[[s]] <- alg3$r_list
     d_list[[s]] <- alg3$d_list
     cluster_list[[s]] <- alg3$cluster_list
-    alg_2_beta_diff[[s]] <- alg2$beta_diff
+
 
     alpha <- get_alpha_list(beta = beta,
                             Z = Z,
@@ -383,13 +382,13 @@ estimate_y <- function(beta, B, Z, K, Y, time){
   # Turn into RA version:
   yhat_ra <- exp(yhat)/rowSums(exp(yhat))
 
+
   y_ra <- Y/rowSums(Y)
 
-
   Ys <- data.frame(time = time,
-                         Z = Z[,2],
-                         yhat_ra,
-                         y_ra)
+                   Z = Z[,L+1],
+                   yhat_ra,
+                   y_ra)
 
   colnames(Ys) <- c("time",
                     "Z",
@@ -397,11 +396,11 @@ estimate_y <- function(beta, B, Z, K, Y, time){
                     paste0("y_", 1:K))
 
 
-  Ys %>%
-    tidyr::pivot_longer(cols = -c(Z, time),
-                        names_to = c("type", "response"),
-                        names_sep = "_",
-                        values_to = "value")
+  # Ys %>%
+  #   tidyr::pivot_longer(cols = -c(Z, time),
+  #                       names_to = c("type", "response"),
+  #                       names_sep = "_",
+  #                       values_to = "value")
 
 
   Ys <- Ys %>%

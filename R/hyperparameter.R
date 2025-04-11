@@ -65,21 +65,21 @@ cleverly_bestpsi <- function(psi_min,
                                                   lp = 0,
                                                   time = time,
                                                   # Hyperparameters
-                                                  gammas = c(1, 1),
+                                                  gammas = gammas,
                                                   tau = tau,
                                                   theta = theta,
                                                   psi = ..1,
                                                   C = 100,
                                                   # Iterations max
-                                                  max_admm_iter = 100,
-                                                  max_outer_iter = 10,
-                                                  max_2_iter = 100,
+                                                  max_admm_iter = max_admm_iter,
+                                                  max_outer_iter = max_outer_iter,
+                                                  max_2_iter = max_2_iter,
                                                   # Convergence criteria
                                                   epsilon_r = .001,
                                                   epsilon_d = .05,
                                                   epsilon_b = .01,
                                                   epsilon_2 = .001,
-                                                  cor_str = "IND"))
+                                                  cor_str = cor_str))
   } else {
     res_list <- list()
     for (p in 1:length(psis)) {

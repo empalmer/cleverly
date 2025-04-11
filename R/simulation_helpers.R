@@ -684,7 +684,7 @@ one_sim <- function(parralel, max_outer_iter = 10){
 
   sim_result <- list("chosen_cluster" = res_psi$clusters,
                      "possible_cluster" = res_psi$all_clusters_psi,
-                    "duration" = duration)
+                     "duration" = duration)
 
   cluster <- res_psi$clusters$membership
   true_cluster <- c(1, 1, 1, 1,
@@ -692,9 +692,9 @@ one_sim <- function(parralel, max_outer_iter = 10){
                     3, 3, 3, 3)
 
   sim_result$cluster_result <- data.frame("rand" = fossil::rand.index(cluster, true_cluster),
-                                       "adj.rand" = mclust::adjustedRandIndex(cluster, true_cluster),
-                                       "jacc" = length(intersect(cluster, true_cluster)) /
-                                         length(union(cluster, true_cluster)))
+                                          "adj.rand" = mclust::adjustedRandIndex(cluster, true_cluster),
+                                          "jacc" = length(intersect(cluster, true_cluster)) /
+                                            length(union(cluster, true_cluster)))
   return(sim_result)
 
 }
