@@ -637,7 +637,7 @@ base_sim <- function(seed = 124){
 #' @export
 #'
 #' @examples
-one_sim <- function(parralel, max_outer_iter = 10){
+one_sim <- function(parralel, max_outer_iter = 10, npsi = 10){
   sim <- sim_Z_longitudinal(n = 20,
                             range_start = 5000,
                             range_end = 10000,
@@ -658,7 +658,7 @@ one_sim <- function(parralel, max_outer_iter = 10){
   start <- Sys.time()
   res_psi <- cleverly_bestpsi(psi_min = 100,
                               psi_max = 2000,
-                              npsi = 6,
+                              npsi = npsi,
                               parralel = parralel,
                               Y = Y,
                               Z = Z,

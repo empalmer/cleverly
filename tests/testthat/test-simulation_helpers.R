@@ -761,7 +761,29 @@ test_that("Simulation no Z", {
 
 
 
-
+  res_psi <- cleverly_bestpsi(psi_min = 100,
+                              psi_max = 2000,
+                              npsi = 6,
+                              parralel = F,
+                              Y = Y,
+                              Z = matrix(1, nrow = nrow(Y), ncol = 1),
+                              lp = 0,
+                              time = time,
+                              # Hyperparameters
+                              gammas = c(10),
+                              tau = 0.01,
+                              theta = 300,
+                              C = 100,
+                              # Iterations max
+                              max_admm_iter = 200,
+                              max_outer_iter = 10,
+                              max_2_iter = 100,
+                              # Convergence criteria
+                              epsilon_r = .001,
+                              epsilon_d = .05,
+                              epsilon_b = .01,
+                              epsilon_2 = .001,
+                              cor_str = "IND")
   res_psi <- cleverly_bestpsi(psi_min = 100,
                               psi_max = 2000,
                               npsi = 2,
