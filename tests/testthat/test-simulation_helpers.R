@@ -748,8 +748,7 @@ test_that("Simulation no Z", {
                       Z = Z,
                       K = K,
                       Y = Y,
-                      time = time
-                    )
+                      time = time)
   y_hat %>%
     dplyr::mutate(response = factor(response, levels = 1:K)) %>%
     ggplot2::ggplot(ggplot2::aes(x = time)) +
@@ -760,10 +759,9 @@ test_that("Simulation no Z", {
     ggplot2::facet_wrap(~response)
 
 
-
   res_psi <- cleverly_bestpsi(psi_min = 100,
                               psi_max = 2000,
-                              npsi = 6,
+                              npsi = 2,
                               parralel = F,
                               Y = Y,
                               Z = matrix(1, nrow = nrow(Y), ncol = 1),

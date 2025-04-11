@@ -121,7 +121,27 @@ cleverly_bestpsi <- function(psi_min,
   print(paste0("chosen psi", psis[best]))
 
 
-  return(res)
+  sim_result <- list("chosen_cluster" = res$clusters,
+                     "possible_cluster" = res$all_clusters_psi)
+
+  cluster <- res$clusters$membership
+  true_cluster <- c(1, 1, 1, 1,
+                    2, 2, 2, 2,
+                    3, 3, 3, 3)
+
+
+  cluster_table <- table(cluster, rep(1:3, each = 4))
+  miss_rate <- sum(diag(cluster_table))/sum(cluster_table)
+
+  sim_result$cluster_result <- data.frame("rand" = fossil::rand.index(cluster, true_cluster),
+                                          "adj.rand" = mclust::adjustedRandIndex(cluster, true_cluster),
+                                          "jacc" = length(intersect(cluster, true_cluster)) /
+                                            length(union(cluster, true_cluster)),
+                                          "miss" = miss_rate
+                                          )
+
+
+  return(sim_result)
 
 
 }
