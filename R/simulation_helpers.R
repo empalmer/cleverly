@@ -240,17 +240,17 @@ sim_data_same_base_different_slope <- function(n,
   )
   # Slope functions
   slope_fxns <- list(
-    function(t) 2 * t,
-    function(t) 3 * t,
-    function(t) 4 * t,
-    function(t) 5 * t,
-    function(t) -1 * t,
-    function(t) -2 * t,
-    function(t) -3 * t,
-    function(t) -4 * t,
-    function(t) t^2,
     function(t) sqrt(t),
+    function(t) 2 * t,
+    function(t) -3 * t,
+    function(t) 4 * t,
+    function(t) -5 * t,
+    function(t) -2 * t,
+    function(t) 3 * t,
     function(t) log1p(t),
+    function(t) -4 * t,
+    function(t) 5 * t,
+    function(t) t^2,
     function(t) sin(pi * t)
   )
 

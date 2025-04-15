@@ -762,7 +762,7 @@ test_that("Simulation no Z", {
   res_psi <- cleverly_bestpsi(psi_min = 100,
                               psi_max = 2000,
                               npsi = 2,
-                              parralel = F,
+                              parralel = T,
                               Y = Y,
                               Z = matrix(1, nrow = nrow(Y), ncol = 1),
                               lp = 0,

@@ -59,6 +59,7 @@ cleverly_bestpsi <- function(psi_min,
 
 
   if (parralel) {
+    future::plan(future::multisession, workers = future::availableCores())
     res_list <- furrr::future_map(psis, ~cleverly(Y = Y,
                                                   Z = Z,
                                                   subject_ids = individual,
