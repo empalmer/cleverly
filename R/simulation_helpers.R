@@ -223,7 +223,8 @@ sim_data_same_base_different_slope <- function(n,
                                                time,
                                                miss_n,
                                                cor_matrix,
-                                               ranges) {
+                                               ranges,
+                                               prob1) {
   sim_data_missing <- list()
 
 
@@ -235,22 +236,22 @@ sim_data_same_base_different_slope <- function(n,
   # Cluster baseline functions
   baseline_fxns <- list(
     fxn1 = function(t) cos(2 * pi * t),
-    fxn2 = function(t) 1 - 2 * exp(-6 * t),
+    fxn2 = function(t) 1 - exp(-6 * t),
     fxn3 = function(t) -2 * t
   )
   # Slope functions
   slope_fxns <- list(
     function(t) sqrt(t),
     function(t) 2 * t,
-    function(t) -3 * t,
+    function(t) -3 * t + 3,
     function(t) 4 * t,
-    function(t) -5 * t,
+    function(t) -5 * t + 5,
     function(t) -2 * t,
     function(t) 3 * t,
     function(t) log1p(t),
-    function(t) -4 * t,
+    function(t) -4 * t + 1,
     function(t) 5 * t,
-    function(t) t^2,
+    function(t) 2 * t^2,
     function(t) sin(pi * t)
   )
 
@@ -260,7 +261,7 @@ sim_data_same_base_different_slope <- function(n,
 
     Z <- stats::rbinom(n = length(time),
                        size = 1,
-                       prob = 0.6)
+                       prob = prob1)
 
     alpha <- data.frame(matrix(ncol = 12, nrow = length(time)))
     for (k in 1:12) {
@@ -417,6 +418,7 @@ sim_Z_longitudinal <- function(n = 20,
                                cor_str,
                                al = 0.4,
                                miss_p = 0.6,
+                               prob1 = 0.4,
                                slope_base = "cluster_base_alldiff_slope"
 ){
   # Time points are a sequence between 0 and 1
@@ -441,7 +443,8 @@ sim_Z_longitudinal <- function(n = 20,
                                                         time,
                                                         miss_n,
                                                         cor_matrix,
-                                                        ranges)
+                                                        ranges,
+                                                        prob1 = prob1)
   }
   else if (slope_base == "cluster_base_same_slope") {
     simulated_data <- generate_data_longitudinal_compositionalZ(n,

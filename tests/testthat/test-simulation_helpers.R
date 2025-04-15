@@ -506,12 +506,12 @@ test_that("cleverly best psi", {
   # Generate simulation data
   set.seed(127)
   sim <- sim_Z_longitudinal(n = 20,
-                            range_start = 5000,
-                            range_end = 10000,
+                            range_start = 4000,
+                            range_end = 8000,
                             nknots = 3,
                             K = 12,
                             order = 3,
-                            user_var = 500,
+                            user_var = 600,
                             cor_str = "IND",
                             al = 0.4,
                             slope_base = "cluster_base_alldiff_slope")
@@ -528,7 +528,7 @@ test_that("cleverly best psi", {
                                  y = value,
                                  color = factor(Z))) +
     ggplot2::geom_point(size = 1) +
-    ggplot2::facet_wrap(~name) +
+    ggplot2::facet_wrap(~name, scales = "free") +
     ggplot2::labs(title = "Simulated Data",
                   color = "EV",
                   y = "Count",
