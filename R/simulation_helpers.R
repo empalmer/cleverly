@@ -390,7 +390,7 @@ sim_noZ <- function(n = 20,
 
 #' Use Chenyangs setup to simulate count data wtih 3 clusters
 #'
-#' No external variables.
+#' One external variable binary with prob prob1 of being 1
 #'
 #' @param n
 #' @param range_start

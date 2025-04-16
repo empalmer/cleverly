@@ -26,5 +26,5 @@ sim_Z_longitudinal(
 data Matrix with columns time, individual, capture number, totaln, counts
 }
 \description{
-No external variables.
+One external variable binary with prob prob1 of being 1
 }
