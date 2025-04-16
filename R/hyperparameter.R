@@ -123,13 +123,15 @@ cleverly_bestpsi <- function(psi_min,
 
 
   sim_result <- list("chosen_cluster" = res$clusters,
-                     "possible_cluster" = res$all_clusters_psi)
+                     "possible_cluster" = res$all_clusters_psi,
+                     "chosen_psi" = psis[best],
+                     "y_hat_init" = res$y_hat_init,
+                     "y_hat_final" = res$y_hat)
 
   cluster <- res$clusters$membership
   true_cluster <- c(1, 1, 1, 1,
                     2, 2, 2, 2,
                     3, 3, 3, 3)
-
 
   cluster_table <- table(cluster, rep(1:3, each = 4))
   miss_rate <- sum(diag(cluster_table))/sum(cluster_table)
@@ -140,7 +142,6 @@ cleverly_bestpsi <- function(psi_min,
                                             length(union(cluster, true_cluster)),
                                           "miss" = miss_rate
                                           )
-
 
   return(sim_result)
 

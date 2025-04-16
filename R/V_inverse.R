@@ -190,6 +190,43 @@ get_Vi_inv <- function(i,
     #V_i_inv <- (1/phi) * A_inv %*% MASS::ginv(R_i + corR) %*% A_inv
     V_i_inv <- (1/phi) * fast_mat_mult3(A_inv, MASS::ginv(R_i + corR), A_inv)
   }
+  else if (cor_str == "AR1") {
+    V_i_list <- list()
+    R_i_list <- list()
+    mi <- mi_vec[i]
+    V_i <- matrix(nrow = 0, ncol = 0)
+    R_i <- matrix(nrow = 0, ncol = 0)
+    for (j in 1:mi) {
+      Y_ij0 <- get_Y_ij0(i = i,
+                         j = j,
+                         Y0 = Y0,
+                         i_index)
+      alpha_ij <- alpha[[i]][[j]]
+
+
+      V_ijj <- get_V_ijj(Y_ij0 = Y_ij0,
+                         phi = phi,
+                         alpha_ij = alpha_ij)
+      A_ijj <- diag(1/sqrt(diag(V_ijj)))
+
+      #R_ijj <- A_ijj %*% V_ijj %*% A_ijj
+      R_ijj <- fast_mat_mult3(A_ijj, V_ijj, A_ijj)
+
+      V_i <- magic::adiag(V_i, V_ijj)
+      R_i <- magic::adiag(R_i, R_ijj)
+
+    }
+
+    A_inv <- diag(1/sqrt(diag(V_i)))
+
+    # For CON, this is a matrix of 1s everywhere except on the block diagonal which has 0s
+    # Then scaled by the calculated rho_cor
+    corR <- rho_cor * kronecker(matrix(1, nrow = mi, ncol = mi) - diag(mi),
+                                matrix(1, nrow = K, ncol = K))
+    #V_i_inv <- (1/phi) * A_inv %*% MASS::ginv(R_i + corR) %*% A_inv
+    V_i_inv <- (1/phi) * fast_mat_mult3(A_inv, MASS::ginv(R_i + corR), A_inv)
+
+  }
   else{
     stop("Invalid corstr")
   }
@@ -304,7 +341,7 @@ get_rho <- function(Y,
   }
 
 
-  regressiondata <- NULL
+  # Initialize list for each subject
   regression_data_list <- vector("list", length(mi_vec))
 
   for (i in seq_along(mi_vec)) {
@@ -313,7 +350,14 @@ get_rho <- function(Y,
 
     # Compute the difference matrix efficiently
     diag_values <- rep(capture_number, each = K)
+    # This lets us find the blocks of the matrix, only matters
+    # if they are zero, not the actual value.
+    # Shouldnt this also be j11 minus j2?
     diagnal3 <- outer(diag_values, diag_values, "-")
+
+    indicatorbeta <- kronecker(matrix(1, nrow = mi, ncol = mi),
+                               matrix(1, nrow = K, ncol = K))
+
     # Compute Pearson residual matrix
     pearson_residual_i <- get_pearson_residual_i(Y,
                                                  Y0,
@@ -328,18 +372,33 @@ get_rho <- function(Y,
     matrix_pearson_residual <- tcrossprod(pearson_residual_i)
 
     # We only want the upper non-block triangle of the matrix
-    matrix_pearson_residual[round(diagnal3) == 0 | lower.tri(matrix_pearson_residual)] <- NA
+    # Extract non-NA values (which are the upper triangular non-block)
+    rijk_rijk <- matrix_pearson_residual[!(round(diagnal3) == 0 |
+                                            lower.tri(matrix_pearson_residual))]
 
-    # Extract non-NA values
-    newRijkl <- na.omit(as.vector(matrix_pearson_residual))
+    # Used for AR1 cor str
+    abs_j1_j2 <- abs(diagnal3[!(round(diagnal3) == 0 |
+                                            lower.tri(matrix_pearson_residual))])
 
-    regression_data_list[[i]] <- newRijkl
+    # save for i
+    regression_data_list[[i]] <- data.frame(rijk_rijk,
+                                            abs_j1_j2)
+
+  }
+  # Combine all dataframes at the end for efficiency
+  regressiondata <- purrr::reduce(regression_data_list, rbind)
+
+
+  if (cor_str == "CON") {
+    # This is how we calculate it for the CON structure.
+    rho_cor <- mean(regressiondata$rijk_rijk)
+  }
+  if (cor_str == "AR1") {
+    objective_f <- purrr::map_dbl(seq(-1,1,0.1), ~sum((regressiondata$rijk_rijk -
+                                                         .x^(regressiondata$abs_j1_j2))^2) )
+    rho_cor <- seq(-1,1,0.1)[which.min(objective_f)]
   }
 
-  # Combine all dataframes at the end for efficiency
-  regressiondata <- unlist(regression_data_list)
-  # This is how we calculate it for the CON structure.
-  rho_cor <- mean(regressiondata)
   # logic for edge cases, mean might not give a valid structure.
   if (rho_cor == 1) {
     rho_cor <- -1

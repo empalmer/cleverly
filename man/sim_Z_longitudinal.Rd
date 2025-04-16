@@ -13,13 +13,14 @@ sim_Z_longitudinal(
   order = 3,
   user_var = 1000,
   cor_str,
-  al = 0.4,
+  rho = 0.4,
   miss_p = 0.6,
+  prob1 = 0.4,
   slope_base = "cluster_base_alldiff_slope"
 )
 }
 \arguments{
-\item{slope_base}{}
+\item{prob1}{}
 }
 \value{
 data Matrix with columns time, individual, capture number, totaln, counts

@@ -4,7 +4,7 @@
 \alias{sim_data_same_base_different_slope}
 \title{Generating data simulation function}
 \usage{
-sim_data_same_base_different_slope(n, time, miss_n, cor_matrix, ranges)
+sim_data_same_base_different_slope(n, time, miss_n, cor_matrix, ranges, prob1)
 }
 \arguments{
 \item{n}{n constant of number of individuals}

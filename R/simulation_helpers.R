@@ -33,23 +33,21 @@ Dirichlet.multinomial <- function(Y0, alpha) {
 #' @param mi number of timepoints for ith sample
 #' @param user_var
 #' @param structure Type of correlation 1 for (?) 2 for (?) 1: compound symmetry, 2: autoregressive, 3: indepdendent
-#' @param al rho?
+#' @param rho rho?
 #'
 #' @returns User defined correlation matrix.
 #' @export
-cor_user <- function(mi, user_var, cor_str, al) {
+cor_user <- function(mi, user_var, cor_str, rho) {
   if (cor_str == "CON") {
-    cor <- user_var * ((pracma::ones(mi, mi) - diag(rep(1, mi))) * al + diag(rep(1, mi)))
-  }
-  if (cor_str == "AR1") {
+    cor <- user_var * ((pracma::ones(mi, mi) - diag(rep(1, mi))) * rho + diag(rep(1, mi)))
+  } else if (cor_str == "AR1") {
     need1 <- matrix(rep(1:mi, each = mi), nrow = mi)
     need2 <- matrix(rep(1:mi, each = mi), ncol = mi, byrow = TRUE)
-    cor <- al^abs(need1 - need2) * user_var
+    cor <- rho^abs(need1 - need2) * user_var
   }
-  if (cor_str == "IND") {
+  else if (cor_str == "IND") {
     cor <- diag(mi) * user_var
-  }
-  else
+  } else
     stop("Invalid cor_str")
   return(cor)
 }
@@ -402,9 +400,10 @@ sim_noZ <- function(n = 20,
 #' @param order
 #' @param user_var
 #' @param cor_str
-#' @param al
+#' @param rho
 #' @param miss_p
 #' @param slope_base
+#' @param prob1
 #'
 #' @returns data Matrix with columns time, individual, capture number, totaln, counts
 #' @export
@@ -416,11 +415,10 @@ sim_Z_longitudinal <- function(n = 20,
                                order = 3,
                                user_var = 1000,
                                cor_str,
-                               al = 0.4,
+                               rho = 0.4,
                                miss_p = 0.6,
                                prob1 = 0.4,
-                               slope_base = "cluster_base_alldiff_slope"
-){
+                               slope_base = "cluster_base_alldiff_slope"){
   # Time points are a sequence between 0 and 1
   time <- seq(0, 1, 0.05)
 
@@ -435,7 +433,7 @@ sim_Z_longitudinal <- function(n = 20,
   cor_matrix <- cor_user(length(time),
                          user_var = user_var,
                          cor_str = cor_str,
-                         al = al)
+                         rho = rho)
 
   # Simulate data.
   if (slope_base == "cluster_base_alldiff_slope") {

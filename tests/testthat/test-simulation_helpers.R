@@ -208,7 +208,8 @@ test_that("Simulation With Z", {
                             order = 3,
                             user_var = 500,
                             cor_str = "IND",
-                            al = 0.4,
+                            rho = 0.4,
+                            prob1 = .9,
                             slope_base = "cluster_base_alldiff_slope")
 
   # Visualize simulated data
@@ -528,7 +529,7 @@ test_that("cleverly best psi", {
                                  y = value,
                                  color = factor(Z))) +
     ggplot2::geom_point(size = 1) +
-    ggplot2::facet_wrap(~name, scales = "free") +
+    ggplot2::facet_wrap(~name, scales = "free_y") +
     ggplot2::labs(title = "Simulated Data",
                   color = "EV",
                   y = "Count",

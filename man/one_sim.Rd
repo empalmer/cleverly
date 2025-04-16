@@ -4,7 +4,7 @@
 \alias{one_sim}
 \title{Title}
 \usage{
-one_sim(parralel, max_outer_iter = 10)
+one_sim(parralel, max_outer_iter = 10, npsi = 10)
 }
 \arguments{
 \item{max_outer_iter}{}
