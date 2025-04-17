@@ -353,7 +353,7 @@ get_rho <- function(Y,
     # This lets us find the blocks of the matrix, only matters
     # if they are zero, not the actual value.
     # Shouldnt this also be j11 minus j2?
-    diagnal3 <- outer(diag_values, diag_values, "-")
+    block_diagonal_elements <- outer(diag_values, diag_values, "-")
 
     indicatorbeta <- kronecker(matrix(1, nrow = mi, ncol = mi),
                                matrix(1, nrow = K, ncol = K))
@@ -373,11 +373,11 @@ get_rho <- function(Y,
 
     # We only want the upper non-block triangle of the matrix
     # Extract non-NA values (which are the upper triangular non-block)
-    rijk_rijk <- matrix_pearson_residual[!(round(diagnal3) == 0 |
+    rijk_rijk <- matrix_pearson_residual[!(block_diagonal_elements == 0 |
                                             lower.tri(matrix_pearson_residual))]
 
     # Used for AR1 cor str
-    abs_j1_j2 <- abs(diagnal3[!(round(diagnal3) == 0 |
+    abs_j1_j2 <- abs(block_diagonal_elements[!(block_diagonal_elements == 0 |
                                             lower.tri(matrix_pearson_residual))])
 
     # save for i
@@ -386,7 +386,7 @@ get_rho <- function(Y,
 
   }
   # Combine all dataframes at the end for efficiency
-  regressiondata <- purrr::reduce(regression_data_list, rbind)
+  regressiondata <- dplyr::bind_rows(regression_data_list)
 
 
   if (cor_str == "CON") {

@@ -187,6 +187,48 @@ plot_clusters <- function(res, K, tau, psi, gammas, theta, max_admm_iter, max_ou
 
 }
 
+#' Plot clusters based on a yhat data frame
+#'
+#' yhat should contain yhat, y, Z, and time
+#'
+#' @param yhat
+#' @param chosen_cluster
+#' @param K
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+plot_clusters_yhat <- function(yhat, chosen_cluster, K = 12){
+
+  cluster_df <- data.frame(
+    K = factor(1:K, levels = 1:K),
+    cluster = factor(chosen_cluster$membership))
+
+  # plot clusters
+  plot <- yhat %>%
+    dplyr::mutate(response = factor(response, levels = 1:K)) %>%
+    dplyr::left_join(cluster_df, by = c("response" = "K")) %>%
+    dplyr::mutate(clusterZ = ifelse(Z == 1, "EV", cluster)) %>%
+    ggplot2::ggplot(ggplot2::aes(x = time)) +
+    ggplot2::geom_point(ggplot2::aes(y = y,
+                                     color = factor(Z),
+                                     shape = factor(Z)),
+                        size = .6, alpha = .8) +
+    ggnewscale::new_scale_color() +
+    ggplot2::geom_line(ggplot2::aes(y = yhat,
+                                    color = clusterZ,
+                                    group = factor(Z)),
+                       linewidth = 1) +
+    ggplot2::facet_wrap(~response) +
+    ggplot2::scale_color_manual(
+      values = c(viridis::viridis(length(unique(cluster_df$cluster))), "grey50"),
+      name = "Cluster"
+    )
+
+  return(plot)
+
+}
 
 #' Title
 #'

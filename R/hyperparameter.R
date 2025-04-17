@@ -129,6 +129,143 @@ cleverly_bestpsi <- function(psi_min,
                      "y_hat_final" = res$y_hat)
 
   cluster <- res$clusters$membership
+  true_cluster <- rep(1:3, each = 4)
+  sim_result$cluster_result <- data.frame("rand" = fossil::rand.index(cluster, true_cluster),
+                                          "adj.rand" = mclust::adjustedRandIndex(cluster, true_cluster),
+                                          "jacc" = length(intersect(cluster, true_cluster)) /
+                                            length(union(cluster, true_cluster)),
+                                          "miss" = "miss" = mclust::classError(classification = .x,
+                                                                               class = true_cluster)$errorRate
+                                          )
+
+  return(sim_result)
+
+
+}
+
+
+
+#' Title
+#'
+#' @param psi_min
+#' @param psi_max
+#' @param npsi
+#' @param parralel
+#' @param Y
+#' @param Z
+#' @param time
+#' @param lp
+#' @param response_type
+#' @param cor_str
+#' @param gammas
+#' @param tau
+#' @param theta
+#' @param C
+#' @param d
+#' @param nknots
+#' @param order
+#' @param epsilon_b
+#' @param epsilon_r
+#' @param epsilon_d
+#' @param max_outer_iter
+#' @param max_admm_iter
+#' @param max_2_iter
+#' @param epsilon_2
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+cleverly_bestparam <- function(param_grid,
+                               parralel = FALSE,
+                               Y,
+                               Z,
+                               time,
+                               lp = 0,
+                               response_type = "counts",
+                               cor_str = "IND",
+                               gamma_length,
+                               theta = 300,
+                               C = 10,
+                               d = 2,
+                               nknots = 3,
+                               order = 3,
+                               epsilon_b = 1e-3,
+                               epsilon_r = 1e-3,
+                               epsilon_d = 1e-3,
+                               max_outer_iter = 10,
+                               max_admm_iter = 100,
+                               max_2_iter = 100,
+                               epsilon_2 = 1e-3){
+
+
+
+  if (parralel) {
+    future::plan(future::multisession, workers = future::availableCores())
+    res_list <- furrr::future_pmap(param_grid, ~cleverly(Y = Y,
+                                                  Z = Z,
+                                                  subject_ids = individual,
+                                                  lp = 0,
+                                                  time = time,
+                                                  # Hyperparameters
+                                                  gammas = rep(..3, gamma_length),
+                                                  tau = ..2,
+                                                  theta = theta,
+                                                  psi = ..1,
+                                                  C = 100,
+                                                  # Iterations max
+                                                  max_admm_iter = max_admm_iter,
+                                                  max_outer_iter = max_outer_iter,
+                                                  max_2_iter = max_2_iter,
+                                                  # Convergence criteria
+                                                  epsilon_r = .001,
+                                                  epsilon_d = .05,
+                                                  epsilon_b = .01,
+                                                  epsilon_2 = .001,
+                                                  cor_str = cor_str))
+  } else {
+    res_list <- list()
+    for (p in 1:length(param_grid)) {
+      psi <- param_grid[p]
+
+      res_list[[p]] <- cleverly(Y = Y,
+                                Z = Z,
+                                subject_ids = individual,
+                                time = time,
+                                lp = lp,
+                                response_type = response_type,
+                                cor_str = cor_str,
+                                gammas = gammas,
+                                psi = psi,
+                                tau = tau,
+                                theta = theta,
+                                C = C,
+                                d = d,
+                                nknots = nknots,
+                                order = order,
+                                epsilon_b = epsilon_b,
+                                epsilon_r = epsilon_r,
+                                epsilon_d = epsilon_d,
+                                max_outer_iter = max_outer_iter,
+                                max_admm_iter = max_admm_iter,
+                                max_2_iter = max_2_iter,
+                                epsilon_2 = epsilon_2)
+    }
+  }
+
+
+  best <- which.min(purrr::map_dbl(res_list, ~.x$BIC))
+  res <- res_list[[best]]
+  res$all_clusters_psi <- purrr::map(res_list, ~.x$clusters)
+
+
+  sim_result <- list("chosen_cluster" = res$clusters,
+                     "possible_cluster" = res$all_clusters_psi,
+                     "chosen_params" = param_grid[best,],
+                     "y_hat_init" = res$y_hat_init,
+                     "y_hat_final" = res$y_hat)
+
+  cluster <- res$clusters$membership
   true_cluster <- c(1, 1, 1, 1,
                     2, 2, 2, 2,
                     3, 3, 3, 3)
@@ -141,15 +278,12 @@ cleverly_bestpsi <- function(psi_min,
                                           "jacc" = length(intersect(cluster, true_cluster)) /
                                             length(union(cluster, true_cluster)),
                                           "miss" = miss_rate
-                                          )
+  )
 
   return(sim_result)
 
 
 }
-
-
-
 
 
 # Get hyperparameters -----------------------------------------------------

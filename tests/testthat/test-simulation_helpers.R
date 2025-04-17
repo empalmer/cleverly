@@ -206,10 +206,10 @@ test_that("Simulation With Z", {
                             nknots = 3,
                             K = 12,
                             order = 3,
-                            user_var = 500,
-                            cor_str = "IND",
-                            rho = 0.4,
-                            prob1 = .9,
+                            user_var = 1000,
+                            cor_str = "CON",
+                            rho = 0.8,
+                            prob1 = .5,
                             slope_base = "cluster_base_alldiff_slope")
 
   # Visualize simulated data
@@ -239,20 +239,20 @@ test_that("Simulation With Z", {
   Z <- sim$Z
 
 
-  tau = .01
+  tau = .005
   theta = 300
-  psi = 500
-  gammas = c(1,1)
-  start <- Sys.time()
+  psi = 800
+  gammas = c(10, 10)
+  #start <- Sys.time()
   #Rprof("test.out", interval = .02)
-  #profvis::profvis({
+  profvis::profvis({
   res <- cleverly(Y = Y,
                   Z = Z,
                   subject_ids = individual,
                   lp = 0,
                   time = time,
                   # Hyperparameters
-                  gammas = c(1, 1),
+                  gammas = gammas,
                   tau = tau,
                   theta = theta,
                   psi = psi,
@@ -266,23 +266,23 @@ test_that("Simulation With Z", {
                   epsilon_d = .05,
                   epsilon_b = .01,
                   epsilon_2 = .001,
-                  cor_str = "IND")
-  # })
-  end <- Sys.time()
+                  cor_str = "CON")
+  })
+  #end <- Sys.time()
   #Rprof(NULL)
   #summaryRprof("test.out")$by.self[1:10,1:2]
-  (duration <- end - start)
-  res$clusters$no
+  #(duration <- end - start)
+  res$clusters
 
   # Diagnostic plots:
   plot_clusters(res = res,
                 K = 12,
-                tau = tau,
-                psi = psi,
-                theta = theta,
-                gammas = gammas,
-                max_admm_iter = max_admm_iter,
-                max_outer_iter = max_outer_iter)
+                tau = 0,
+                psi = 0,
+                theta = 0,
+                gammas = 0,
+                max_admm_iter = 0,
+                max_outer_iter = 0)
 
   plot_cluster_path(res, psi, tau, theta,gammas, max_admm_iter, max_outer_iter, duration)
   plot_initial_fit(res, K = 12, gammas = gammas)
