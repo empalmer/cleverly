@@ -134,7 +134,7 @@ cleverly_bestpsi <- function(psi_min,
                                           "adj.rand" = mclust::adjustedRandIndex(cluster, true_cluster),
                                           "jacc" = length(intersect(cluster, true_cluster)) /
                                             length(union(cluster, true_cluster)),
-                                          "miss" = "miss" = mclust::classError(classification = .x,
+                                          "miss" = mclust::classError(classification = .x,
                                                                                class = true_cluster)$errorRate
                                           )
 
