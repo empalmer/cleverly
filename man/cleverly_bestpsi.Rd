@@ -20,6 +20,7 @@ cleverly_bestpsi(
   theta = 300,
   C = 10,
   d = 2,
+  run_min = 3,
   nknots = 3,
   order = 3,
   epsilon_b = 0.001,
@@ -32,7 +33,7 @@ cleverly_bestpsi(
 )
 }
 \arguments{
-\item{epsilon_2}{}
+\item{run_min}{}
 }
 \description{
 Title

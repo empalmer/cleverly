@@ -16,6 +16,7 @@ algorithm1(
   theta,
   C,
   d,
+  run_min,
   nknots,
   order,
   epsilon_b,
@@ -51,6 +52,8 @@ algorithm1(
 
 \item{d}{Order for the difference matrix}
 
+\item{run_min}{}
+
 \item{nknots}{Number of knots for the B-spline basis}
 
 \item{order}{Order of the B-spline basis}
@@ -64,8 +67,6 @@ algorithm1(
 \item{max_outer_iter}{Max number of iterations for the outer loop (Algorithm 1)}
 
 \item{max_admm_iter}{Max number of iterations for the ADMM loop}
-
-\item{cor_str}{}
 }
 \value{
 List of beta, clusters, y_hat, v, admm_diffs, admm_beta_list, loop_list_beta, loop_list_diff, phis_list

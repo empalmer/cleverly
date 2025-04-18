@@ -27,6 +27,7 @@
 #' @param max_2_iter
 #' @param epsilon_2
 #' @param cor_str
+#' @param run_min
 #'
 #' @returns
 #' @export
@@ -45,6 +46,7 @@ cleverly <- function(Y,
                      theta = 300,
                      C = 10,
                      d = 2,
+                     run_min = 3,
                      nknots = 3,
                      order = 3,
                      epsilon_b = 1e-3,
@@ -149,6 +151,7 @@ cleverly <- function(Y,
                          theta = theta,
                          C = C,
                          d = d,
+                         run_min = run_min,
                          nknots = nknots,
                          order = order,
                          epsilon_b = epsilon_b,

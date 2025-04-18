@@ -25,6 +25,7 @@
 #' @param max_admm_iter
 #' @param max_2_iter
 #' @param epsilon_2
+#' @param run_min
 #'
 #' @returns
 #' @export
@@ -45,6 +46,7 @@ cleverly_bestpsi <- function(psi_min,
                              theta = 300,
                              C = 10,
                              d = 2,
+                             run_min = 3,
                              nknots = 3,
                              order = 3,
                              epsilon_b = 1e-3,
@@ -71,6 +73,7 @@ cleverly_bestpsi <- function(psi_min,
                                                   theta = theta,
                                                   psi = ..1,
                                                   C = 100,
+                                                  run_min = run_min,
                                                   # Iterations max
                                                   max_admm_iter = max_admm_iter,
                                                   max_outer_iter = max_outer_iter,
@@ -99,6 +102,7 @@ cleverly_bestpsi <- function(psi_min,
                                 theta = theta,
                                 C = C,
                                 d = d,
+                                run_min = run_min,
                                 nknots = nknots,
                                 order = order,
                                 epsilon_b = epsilon_b,
@@ -110,7 +114,6 @@ cleverly_bestpsi <- function(psi_min,
                                 epsilon_2 = epsilon_2)
     }
   }
-
 
   best <- which.min(purrr::map_dbl(res_list, ~.x$BIC))
   res <- res_list[[best]]
@@ -134,7 +137,7 @@ cleverly_bestpsi <- function(psi_min,
                                           "adj.rand" = mclust::adjustedRandIndex(cluster, true_cluster),
                                           "jacc" = length(intersect(cluster, true_cluster)) /
                                             length(union(cluster, true_cluster)),
-                                          "miss" = mclust::classError(classification = .x,
+                                          "miss" = mclust::classError(classification = cluster,
                                                                                class = true_cluster)$errorRate
                                           )
 

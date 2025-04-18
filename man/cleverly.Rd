@@ -18,6 +18,7 @@ cleverly(
   theta = 300,
   C = 10,
   d = 2,
+  run_min = 3,
   nknots = 3,
   order = 3,
   epsilon_b = 0.001,
@@ -42,8 +43,6 @@ cleverly(
 
 \item{response_type}{Counts or continuous response?}
 
-\item{cor_str}{}
-
 \item{gammas}{Vector of dimension L + 1 for penalizing the D matrix}
 
 \item{psi}{Hyperparameter for clustering penalty (larger drives pairwise differences to zero)}
@@ -55,6 +54,8 @@ cleverly(
 \item{C}{Constant for determining the hessian change. Default is 10.}
 
 \item{d}{Order for the difference matrix}
+
+\item{run_min}{}
 
 \item{nknots}{Number of knots for the B-spline basis}
 

@@ -513,8 +513,9 @@ test_that("cleverly best psi", {
                             K = 12,
                             order = 3,
                             user_var = 600,
-                            cor_str = "IND",
-                            al = 0.4,
+                            cor_str = "CON",
+                            rho = 0.4,
+                            prob1 = .5,
                             slope_base = "cluster_base_alldiff_slope")
 
   # Visualize simulated data
@@ -543,13 +544,9 @@ test_that("cleverly best psi", {
     "Z"))
   Z <- sim$Z
 
-
-  start <- Sys.time()
-  #Rprof("test.out", interval = .02)
-  profvis::profvis({
-  res_psi <- cleverly_bestpsi(psi_min = 100,
-                          psi_max = 2000,
-                          npsi = 4,
+  res_psi <- cleverly_bestpsi(psi_min = 800,
+                          psi_max = 1000,
+                          npsi = 2,
                           parralel = FALSE,
                           Y = Y,
                           Z = Z,
@@ -557,24 +554,20 @@ test_that("cleverly best psi", {
                           time = time,
                           # Hyperparameters
                           gammas = c(1, 1),
-                          tau = 0.01,
+                          tau = 0.005,
                           theta = 300,
                           C = 100,
                           # Iterations max
-                          max_admm_iter = 200,
-                          max_outer_iter = 10,
-                          max_2_iter = 100,
+                          max_admm_iter = 50,
+                          max_outer_iter = 2,
+                          max_2_iter = 50,
                           # Convergence criteria
                           epsilon_r = .001,
                           epsilon_d = .05,
                           epsilon_b = .01,
                           epsilon_2 = .001,
                           cor_str = "IND")
-  })
-  end <- Sys.time()
-  #Rprof(NULL)
-  #summaryRprof("test.out")$by.self[1:10,1:2]
-  (duration <- end - start)
+
   res_psi$clusters
 
   res <- res_psi

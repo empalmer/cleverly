@@ -21,6 +21,7 @@
 #' @param max_2_iter
 #' @param epsilon_2
 #' @param cor_str
+#' @param run_min
 #'
 #' @returns List of beta, clusters, y_hat, v, admm_diffs, admm_beta_list, loop_list_beta, loop_list_diff, phis_list
 #' @export
@@ -35,6 +36,7 @@ algorithm1 <- function(Y,
                        theta,
                        C,
                        d,
+                       run_min,
                        nknots,
                        order,
                        epsilon_b,
@@ -258,7 +260,7 @@ algorithm1 <- function(Y,
     }
 
     # Exit if constant cluster results for the past 3 iterations
-    if (s >= 3) {
+    if (s >= run_min) {
       current <-  alg3$cluster_list[[length(alg3$cluster_list)]]$membership
       past1 <- cluster_list[[s - 1]][[length(cluster_list[[s - 1]])]]$membership
       past2 <- cluster_list[[s - 2]][[length(cluster_list[[s - 2]])]]$membership
