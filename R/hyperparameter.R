@@ -138,7 +138,8 @@ cleverly_bestpsi <- function(psi_min,
                                           "jacc" = length(intersect(cluster, true_cluster)) /
                                             length(union(cluster, true_cluster)),
                                           "miss" = mclust::classError(classification = cluster,
-                                                                               class = true_cluster)$errorRate
+                                                                               class = true_cluster)$errorRate,
+                                          "nclust" = res$clusters$no
                                           )
 
   return(sim_result)

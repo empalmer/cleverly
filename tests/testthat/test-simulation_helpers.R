@@ -639,14 +639,13 @@ test_that("Simulation no Z", {
                             order = 3,
                             user_var = 500,
                             cor_str = "IND",
-                            al = 0.4,
+                            rho = 0.4,
                             slope_base = "cluster_base_alldiff_slope")
 
   Y <- dplyr::select(sim, -c(
     "total_n",
     "Capture.Number",
     "Z"))
-
 
 
   tau = .01
