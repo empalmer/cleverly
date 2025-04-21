@@ -9,9 +9,9 @@
 #' @param B B spline basis matrix of dimension (N x P)
 #' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
-#' @param i_index
-#' @param Y0
-#' @param alpha_ij
+#' @param i_index starting index of the ith subject in the data
+#' @param Y0 Vector of total count for each sample
+#' @param alpha_ij Vector of DM parameters for i, j
 #'
 #' @returns Matrix of dimension PK x K
 #' @export
@@ -55,11 +55,11 @@ get_partials_ijl <- function(i,
 #' @param B B spline basis matrix of dimension (N x P)
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
-#' @param Y0
-#' @param alpha_i
-#' @param i_index
+#' @param Y0 Vector of total count for each sample
+#' @param alpha_i Vector of DM parameters for i
+#' @param i_index starting index of the ith subject in the data
 #' @param P
-#' @param K
+#' @param K Number of responses
 #'
 #' @returns Matrix of dimension KP x Kmi
 #' @export
@@ -100,14 +100,14 @@ get_partials_il <- function(i,
 #'
 #' @param l
 #' @param mi_vec
-#' @param i_index
+#' @param i_index starting index of the ith subject in the data
 #' @param beta
 #' @param Z
 #' @param B
-#' @param Y0
+#' @param Y0 Vector of total count for each sample
 #' @param alpha
 #' @param P
-#' @param K
+#' @param K Number of responses
 #'
 #' @returns
 #' @export

@@ -2,13 +2,16 @@
 % Please edit documentation in R/simulation_diagnostics.R
 \name{plot_alg2_convergence}
 \alias{plot_alg2_convergence}
-\title{Title}
+\title{plot_alg2_convergence}
 \usage{
 plot_alg2_convergence(res)
 }
 \arguments{
-\item{res}{}
+\item{res}{Cleverly model object}
+}
+\value{
+ggplot
 }
 \description{
-Title
+plot_alg2_convergence
 }

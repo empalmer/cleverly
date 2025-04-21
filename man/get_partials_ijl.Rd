@@ -15,13 +15,17 @@ get_partials_ijl(i, j, l, mi_vec, i_index, Y0, Z, B, beta, alpha_ij)
 
 \item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
 
+\item{i_index}{starting index of the ith subject in the data}
+
+\item{Y0}{Vector of total count for each sample}
+
 \item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
 
 \item{B}{B spline basis matrix of dimension (N x P)}
 
 \item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
 
-\item{alpha_ij}{}
+\item{alpha_ij}{Vector of DM parameters for i, j}
 }
 \value{
 Matrix of dimension PK x K

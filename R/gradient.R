@@ -12,11 +12,11 @@
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #' @param B B spline basis matrix of dimension (N x P)
 #' @param i_index starting index of the ith subject in the data
-#' @param Y0
+#' @param Y0 Vector of total count for each sample
 #' @param alpha
 #' @param Vi_inv
-#' @param partials_il
-#' @param K
+#' @param partials_il Partials vector for ith subject and lth external variable
+#' @param K Number of responses
 #'
 #' @returns Vector of length PK
 #' @export
@@ -66,12 +66,12 @@ get_gradient_il <- function(i,
 #' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
 #' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
 #' @param B B spline basis matrix of dimension (N x P)
-#' @param i_index
-#' @param V_inv
+#' @param i_index starting index of the ith subject in the data
+#' @param V_inv V inverse
 #' @param partials_l
-#' @param Y0
+#' @param Y0 Vector of total count for each sample
 #' @param alpha
-#' @param K
+#' @param K Number of responses
 #' @param P
 #'
 #' @returns vector of length PK x 1

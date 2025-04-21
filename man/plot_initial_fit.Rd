@@ -2,13 +2,17 @@
 % Please edit documentation in R/simulation_diagnostics.R
 \name{plot_initial_fit}
 \alias{plot_initial_fit}
-\title{Title}
+\title{plot_initial_fit}
 \usage{
 plot_initial_fit(res, K, gammas)
 }
 \arguments{
-\item{gammas}{}
+\item{res}{Cleverly model object}
+
+\item{K}{Number of responses}
+
+\item{gammas}{Vector of dimension L + 1 for penalizing the D matrix}
 }
 \description{
-Title
+plot_initial_fit
 }

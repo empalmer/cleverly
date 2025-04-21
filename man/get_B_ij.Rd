@@ -12,6 +12,8 @@ get_B_ij(i, j, B, i_index)
 \item{j}{time index}
 
 \item{B}{B spline basis matrix of dimension (N x P)}
+
+\item{i_index}{starting index of the ith subject in the data}
 }
 \value{
 A vector of length P

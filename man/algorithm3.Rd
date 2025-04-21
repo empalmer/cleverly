@@ -38,6 +38,8 @@ algorithm3(
 \arguments{
 \item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
 
+\item{Y0}{Vector of total count for each sample}
+
 \item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
 
 \item{lp}{clustering index (integer between 0 and L)}
@@ -58,6 +60,8 @@ algorithm3(
 
 \item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
 
+\item{i_index}{starting index of the ith subject in the data}
+
 \item{gammas}{Vector of dimension L + 1 for penalizing the D matrix}
 
 \item{tau}{MCP hyper parameter.}
@@ -73,6 +77,10 @@ algorithm3(
 \item{epsilon_r}{Tolerance for ADMM convergence}
 
 \item{epsilon_d}{Tolerance for ADMM convergence}
+
+\item{L}{Number of external variables}
+
+\item{K}{Number of responses}
 
 \item{M}{}
 }

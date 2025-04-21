@@ -2,13 +2,19 @@
 % Please edit documentation in R/V_inverse.R
 \name{get_V_inv}
 \alias{get_V_inv}
-\title{Get overal V inverse}
+\title{Get overall V inverse}
 \usage{
 get_V_inv(Y, Y0, alpha, mi_vec, i_index, phi, beta, Z, B, K, cor_str, rho_cor)
 }
 \arguments{
-\item{Y0}{}
+\item{Y0}{Vector of total count for each sample}
+
+\item{i_index}{starting index of the ith subject in the data}
+
+\item{phi}{Current value of overdispersion parameter}
+
+\item{K}{Number of responses}
 }
 \description{
-Get overal V inverse
+for all i
 }

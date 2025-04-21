@@ -7,6 +7,10 @@
 get_d_norm(v_new, v, theta, Kappa, K, P)
 }
 \arguments{
+\item{theta}{ADMM hyper parameter.}
+
+\item{Kappa}{keeps track of each possible response pair}
+
 \item{P}{}
 }
 \description{

@@ -9,6 +9,8 @@ get_pearson_residual_i(Y, Y0, i, beta, alpha = alpha, Z, B, K, mi_vec, i_index)
 \arguments{
 \item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
 
+\item{Y0}{Vector of total count for each sample}
+
 \item{i}{subject index}
 
 \item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
@@ -21,7 +23,7 @@ get_pearson_residual_i(Y, Y0, i, beta, alpha = alpha, Z, B, K, mi_vec, i_index)
 
 \item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
 
-\item{i_index}{}
+\item{i_index}{starting index of the ith subject in the data}
 }
 \value{
 pearson residual vector for each i

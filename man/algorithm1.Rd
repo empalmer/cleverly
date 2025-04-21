@@ -67,6 +67,8 @@ algorithm1(
 \item{max_outer_iter}{Max number of iterations for the outer loop (Algorithm 1)}
 
 \item{max_admm_iter}{Max number of iterations for the ADMM loop}
+
+\item{max_2_iter}{Maximum number of iterations for algorithm 2 to run each loop}
 }
 \value{
 List of beta, clusters, y_hat, v, admm_diffs, admm_beta_list, loop_list_beta, loop_list_diff, phis_list

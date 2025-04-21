@@ -11,7 +11,11 @@ get_mu_i(i, alpha, mi_vec, i_index, Y0, K)
 
 \item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
 
-\item{K}{}
+\item{i_index}{starting index of the ith subject in the data}
+
+\item{Y0}{Vector of total count for each sample}
+
+\item{K}{Number of responses}
 }
 \value{
 Vector of length K*mi with each K first

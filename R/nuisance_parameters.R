@@ -8,9 +8,9 @@
 #' @param B B spline basis matrix of dimension (N x P)
 #' @param K Number of responses
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
-#' @param Y0
+#' @param Y0 Vector of total count for each sample
 #' @param alpha
-#' @param i_index
+#' @param i_index starting index of the ith subject in the data
 #' @param M
 #'
 #' @returns scalar phi
@@ -42,9 +42,9 @@ get_phi <- function(Y, Y0, beta, alpha, Z, B, K, mi_vec, i_index, M){
 #' @param B B spline basis matrix of dimension (N x P)
 #' @param K Number of responses
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
-#' @param Y0
+#' @param Y0 Vector of total count for each sample
 #' @param alpha
-#' @param i_index
+#' @param i_index starting index of the ith subject in the data
 #' @param M
 #'
 #' @returns Pearson residuals vector for all i, j, k
@@ -87,9 +87,9 @@ get_pearson_residuals <- function(Y,
 #' @param B B spline basis matrix of dimension (N x P)
 #' @param K Number of responses
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
-#' @param Y0
+#' @param Y0 Vector of total count for each sample
 #' @param alpha
-#' @param i_index
+#' @param i_index starting index of the ith subject in the data
 #'
 #' @returns pearson residual vector for each i
 #' @export

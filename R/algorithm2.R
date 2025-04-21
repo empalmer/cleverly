@@ -10,16 +10,16 @@
 #' @param gammas Vector of dimension L + 1 for penalizing the D matrix
 #' @param phi Current value of overdispersion parameter
 #' @param C Constant for determining the hessian change.
-#' @param Y0
-#' @param max_2_iter
+#' @param Y0 Vector of total count for each sample
+#' @param max_2_iter Maximum number of iterations for algorithm 2 to run each loop
 #' @param epsilon_2
 #' @param time
 #' @param s
-#' @param L
+#' @param L Number of external variables
 #' @param P
-#' @param K
+#' @param K Number of responses
 #' @param M
-#' @param i_index
+#' @param i_index starting index of the ith subject in the data
 #'
 #' @returns Vector of length PK x L
 #' @export

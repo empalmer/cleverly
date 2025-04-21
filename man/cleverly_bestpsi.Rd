@@ -2,7 +2,7 @@
 % Please edit documentation in R/hyperparameter.R
 \name{cleverly_bestpsi}
 \alias{cleverly_bestpsi}
-\title{Title}
+\title{cleverly_bestpsi}
 \usage{
 cleverly_bestpsi(
   psi_min,
@@ -33,8 +33,26 @@ cleverly_bestpsi(
 )
 }
 \arguments{
+\item{psi_min}{minimum psi}
+
+\item{psi_max}{maximum psi}
+
+\item{npsi}{Number of psi values to test}
+
+\item{parralel}{Run in parallel? T/F, if T, use all available cores}
+
+\item{gammas}{Vector of dimension L + 1 for penalizing the D matrix}
+
+\item{tau}{MCP hyper parameter.}
+
+\item{theta}{ADMM hyper parameter.}
+
 \item{run_min}{}
+
+\item{max_admm_iter}{Max number of iterations for the ADMM loop}
+
+\item{max_2_iter}{Maximum number of iterations for algorithm 2 to run each loop}
 }
 \description{
-Title
+Run cleverly for a range of hyperparameter psi values.
 }

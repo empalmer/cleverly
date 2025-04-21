@@ -2,13 +2,19 @@
 % Please edit documentation in R/helpers.R
 \name{get_alpha_i}
 \alias{get_alpha_i}
-\title{Title}
+\title{get_alpha_i}
 \usage{
 get_alpha_i(i, beta_ks, Z, B, K, i_index, mi_vec, L, P)
 }
 \arguments{
+\item{K}{Number of responses}
+
+\item{i_index}{starting index of the ith subject in the data}
+
+\item{L}{Number of external variables}
+
 \item{P}{}
 }
 \description{
-Title
+get_alpha_i
 }

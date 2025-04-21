@@ -7,7 +7,7 @@
 get_R_ijjp(corstr, rho, K)
 }
 \arguments{
-\item{K}{}
+\item{K}{Number of responses}
 }
 \description{
 Title

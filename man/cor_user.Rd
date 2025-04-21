@@ -9,7 +9,9 @@ cor_user(mi, user_var, cor_str, rho)
 \arguments{
 \item{mi}{number of timepoints for ith sample}
 
-\item{rho}{rho?}
+\item{user_var}{User supplied variance}
+
+\item{rho}{rho}
 
 \item{structure}{Type of correlation 1 for (?) 2 for (?) 1: compound symmetry, 2: autoregressive, 3: indepdendent}
 }

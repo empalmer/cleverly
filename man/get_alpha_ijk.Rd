@@ -15,6 +15,10 @@ get_alpha_ijk(i, j, k, beta_ks, Z_ij, B_ij, i_index, P, L)
 
 \item{Z_ij}{vector of length l.}
 
+\item{i_index}{starting index of the ith subject in the data}
+
+\item{L}{Number of external variables}
+
 \item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
 }
 \value{

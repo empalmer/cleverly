@@ -10,6 +10,10 @@ get_Y_ij0(i, j, Y0, i_index)
 \item{i}{subject index}
 
 \item{j}{time index}
+
+\item{Y0}{Vector of total count for each sample}
+
+\item{i_index}{starting index of the ith subject in the data}
 }
 \value{
 Scalar of the total sum constraint for a given i, j

@@ -7,7 +7,7 @@
 plot_clusters_yhat(yhat, chosen_cluster, K = 12)
 }
 \arguments{
-\item{K}{}
+\item{K}{Number of responses}
 }
 \description{
 yhat should contain yhat, y, Z, and time

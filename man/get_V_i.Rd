@@ -11,6 +11,8 @@ get_V_i(i, Y, Y0, phi, beta, Z, B, K, mi_vec, i_index, L, P)
 
 \item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
 
+\item{Y0}{Vector of total count for each sample}
+
 \item{phi}{Current value of overdispersion parameter}
 
 \item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
@@ -22,6 +24,10 @@ get_V_i(i, Y, Y0, phi, beta, Z, B, K, mi_vec, i_index, L, P)
 \item{K}{Number of responses}
 
 \item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
+
+\item{i_index}{starting index of the ith subject in the data}
+
+\item{L}{Number of external variables}
 
 \item{P}{}
 }

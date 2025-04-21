@@ -11,15 +11,21 @@ get_partials_il(i, l, Y0, Z, B, beta, alpha_i, mi_vec, i_index, P, K)
 
 \item{l}{external variable index}
 
+\item{Y0}{Vector of total count for each sample}
+
 \item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
 
 \item{B}{B spline basis matrix of dimension (N x P)}
 
 \item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
 
+\item{alpha_i}{Vector of DM parameters for i}
+
 \item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
 
-\item{K}{}
+\item{i_index}{starting index of the ith subject in the data}
+
+\item{K}{Number of responses}
 }
 \value{
 Matrix of dimension KP x Kmi

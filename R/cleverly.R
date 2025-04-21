@@ -24,7 +24,7 @@
 #' @param epsilon_b
 #' @param epsilon_r
 #' @param epsilon_d
-#' @param max_2_iter
+#' @param max_2_iter Maximum number of iterations for algorithm 2 to run each loop
 #' @param epsilon_2
 #' @param cor_str
 #' @param run_min

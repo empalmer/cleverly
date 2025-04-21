@@ -131,13 +131,13 @@ beta_path <- function(betas, K, B, Z, time){
 
 #' Title
 #'
-#' @param res
-#' @param K
-#' @param tau
+#' @param res Cleverly model object
+#' @param K Number of responses
+#' @param tau MCP hyper parameter.
 #' @param psi
-#' @param gammas
-#' @param theta
-#' @param max_admm_iter
+#' @param gammas Vector of dimension L + 1 for penalizing the D matrix
+#' @param theta ADMM hyper parameter.
+#' @param max_admm_iter Max number of iterations for the ADMM loop
 #' @param max_outer_iter
 #'
 #' @returns
@@ -193,7 +193,7 @@ plot_clusters <- function(res, K, tau, psi, gammas, theta, max_admm_iter, max_ou
 #'
 #' @param yhat
 #' @param chosen_cluster
-#' @param K
+#' @param K Number of responses
 #'
 #' @returns
 #' @export
@@ -230,16 +230,14 @@ plot_clusters_yhat <- function(yhat, chosen_cluster, K = 12){
 
 }
 
-#' Title
+#' plot_initial_fit
 #'
-#' @param res
-#' @param K
-#' @param gammas
+#' @param res Cleverly model object
+#' @param K Number of responses
+#' @param gammas Vector of dimension L + 1 for penalizing the D matrix
 #'
 #' @returns
 #' @export
-#'
-#' @examples
 plot_initial_fit <- function(res, K, gammas){
   # Initial fit:
   y_hat_init <- res$y_hat_init
@@ -262,21 +260,19 @@ plot_initial_fit <- function(res, K, gammas){
 }
 
 
-#' Title
+#' plot_cluster_path
 #'
-#' @param res
+#' @param res Cleverly model object
 #' @param psi
-#' @param tau
-#' @param theta
-#' @param gammas
-#' @param max_admm_iter
+#' @param tau MCP hyper parameter.
+#' @param theta ADMM hyper parameter.
+#' @param gammas Vector of dimension L + 1 for penalizing the D matrix
+#' @param max_admm_iter Max number of iterations for the ADMM loop
 #' @param max_outer_iter
 #' @param duration
 #'
 #' @returns
 #' @export
-#'
-#' @examples
 plot_cluster_path <- function(res, psi, tau, theta, gammas, max_admm_iter, max_outer_iter, duration){
   # Cluster progress:
   cluster_track <- res$cluster_list
@@ -303,14 +299,12 @@ plot_cluster_path <- function(res, psi, tau, theta, gammas, max_admm_iter, max_o
 }
 
 
-#' Title
+#' plot_alg2_convergence
 #'
-#' @param res
+#' @param res Cleverly model object
 #'
-#' @returns
+#' @returns ggplot
 #' @export
-#'
-#' @examples
 plot_alg2_convergence <- function(res){
   # alg2 convergence
   plot <- purrr::imap_dfr(res$alg_2_beta_diff,
@@ -328,14 +322,13 @@ plot_alg2_convergence <- function(res){
 }
 
 
-#' Title
+#' plot_d_convergence
 #'
-#' @param res
+#' @param res Cleverly model object
 #'
 #' @returns
 #' @export
-#'
-#' @examples
+
 plot_d_convergence <- function(res){
   plot <- purrr::imap_dfr(res$d_list,
                   ~data.frame(cluster = unlist(.x),
@@ -350,14 +343,13 @@ plot_d_convergence <- function(res){
   return(plot)
 }
 
-#' Title
+#' plot_r_convergence
 #'
-#' @param res
+#' @param res Cleverly model object
 #'
 #' @returns
 #' @export
-#'
-#' @examples
+
 plot_r_convergence <- function(res){
   plot <- purrr::imap_dfr(res$r_list,
                   ~data.frame(cluster = unlist(.x),

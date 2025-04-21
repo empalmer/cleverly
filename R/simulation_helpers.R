@@ -28,12 +28,14 @@ Dirichlet.multinomial <- function(Y0, alpha) {
 
 
 
+
+
 #' User defined correlation structure
 #'
 #' @param mi number of timepoints for ith sample
-#' @param user_var
+#' @param user_var User supplied variance
 #' @param structure Type of correlation 1 for (?) 2 for (?) 1: compound symmetry, 2: autoregressive, 3: indepdendent
-#' @param rho rho?
+#' @param rho rho
 #'
 #' @returns User defined correlation matrix.
 #' @export
@@ -43,14 +45,19 @@ cor_user <- function(mi, user_var, cor_str, rho) {
   } else if (cor_str == "AR1") {
     need1 <- matrix(rep(1:mi, each = mi), nrow = mi)
     need2 <- matrix(rep(1:mi, each = mi), ncol = mi, byrow = TRUE)
-    cor <- rho^abs(need1 - need2) * user_var
+    cor <- user_var * (rho^abs(need1 - need2))
   }
   else if (cor_str == "IND") {
-    cor <- diag(mi) * user_var
+    cor <- user_var * diag(mi)
   } else
     stop("Invalid cor_str")
   return(cor)
 }
+
+
+
+# Generate counts based on different curve patterns -----------------------
+
 
 
 #' Generating data simulation function
@@ -317,6 +324,9 @@ sim_data_same_base_different_slope <- function(n,
 
 
 
+# Simulate the data (DM) --------------------------------------------------
+
+
 #' Use Chenyangs setup to simulate count data wtih 3 clusters
 #'
 #' No external variables.
@@ -396,13 +406,13 @@ sim_noZ <- function(n = 20,
 #' @param range_start
 #' @param range_end
 #' @param nknots
-#' @param K
+#' @param K Number of responses
 #' @param order
 #' @param user_var
 #' @param cor_str
 #' @param rho
-#' @param miss_p
-#' @param slope_base
+#' @param miss_p proportion of missing samples
+#' @param slope_base type of slope/intercept clustering curves to generate
 #' @param prob1
 #'
 #' @returns data Matrix with columns time, individual, capture number, totaln, counts
@@ -636,8 +646,6 @@ base_sim <- function(seed = 124){
 #'
 #' @returns
 #' @export
-#'
-#' @examples
 one_sim <- function(parralel, max_outer_iter = 10, npsi = 10){
   sim <- sim_Z_longitudinal(n = 20,
                             range_start = 5000,
@@ -701,18 +709,4 @@ one_sim <- function(parralel, max_outer_iter = 10, npsi = 10){
 }
 
 
-#' Title
-#'
-#' @param nsim
-#' @param parralel
-#' @param max_outer_iter
-#'
-#' @returns
-#' @export
-#'
-#' @examples
-my_method_sim <- function(nsim = 50, parralel = F, max_outer_iter){
-  res <- purrr::map(1:nsim, ~ one_sim(parralel = parralel,
-                                      max_outer_iter = max_outer_iter))
 
-}

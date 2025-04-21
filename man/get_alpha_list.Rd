@@ -7,6 +7,12 @@
 get_alpha_list(beta, Z, B, K, i_index, mi_vec, L, P)
 }
 \arguments{
+\item{K}{Number of responses}
+
+\item{i_index}{starting index of the ith subject in the data}
+
+\item{L}{Number of external variables}
+
 \item{P}{}
 }
 \description{

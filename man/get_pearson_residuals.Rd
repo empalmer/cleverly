@@ -9,6 +9,8 @@ get_pearson_residuals(Y, Y0, beta, alpha, Z, B, K, mi_vec, i_index, M)
 \arguments{
 \item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
 
+\item{Y0}{Vector of total count for each sample}
+
 \item{beta}{beta matrix of beta (or beta hat) of dimension (P*K) x L}
 
 \item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
@@ -18,6 +20,8 @@ get_pearson_residuals(Y, Y0, beta, alpha, Z, B, K, mi_vec, i_index, M)
 \item{K}{Number of responses}
 
 \item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
+
+\item{i_index}{starting index of the ith subject in the data}
 
 \item{M}{}
 }

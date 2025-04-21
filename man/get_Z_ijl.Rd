@@ -14,6 +14,8 @@ get_Z_ijl(i, j, l, Z, i_index)
 \item{l}{external variable index}
 
 \item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
+
+\item{i_index}{starting index of the ith subject in the data}
 }
 \value{
 Scalar for the l-th external variable for subject i at time j

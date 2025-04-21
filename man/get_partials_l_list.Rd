@@ -7,7 +7,11 @@
 get_partials_l_list(Y0, l, mi_vec, i_index, beta, alpha, Z, B, P, K)
 }
 \arguments{
-\item{K}{}
+\item{Y0}{Vector of total count for each sample}
+
+\item{i_index}{starting index of the ith subject in the data}
+
+\item{K}{Number of responses}
 }
 \description{
 Partials list (of matrices) with respect to given l

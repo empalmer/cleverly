@@ -20,7 +20,13 @@ sim_Z_longitudinal(
 )
 }
 \arguments{
+\item{K}{Number of responses}
+
+\item{miss_p}{proportion of missing samples}
+
 \item{prob1}{}
+
+\item{slope_base}{type of slope/intercept clustering curves to generate}
 }
 \value{
 data Matrix with columns time, individual, capture number, totaln, counts

@@ -2,7 +2,7 @@
 % Please edit documentation in R/simulation_diagnostics.R
 \name{plot_cluster_path}
 \alias{plot_cluster_path}
-\title{Title}
+\title{plot_cluster_path}
 \usage{
 plot_cluster_path(
   res,
@@ -16,8 +16,18 @@ plot_cluster_path(
 )
 }
 \arguments{
+\item{res}{Cleverly model object}
+
+\item{tau}{MCP hyper parameter.}
+
+\item{theta}{ADMM hyper parameter.}
+
+\item{gammas}{Vector of dimension L + 1 for penalizing the D matrix}
+
+\item{max_admm_iter}{Max number of iterations for the ADMM loop}
+
 \item{duration}{}
 }
 \description{
-Title
+plot_cluster_path
 }

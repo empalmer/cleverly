@@ -11,9 +11,13 @@ get_Yi_minus_mui(i, Y, Y0, alpha, mi_vec, i_index, K)
 
 \item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
 
+\item{Y0}{Vector of total count for each sample}
+
 \item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
 
-\item{K}{}
+\item{i_index}{starting index of the ith subject in the data}
+
+\item{K}{Number of responses}
 }
 \value{
 Vector of length Kmi

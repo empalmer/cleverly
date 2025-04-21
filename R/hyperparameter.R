@@ -1,19 +1,21 @@
 
-#' Title
+#' cleverly_bestpsi
 #'
-#' @param psi_min
-#' @param psi_max
-#' @param npsi
-#' @param parralel
+#' Run cleverly for a range of hyperparameter psi values.
+#'
+#' @param psi_min minimum psi
+#' @param psi_max maximum psi
+#' @param npsi Number of psi values to test
+#' @param parralel Run in parallel? T/F, if T, use all available cores
 #' @param Y
 #' @param Z
 #' @param time
 #' @param lp
 #' @param response_type
 #' @param cor_str
-#' @param gammas
-#' @param tau
-#' @param theta
+#' @param gammas Vector of dimension L + 1 for penalizing the D matrix
+#' @param tau MCP hyper parameter.
+#' @param theta ADMM hyper parameter.
 #' @param C
 #' @param d
 #' @param nknots
@@ -22,8 +24,8 @@
 #' @param epsilon_r
 #' @param epsilon_d
 #' @param max_outer_iter
-#' @param max_admm_iter
-#' @param max_2_iter
+#' @param max_admm_iter Max number of iterations for the ADMM loop
+#' @param max_2_iter Maximum number of iterations for algorithm 2 to run each loop
 #' @param epsilon_2
 #' @param run_min
 #'
@@ -161,9 +163,9 @@ cleverly_bestpsi <- function(psi_min,
 #' @param lp
 #' @param response_type
 #' @param cor_str
-#' @param gammas
-#' @param tau
-#' @param theta
+#' @param gammas Vector of dimension L + 1 for penalizing the D matrix
+#' @param tau MCP hyper parameter.
+#' @param theta ADMM hyper parameter.
 #' @param C
 #' @param d
 #' @param nknots
@@ -172,8 +174,8 @@ cleverly_bestpsi <- function(psi_min,
 #' @param epsilon_r
 #' @param epsilon_d
 #' @param max_outer_iter
-#' @param max_admm_iter
-#' @param max_2_iter
+#' @param max_admm_iter Max number of iterations for the ADMM loop
+#' @param max_2_iter Maximum number of iterations for algorithm 2 to run each loop
 #' @param epsilon_2
 #'
 #' @returns

@@ -18,7 +18,7 @@
 #' @param max_outer_iter Max number of iterations for the outer loop (Algorithm 1)
 #' @param max_admm_iter Max number of iterations for the ADMM loop
 #' @param C Constant for determining the hessian change.
-#' @param max_2_iter
+#' @param max_2_iter Maximum number of iterations for algorithm 2 to run each loop
 #' @param epsilon_2
 #' @param cor_str
 #' @param run_min

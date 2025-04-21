@@ -2,13 +2,13 @@
 % Please edit documentation in R/simulation_diagnostics.R
 \name{plot_d_convergence}
 \alias{plot_d_convergence}
-\title{Title}
+\title{plot_d_convergence}
 \usage{
 plot_d_convergence(res)
 }
 \arguments{
-\item{res}{}
+\item{res}{Cleverly model object}
 }
 \description{
-Title
+plot_d_convergence
 }

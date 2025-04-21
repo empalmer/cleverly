@@ -32,6 +32,8 @@ update_beta_admm(
 \arguments{
 \item{Y}{Matrix of counts Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
 
+\item{Y0}{Vector of total count for each sample}
+
 \item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
 
 \item{lp}{clustering index (integer between 0 and L)}
@@ -57,6 +59,12 @@ update_beta_admm(
 \item{C}{Constant for determining the hessian change.}
 
 \item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
+
+\item{i_index}{starting index of the ith subject in the data}
+
+\item{K}{Number of responses}
+
+\item{L}{Number of external variables}
 
 \item{P}{}
 }

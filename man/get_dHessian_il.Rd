@@ -26,7 +26,11 @@ get_dHessian_il(
 
 \item{l}{external variable index}
 
+\item{Y0}{Vector of total count for each sample}
+
 \item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
+
+\item{i_index}{starting index of the ith subject in the data}
 
 \item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
 
@@ -37,6 +41,12 @@ get_dHessian_il(
 \item{phi}{Current value of overdispersion parameter}
 
 \item{Vi_inv}{(optional) Vi inverse If supplied is faster}
+
+\item{partials_il}{Partials vector for ith subject and lth external variable}
+
+\item{alpha_i}{Vector of DM parameters for i}
+
+\item{K}{Number of responses}
 
 \item{P}{}
 }

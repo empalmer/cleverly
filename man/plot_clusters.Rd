@@ -7,6 +7,18 @@
 plot_clusters(res, K, tau, psi, gammas, theta, max_admm_iter, max_outer_iter)
 }
 \arguments{
+\item{res}{Cleverly model object}
+
+\item{K}{Number of responses}
+
+\item{tau}{MCP hyper parameter.}
+
+\item{gammas}{Vector of dimension L + 1 for penalizing the D matrix}
+
+\item{theta}{ADMM hyper parameter.}
+
+\item{max_admm_iter}{Max number of iterations for the ADMM loop}
+
 \item{max_outer_iter}{}
 }
 \description{

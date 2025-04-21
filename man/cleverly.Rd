@@ -64,6 +64,8 @@ cleverly(
 \item{max_outer_iter}{Number of iterations for the outer loop (Algorithm 1)}
 
 \item{max_admm_iter}{Number of iterations for the clustering step (Algorithm 3)}
+
+\item{max_2_iter}{Maximum number of iterations for algorithm 2 to run each loop}
 }
 \description{
 Overall user interface for this algorithm

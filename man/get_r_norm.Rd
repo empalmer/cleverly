@@ -2,13 +2,15 @@
 % Please edit documentation in R/algorithm3.R
 \name{get_r_norm}
 \alias{get_r_norm}
-\title{Title}
+\title{get_r_norm}
 \usage{
 get_r_norm(beta, v, Kappa, P, lp)
 }
 \arguments{
+\item{Kappa}{keeps track of each possible response pair}
+
 \item{lp}{}
 }
 \description{
-Title
+Get the L2 norm of convergence criteria r
 }

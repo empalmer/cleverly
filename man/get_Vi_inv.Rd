@@ -27,6 +27,8 @@ get_Vi_inv(
 
 \item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
 
+\item{i_index}{starting index of the ith subject in the data}
+
 \item{phi}{Current value of overdispersion parameter}
 
 \item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
@@ -36,6 +38,8 @@ get_Vi_inv(
 \item{B}{B spline basis matrix of dimension (N x P)}
 
 \item{K}{Number of responses}
+
+\item{rho_cor}{}
 }
 \value{
 Matrix of dimension Kmi x Kmi

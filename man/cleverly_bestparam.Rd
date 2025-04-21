@@ -29,7 +29,17 @@ cleverly_bestparam(
 )
 }
 \arguments{
+\item{theta}{ADMM hyper parameter.}
+
+\item{max_admm_iter}{Max number of iterations for the ADMM loop}
+
+\item{max_2_iter}{Maximum number of iterations for algorithm 2 to run each loop}
+
 \item{epsilon_2}{}
+
+\item{gammas}{Vector of dimension L + 1 for penalizing the D matrix}
+
+\item{tau}{MCP hyper parameter.}
 }
 \description{
 Title

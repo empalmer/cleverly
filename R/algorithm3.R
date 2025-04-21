@@ -23,13 +23,13 @@
 #' @param phi Current value of overdispersion parameter
 #' @param epsilon_r Tolerance for ADMM convergence
 #' @param epsilon_d Tolerance for ADMM convergence
-#' @param Y0
+#' @param Y0 Vector of total count for each sample
 #' @param lambda
 #' @param AtA
-#' @param i_index
+#' @param i_index starting index of the ith subject in the data
 #' @param s
-#' @param L
-#' @param K
+#' @param L Number of external variables
+#' @param K Number of responses
 #' @param M
 #'
 #' @returns List with the updated betas, updated vs, and lists tracking the betas, vs, and lambdas for each iteration
@@ -295,12 +295,12 @@ update_v <- function(beta,
 #' @param phi Current value of overdispersion parameter
 #' @param C Constant for determining the hessian change.
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
-#' @param Y0
+#' @param Y0 Vector of total count for each sample
 #' @param alpha
 #' @param AtA
-#' @param i_index
-#' @param K
-#' @param L
+#' @param i_index starting index of the ith subject in the data
+#' @param K Number of responses
+#' @param L Number of external variables
 #' @param P
 #'
 #' @returns matrix of updated betas
@@ -466,11 +466,13 @@ update_lambda <- function(beta_lp, v, lambda, A, theta){
 # Convergence criteria ----------------------------------------------------
 
 
-#' Title
+#' get_r_norm
+#'
+#' Get the L2 norm of convergence criteria r
 #'
 #' @param beta
 #' @param v
-#' @param Kappa
+#' @param Kappa keeps track of each possible response pair
 #' @param P
 #' @param lp
 #'
@@ -501,8 +503,8 @@ get_r_norm <- function(beta, v, Kappa, P, lp){
 #'
 #' @param v_new
 #' @param v
-#' @param theta
-#' @param Kappa
+#' @param theta ADMM hyper parameter.
+#' @param Kappa keeps track of each possible response pair
 #' @param K
 #' @param P
 #'

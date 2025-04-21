@@ -17,6 +17,10 @@ get_alpha_ij(i, j, beta_ks, Z, B, K, i_index, L, P)
 
 \item{K}{Number of responses}
 
+\item{i_index}{starting index of the ith subject in the data}
+
+\item{L}{Number of external variables}
+
 \item{P}{}
 
 \item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}

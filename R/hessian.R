@@ -9,12 +9,12 @@
 #' @param B B spline basis matrix of dimension (N x P)
 #' @param phi Current value of overdispersion parameter
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
-#' @param i_index
+#' @param i_index starting index of the ith subject in the data
 #' @param Vi_inv (optional) Vi inverse If supplied is faster
-#' @param partials_il
-#' @param Y0
-#' @param alpha_i
-#' @param K
+#' @param partials_il Partials vector for ith subject and lth external variable
+#' @param Y0 Vector of total count for each sample
+#' @param alpha_i Vector of DM parameters for i
+#' @param K Number of responses
 #' @param P
 #'
 #' @returns Matrix of dimension KP times KP
@@ -71,12 +71,12 @@ get_dHessian_il <- function(i,
 #' @param B B spline basis matrix of dimension (N x P)
 #' @param phi Current value of overdispersion parameter
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
-#' @param i_index
+#' @param i_index starting index of the ith subject in the data
 #' @param Vi_inv (optional) Vi inverse If supplied is faster
-#' @param partials_il
-#' @param Y0
-#' @param alpha_i
-#' @param K
+#' @param partials_il Partials vector for ith subject and lth external variable
+#' @param Y0 Vector of total count for each sample
+#' @param alpha_i Vector of DM parameters for i
+#' @param K Number of responses
 #' @param P
 #'
 #' @returns Matrix of dimension KP times KP
@@ -114,13 +114,13 @@ get_Hessian_il <- function(i,
 #' @param phi Current value of overdispersion parameter
 #' @param C Constant for determining the hessian change.
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
-#' @param i_index
+#' @param i_index starting index of the ith subject in the data
 #' @param V_inv (optional) List of V inverses for each i. If supplied is faster
-#' @param Y0
+#' @param Y0 Vector of total count for each sample
 #' @param partials_l
 #' @param alpha
 #' @param P
-#' @param K
+#' @param K Number of responses
 #'
 #' @returns Matrix of dimension KP times KP
 #' @export
@@ -198,13 +198,13 @@ get_DHessian_l <- function(l,
 #' @param phi Current value of overdispersion parameter
 #' @param C Constant for determining the hessian change.
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
-#' @param i_index
+#' @param i_index starting index of the ith subject in the data
 #' @param V_inv (optional) List of V inverses for each i. If supplied is faster
-#' @param Y0
+#' @param Y0 Vector of total count for each sample
 #' @param partials_l
 #' @param alpha
 #' @param P
-#' @param K
+#' @param K Number of responses
 #'
 #' @returns Matrix of dimension KP times KP
 #' @export
