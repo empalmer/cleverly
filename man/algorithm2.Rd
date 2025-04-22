@@ -55,9 +55,17 @@ algorithm2(
 
 \item{max_2_iter}{Maximum number of iterations for algorithm 2 to run each loop}
 
+\item{epsilon_2}{Tolerance for convergence of algorithm 2}
+
+\item{time}{either a vector of length(Y) or a column reference if Y is a data frame. Must be numeric}
+
 \item{L}{Number of external variables}
 
+\item{P}{Number of B-spline coefficients (order + nknots)}
+
 \item{K}{Number of responses}
+
+\item{M}{Number of samples times timepoints for each sample}
 }
 \value{
 Vector of length PK x L

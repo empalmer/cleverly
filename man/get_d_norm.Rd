@@ -2,17 +2,26 @@
 % Please edit documentation in R/algorithm3.R
 \name{get_d_norm}
 \alias{get_d_norm}
-\title{Title}
+\title{get_d_norm}
 \usage{
 get_d_norm(v_new, v, theta, Kappa, K, P)
 }
 \arguments{
+\item{v_new}{updated differences for each pair of betas of dimension (P*|Kappa|) x1}
+
+\item{v}{differences for each pair of betas of dimension (P*|Kappa|) x1}
+
 \item{theta}{ADMM hyper parameter.}
 
 \item{Kappa}{keeps track of each possible response pair}
 
-\item{P}{}
+\item{K}{Number of responses}
+
+\item{P}{Number of B-spline coefficients (order + nknots)}
+}
+\value{
+difference between v_new and v
 }
 \description{
-Title
+get_d_norm
 }

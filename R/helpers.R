@@ -234,7 +234,7 @@ get_mu_ij <- function(Y_ij0, alpha_ij) {
 #' Get mu_i mean vector for ith sample
 #'
 #' @param i subject index
-#' @param alpha
+#' @param alpha list of alpha that can be subsetted by i and j
 #' @param i_index starting index of the ith subject in the data
 #' @param Y0 Vector of total count for each sample
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
@@ -266,7 +266,7 @@ get_mu_i <- function(i, alpha, mi_vec, i_index, Y0, K) {
 #' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #' @param Y0 Vector of total count for each sample
-#' @param alpha
+#' @param alpha list of alpha that can be subsetted by i and j
 #' @param i_index starting index of the ith subject in the data
 #' @param K Number of responses
 #'
@@ -340,11 +340,11 @@ get_B <- function(time, order, nknots) {
 #' @param j time index
 #' @param k response index
 #' @param Z_ij vector of length l.
-#' @param B_ij
+#' @param B_ij B spline basis for i and j
 #' @param i_index starting index of the ith subject in the data
-#' @param P
+#' @param P Number of B-spline coefficients (order + nknots)
+#' @param beta_ks list of beta for each k
 #' @param L Number of external variables
-#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
 #'
 #' @returns Numeric (1x1)
 #' @export
@@ -390,7 +390,7 @@ get_alpha_ijk <- function(i, j, k, beta_ks, Z_ij, B_ij, i_index, P, L) {
 #' @param K Number of responses
 #' @param i_index starting index of the ith subject in the data
 #' @param L Number of external variables
-#' @param P
+#' @param P Number of B-spline coefficients (order + nknots)
 #'
 #' @returns Vector of length K
 #' @export
@@ -424,17 +424,17 @@ get_alpha_ij <- function(i, j, beta_ks, Z, B, K, i_index, L, P) {
 
 #' get_alpha_i
 #'
-#' @param i
-#' @param beta
-#' @param Z
-#' @param B
+#' @param i subject index
+#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param B B spline basis matrix of dimension (N x P)
 #' @param K Number of responses
 #' @param i_index starting index of the ith subject in the data
-#' @param mi_vec
+#' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #' @param L Number of external variables
-#' @param P
+#' @param P Number of B-spline coefficients (order + nknots)
 #'
-#' @returns
+#' @returns list of alphas for each j in 1:mi
 #' @export
 get_alpha_i <- function(i, beta_ks, Z, B, K, i_index, mi_vec, L, P){
   # L <- ncol(Z) - 1
@@ -452,21 +452,19 @@ get_alpha_i <- function(i, beta_ks, Z, B, K, i_index, mi_vec, L, P){
 
 }
 
-#' Title
+#' get_alpha_list
 #'
-#' @param beta
-#' @param Z
-#' @param B
+#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param B B spline basis matrix of dimension (N x P)
 #' @param K Number of responses
 #' @param i_index starting index of the ith subject in the data
-#' @param mi_vec
+#' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #' @param L Number of external variables
-#' @param P
+#' @param P Number of B-spline coefficients (order + nknots)
 #'
-#' @returns
+#' @returns list
 #' @export
-#'
-#' @examples
 get_alpha_list <- function(beta, Z, B, K, i_index, mi_vec, L, P){
   n <- length(mi_vec)
 

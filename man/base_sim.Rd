@@ -2,7 +2,7 @@
 % Please edit documentation in R/simulation_helpers.R
 \name{base_sim}
 \alias{base_sim}
-\title{Title}
+\title{base_sim B spline simulation}
 \usage{
 base_sim(seed = 124)
 }
@@ -13,5 +13,5 @@ base_sim(seed = 124)
 list
 }
 \description{
-Title
+base_sim B spline simulation
 }

@@ -21,7 +21,7 @@ get_alpha_ij(i, j, beta_ks, Z, B, K, i_index, L, P)
 
 \item{L}{Number of external variables}
 
-\item{P}{}
+\item{P}{Number of B-spline coefficients (order + nknots)}
 
 \item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
 }

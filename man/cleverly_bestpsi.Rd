@@ -41,17 +41,50 @@ cleverly_bestpsi(
 
 \item{parralel}{Run in parallel? T/F, if T, use all available cores}
 
+\item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
+
+\item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
+
+\item{time}{vector of time values for each subject/time}
+
+\item{lp}{clustering index (integer between 0 and L)}
+
+\item{response_type}{Counts or continuous response}
+
+\item{cor_str}{Type of correlation structure (IND, CON, AR1)}
+
 \item{gammas}{Vector of dimension L + 1 for penalizing the D matrix}
 
 \item{tau}{MCP hyper parameter.}
 
 \item{theta}{ADMM hyper parameter.}
 
+\item{C}{Constant for determining the hessian change.}
+
+\item{d}{Order for the difference matrix}
+
 \item{run_min}{}
+
+\item{nknots}{Number of knots for the B-spline basis}
+
+\item{order}{Order of the B-spline basis}
+
+\item{epsilon_b}{Tolerance for alg 1 convergence}
+
+\item{epsilon_r}{Tolerance for ADMM convergence}
+
+\item{epsilon_d}{Tolerance for ADMM convergence}
+
+\item{max_outer_iter}{Max number of iterations for the outer loop (Algorithm 1)}
 
 \item{max_admm_iter}{Max number of iterations for the ADMM loop}
 
 \item{max_2_iter}{Maximum number of iterations for algorithm 2 to run each loop}
+
+\item{epsilon_2}{Tolerance for convergence of algorithm 2}
+}
+\value{
+list of
 }
 \description{
 Run cleverly for a range of hyperparameter psi values.

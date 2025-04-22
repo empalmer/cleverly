@@ -19,8 +19,8 @@
 #' @param max_admm_iter Max number of iterations for the ADMM loop
 #' @param C Constant for determining the hessian change.
 #' @param max_2_iter Maximum number of iterations for algorithm 2 to run each loop
-#' @param epsilon_2
-#' @param cor_str
+#' @param epsilon_2 Tolerance for convergence of algorithm 2
+#' @param cor_str Type of correlation structure (IND, CON, AR1)
 #' @param run_min
 #'
 #' @returns List of beta, clusters, y_hat, v, admm_diffs, admm_beta_list, loop_list_beta, loop_list_diff, phis_list
@@ -359,8 +359,8 @@ algorithm1 <- function(Y,
 #' @param B B spline basis matrix of dimension (N x P)
 #' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
 #' @param K Number of responses
-#' @param Y
-#' @param time
+#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
+#' @param time either a vector of length(Y) or a column reference if Y is a data frame. Must be numeric
 #'
 #' @returns Vector of RA values for y
 #' @export

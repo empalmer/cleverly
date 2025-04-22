@@ -42,6 +42,12 @@ get_DHessian_l(
 
 \item{V_inv}{(optional) List of V inverses for each i. If supplied is faster}
 
+\item{partials_l}{List of partials vectors for each i}
+
+\item{alpha}{list of alpha that can be subsetted by i and j}
+
+\item{P}{Number of B-spline coefficients (order + nknots)}
+
 \item{K}{Number of responses}
 }
 \value{

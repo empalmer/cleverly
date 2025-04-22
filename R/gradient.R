@@ -13,8 +13,8 @@
 #' @param B B spline basis matrix of dimension (N x P)
 #' @param i_index starting index of the ith subject in the data
 #' @param Y0 Vector of total count for each sample
-#' @param alpha
-#' @param Vi_inv
+#' @param alpha list of alpha that can be subsetted by i and j
+#' @param Vi_inv Vi matrix inverse for subject i
 #' @param partials_il Partials vector for ith subject and lth external variable
 #' @param K Number of responses
 #'
@@ -68,11 +68,11 @@ get_gradient_il <- function(i,
 #' @param B B spline basis matrix of dimension (N x P)
 #' @param i_index starting index of the ith subject in the data
 #' @param V_inv V inverse
-#' @param partials_l
+#' @param partials_l List of partials vectors for each i
 #' @param Y0 Vector of total count for each sample
-#' @param alpha
+#' @param alpha list of alpha that can be subsetted by i and j
 #' @param K Number of responses
-#' @param P
+#' @param P Number of B-spline coefficients (order + nknots)
 #'
 #' @returns vector of length PK x 1
 #' @export

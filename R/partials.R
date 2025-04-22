@@ -58,7 +58,7 @@ get_partials_ijl <- function(i,
 #' @param Y0 Vector of total count for each sample
 #' @param alpha_i Vector of DM parameters for i
 #' @param i_index starting index of the ith subject in the data
-#' @param P
+#' @param P Number of B-spline coefficients (order + nknots)
 #' @param K Number of responses
 #'
 #' @returns Matrix of dimension KP x Kmi
@@ -98,18 +98,18 @@ get_partials_il <- function(i,
 
 #' Partials list (of matrices) with respect to given l
 #'
-#' @param l
-#' @param mi_vec
+#' @param l external variable index
+#' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #' @param i_index starting index of the ith subject in the data
-#' @param beta
-#' @param Z
-#' @param B
+#' @param beta List of beta values
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param B B spline basis matrix of dimension (N x P)
 #' @param Y0 Vector of total count for each sample
-#' @param alpha
-#' @param P
+#' @param alpha list of alpha that can be subsetted by i and j
+#' @param P Number of B-spline coefficients (order + nknots)
 #' @param K Number of responses
 #'
-#' @returns
+#' @returns list
 #' @export
 get_partials_l_list <- function(Y0,
                                 l,
@@ -123,7 +123,6 @@ get_partials_l_list <- function(Y0,
                                 K){
   n <- length(mi_vec)
   partials_list <- list()
-
 
   for (i in 1:n) {
     partials_list[[i]] <- get_partials_il(i = i,

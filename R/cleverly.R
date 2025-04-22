@@ -10,7 +10,7 @@
 #' @param subject_ids either a vector of length(Y) or a column reference if Y is a data frame
 #' @param time either a vector of length(Y) or a column reference if Y is a data frame. Must be numeric
 #' @param lp either a numeric index of which external variable to cluster on, or the name of the column of Z that contains the clustering variable. Specify numeric 0 to cluster via baseline.
-#' @param response_type Counts or continuous response?
+#' @param response_type Counts or continuous response
 #' @param d Order for the difference matrix
 #' @param nknots Number of knots for the B-spline basis
 #' @param order Order of the B-spline basis
@@ -21,18 +21,16 @@
 #' @param C Constant for determining the hessian change. Default is 10.
 #' @param max_outer_iter Number of iterations for the outer loop (Algorithm 1)
 #' @param max_admm_iter Number of iterations for the clustering step (Algorithm 3)
-#' @param epsilon_b
-#' @param epsilon_r
-#' @param epsilon_d
+#' @param epsilon_b Tolerance for alg 1 convergence
+#' @param epsilon_r Tolerance for ADMM convergence
+#' @param epsilon_d Tolerance for ADMM convergence
 #' @param max_2_iter Maximum number of iterations for algorithm 2 to run each loop
-#' @param epsilon_2
-#' @param cor_str
+#' @param epsilon_2 Tolerance for convergence of algorithm 2
+#' @param cor_str Type of correlation structure (IND, CON, AR1)
 #' @param run_min
 #'
 #' @returns
 #' @export
-#'
-#' @examples
 cleverly <- function(Y,
                      Z,
                      subject_ids,

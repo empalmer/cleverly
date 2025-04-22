@@ -29,7 +29,7 @@ get_V_i(i, Y, Y0, phi, beta, Z, B, K, mi_vec, i_index, L, P)
 
 \item{L}{Number of external variables}
 
-\item{P}{}
+\item{P}{Number of B-spline coefficients (order + nknots)}
 }
 \value{
 Diagonal matrix of Kmi x Kmi Each block is for a single j of block size K x K

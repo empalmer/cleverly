@@ -24,13 +24,13 @@
 #' @param epsilon_r Tolerance for ADMM convergence
 #' @param epsilon_d Tolerance for ADMM convergence
 #' @param Y0 Vector of total count for each sample
-#' @param lambda
-#' @param AtA
+#' @param lambda ADMM vector of dimension (P*|Kappa|) x1
+#' @param AtA Pre-calculated A transpose times A for speed
 #' @param i_index starting index of the ith subject in the data
 #' @param s
 #' @param L Number of external variables
 #' @param K Number of responses
-#' @param M
+#' @param M Number of samples times timepoints for each sample
 #'
 #' @returns List with the updated betas, updated vs, and lists tracking the betas, vs, and lambdas for each iteration
 #' @export
@@ -296,12 +296,12 @@ update_v <- function(beta,
 #' @param C Constant for determining the hessian change.
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #' @param Y0 Vector of total count for each sample
-#' @param alpha
-#' @param AtA
+#' @param alpha list of alpha that can be subsetted by i and j
+#' @param AtA Pre-calculated A transpose times A for speed
 #' @param i_index starting index of the ith subject in the data
 #' @param K Number of responses
 #' @param L Number of external variables
-#' @param P
+#' @param P Number of B-spline coefficients (order + nknots)
 #'
 #' @returns matrix of updated betas
 #' @export
@@ -470,16 +470,14 @@ update_lambda <- function(beta_lp, v, lambda, A, theta){
 #'
 #' Get the L2 norm of convergence criteria r
 #'
-#' @param beta
-#' @param v
+#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
+#' @param v differences for each pair of betas of dimension (P*|Kappa|) x1
 #' @param Kappa keeps track of each possible response pair
-#' @param P
-#' @param lp
+#' @param P Number of B-spline coefficients (order + nknots)
+#' @param lp clustering index (integer between 0 and L)
 #'
-#' @returns
+#' @returns L2 norm of the difference between beta_k1 and beta_k2
 #' @export
-#'
-#' @examples
 get_r_norm <- function(beta, v, Kappa, P, lp){
   r_kappa <- c()
   for (kappa in 1:nrow(Kappa)) {
@@ -499,19 +497,17 @@ get_r_norm <- function(beta, v, Kappa, P, lp){
   return(norm)
 }
 
-#' Title
+#' get_d_norm
 #'
-#' @param v_new
-#' @param v
+#' @param v_new updated differences for each pair of betas of dimension (P*|Kappa|) x1
+#' @param v differences for each pair of betas of dimension (P*|Kappa|) x1
 #' @param theta ADMM hyper parameter.
 #' @param Kappa keeps track of each possible response pair
-#' @param K
-#' @param P
+#' @param K Number of responses
+#' @param P Number of B-spline coefficients (order + nknots)
 #'
-#' @returns
+#' @returns difference between v_new and v
 #' @export
-#'
-#' @examples
 get_d_norm <- function(v_new, v, theta, Kappa, K, P){
   v_diff <- v_new - v
   diff_mat <- matrix(v_diff, nrow = P)

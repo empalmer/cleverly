@@ -2,7 +2,7 @@
 % Please edit documentation in R/simulation_helpers.R
 \name{sim_Z_longitudinal}
 \alias{sim_Z_longitudinal}
-\title{Use Chenyangs setup to simulate count data wtih 3 clusters}
+\title{Simulate data}
 \usage{
 sim_Z_longitudinal(
   n = 20,
@@ -20,11 +20,27 @@ sim_Z_longitudinal(
 )
 }
 \arguments{
+\item{n}{Number of subjects}
+
+\item{range_start}{Starting count range for the Dirichlet multinomial}
+
+\item{range_end}{Ending count range for the Dirichlet multinomial}
+
+\item{nknots}{Number of knots}
+
 \item{K}{Number of responses}
+
+\item{order}{Order of the B-spline basis}
+
+\item{user_var}{User supplied variance}
+
+\item{cor_str}{Type of correlation structure (IND, CON, AR1)}
+
+\item{rho}{Correlation parameter}
 
 \item{miss_p}{proportion of missing samples}
 
-\item{prob1}{}
+\item{prob1}{Probability of the binary external variable being 1}
 
 \item{slope_base}{type of slope/intercept clustering curves to generate}
 }
@@ -32,5 +48,6 @@ sim_Z_longitudinal(
 data Matrix with columns time, individual, capture number, totaln, counts
 }
 \description{
-One external variable binary with prob prob1 of being 1
+Use Chenyang's setup to simulate count data with 3 clusters,
+one external variable binary with prob prob1 of being 1
 }

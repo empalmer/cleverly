@@ -7,32 +7,30 @@
 #' @param psi_max maximum psi
 #' @param npsi Number of psi values to test
 #' @param parralel Run in parallel? T/F, if T, use all available cores
-#' @param Y
-#' @param Z
-#' @param time
-#' @param lp
-#' @param response_type
-#' @param cor_str
+#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param time vector of time values for each subject/time
+#' @param lp clustering index (integer between 0 and L)
+#' @param response_type Counts or continuous response
+#' @param cor_str Type of correlation structure (IND, CON, AR1)
 #' @param gammas Vector of dimension L + 1 for penalizing the D matrix
 #' @param tau MCP hyper parameter.
 #' @param theta ADMM hyper parameter.
-#' @param C
-#' @param d
-#' @param nknots
-#' @param order
-#' @param epsilon_b
-#' @param epsilon_r
-#' @param epsilon_d
-#' @param max_outer_iter
+#' @param C Constant for determining the hessian change.
+#' @param d Order for the difference matrix
+#' @param nknots Number of knots for the B-spline basis
+#' @param order Order of the B-spline basis
+#' @param epsilon_b Tolerance for alg 1 convergence
+#' @param epsilon_r Tolerance for ADMM convergence
+#' @param epsilon_d Tolerance for ADMM convergence
+#' @param max_outer_iter Max number of iterations for the outer loop (Algorithm 1)
 #' @param max_admm_iter Max number of iterations for the ADMM loop
 #' @param max_2_iter Maximum number of iterations for algorithm 2 to run each loop
-#' @param epsilon_2
+#' @param epsilon_2 Tolerance for convergence of algorithm 2
 #' @param run_min
 #'
-#' @returns
+#' @returns list of
 #' @export
-#'
-#' @examples
 cleverly_bestpsi <- function(psi_min,
                              psi_max,
                              npsi,
@@ -151,37 +149,35 @@ cleverly_bestpsi <- function(psi_min,
 
 
 
-#' Title
+#' cleverly_bestparam
 #'
-#' @param psi_min
-#' @param psi_max
-#' @param npsi
-#' @param parralel
-#' @param Y
-#' @param Z
-#' @param time
-#' @param lp
-#' @param response_type
-#' @param cor_str
+#' @param psi_min minimum psi value
+#' @param psi_max maximum psi value
+#' @param npsi Number of psi values to test
+#' @param parralel Run in parallel? T/F, if T, use all available cores
+#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param time vector of time values for each subject/time
+#' @param lp clustering index (integer between 0 and L)
+#' @param response_type Counts or continuous response
+#' @param cor_str Type of correlation structure (IND, CON, AR1)
 #' @param gammas Vector of dimension L + 1 for penalizing the D matrix
 #' @param tau MCP hyper parameter.
 #' @param theta ADMM hyper parameter.
-#' @param C
-#' @param d
-#' @param nknots
-#' @param order
-#' @param epsilon_b
-#' @param epsilon_r
-#' @param epsilon_d
-#' @param max_outer_iter
+#' @param C Constant for determining the hessian change.
+#' @param d Order for the difference matrix
+#' @param nknots Number of knots for the B-spline basis
+#' @param order Order of the B-spline basis
+#' @param epsilon_b Tolerance for alg 1 convergence
+#' @param epsilon_r Tolerance for ADMM convergence
+#' @param epsilon_d Tolerance for ADMM convergence
+#' @param max_outer_iter Max number of iterations for the outer loop (Algorithm 1)
 #' @param max_admm_iter Max number of iterations for the ADMM loop
 #' @param max_2_iter Maximum number of iterations for algorithm 2 to run each loop
-#' @param epsilon_2
+#' @param epsilon_2 Tolerance for convergence of algorithm 2
 #'
-#' @returns
+#' @returns list
 #' @export
-#'
-#' @examples
 cleverly_bestparam <- function(param_grid,
                                parralel = FALSE,
                                Y,

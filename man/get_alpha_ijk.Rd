@@ -13,13 +13,17 @@ get_alpha_ijk(i, j, k, beta_ks, Z_ij, B_ij, i_index, P, L)
 
 \item{k}{response index}
 
+\item{beta_ks}{list of beta for each k}
+
 \item{Z_ij}{vector of length l.}
+
+\item{B_ij}{B spline basis for i and j}
 
 \item{i_index}{starting index of the ith subject in the data}
 
-\item{L}{Number of external variables}
+\item{P}{Number of B-spline coefficients (order + nknots)}
 
-\item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
+\item{L}{Number of external variables}
 }
 \value{
 Numeric (1x1)

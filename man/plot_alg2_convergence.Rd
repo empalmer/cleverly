@@ -10,7 +10,7 @@ plot_alg2_convergence(res)
 \item{res}{Cleverly model object}
 }
 \value{
-ggplot
+ggplot object
 }
 \description{
 plot_alg2_convergence

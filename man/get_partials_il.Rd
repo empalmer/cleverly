@@ -25,6 +25,8 @@ get_partials_il(i, l, Y0, Z, B, beta, alpha_i, mi_vec, i_index, P, K)
 
 \item{i_index}{starting index of the ith subject in the data}
 
+\item{P}{Number of B-spline coefficients (order + nknots)}
+
 \item{K}{Number of responses}
 }
 \value{

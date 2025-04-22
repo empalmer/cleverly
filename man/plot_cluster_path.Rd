@@ -18,6 +18,8 @@ plot_cluster_path(
 \arguments{
 \item{res}{Cleverly model object}
 
+\item{psi}{Hyperparameter for clustering penalty (larger drives pairwise differences to zero)}
+
 \item{tau}{MCP hyper parameter.}
 
 \item{theta}{ADMM hyper parameter.}
@@ -26,7 +28,12 @@ plot_cluster_path(
 
 \item{max_admm_iter}{Max number of iterations for the ADMM loop}
 
+\item{max_outer_iter}{Max number of iterations for the outer loop (Algorithm 1)}
+
 \item{duration}{}
+}
+\value{
+ggplot object
 }
 \description{
 plot_cluster_path

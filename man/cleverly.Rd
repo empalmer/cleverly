@@ -41,7 +41,9 @@ cleverly(
 
 \item{lp}{either a numeric index of which external variable to cluster on, or the name of the column of Z that contains the clustering variable. Specify numeric 0 to cluster via baseline.}
 
-\item{response_type}{Counts or continuous response?}
+\item{response_type}{Counts or continuous response}
+
+\item{cor_str}{Type of correlation structure (IND, CON, AR1)}
 
 \item{gammas}{Vector of dimension L + 1 for penalizing the D matrix}
 
@@ -61,11 +63,19 @@ cleverly(
 
 \item{order}{Order of the B-spline basis}
 
+\item{epsilon_b}{Tolerance for alg 1 convergence}
+
+\item{epsilon_r}{Tolerance for ADMM convergence}
+
+\item{epsilon_d}{Tolerance for ADMM convergence}
+
 \item{max_outer_iter}{Number of iterations for the outer loop (Algorithm 1)}
 
 \item{max_admm_iter}{Number of iterations for the clustering step (Algorithm 3)}
 
 \item{max_2_iter}{Maximum number of iterations for algorithm 2 to run each loop}
+
+\item{epsilon_2}{Tolerance for convergence of algorithm 2}
 }
 \description{
 Overall user interface for this algorithm

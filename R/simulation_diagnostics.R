@@ -134,16 +134,14 @@ beta_path <- function(betas, K, B, Z, time){
 #' @param res Cleverly model object
 #' @param K Number of responses
 #' @param tau MCP hyper parameter.
-#' @param psi
+#' @param psi Hyperparameter for clustering penalty (larger drives pairwise differences to zero)
 #' @param gammas Vector of dimension L + 1 for penalizing the D matrix
 #' @param theta ADMM hyper parameter.
 #' @param max_admm_iter Max number of iterations for the ADMM loop
-#' @param max_outer_iter
+#' @param max_outer_iter Max number of iterations for the outer loop (Algorithm 1)
 #'
-#' @returns
+#' @returns ggplot object
 #' @export
-#'
-#' @examples
 plot_clusters <- function(res, K, tau, psi, gammas, theta, max_admm_iter, max_outer_iter){
   cluster_df <- data.frame(
     K = factor(1:K, levels = 1:K),
@@ -191,14 +189,12 @@ plot_clusters <- function(res, K, tau, psi, gammas, theta, max_admm_iter, max_ou
 #'
 #' yhat should contain yhat, y, Z, and time
 #'
-#' @param yhat
-#' @param chosen_cluster
+#' @param yhat Matrix that contains yhat, y, Z, and time
+#' @param chosen_cluster Cluster object
 #' @param K Number of responses
 #'
-#' @returns
+#' @returns ggplot object
 #' @export
-#'
-#' @examples
 plot_clusters_yhat <- function(yhat, chosen_cluster, K = 12){
 
   cluster_df <- data.frame(
@@ -236,7 +232,7 @@ plot_clusters_yhat <- function(yhat, chosen_cluster, K = 12){
 #' @param K Number of responses
 #' @param gammas Vector of dimension L + 1 for penalizing the D matrix
 #'
-#' @returns
+#' @returns ggplot object
 #' @export
 plot_initial_fit <- function(res, K, gammas){
   # Initial fit:
@@ -263,15 +259,15 @@ plot_initial_fit <- function(res, K, gammas){
 #' plot_cluster_path
 #'
 #' @param res Cleverly model object
-#' @param psi
+#' @param psi Hyperparameter for clustering penalty (larger drives pairwise differences to zero)
 #' @param tau MCP hyper parameter.
 #' @param theta ADMM hyper parameter.
 #' @param gammas Vector of dimension L + 1 for penalizing the D matrix
 #' @param max_admm_iter Max number of iterations for the ADMM loop
-#' @param max_outer_iter
+#' @param max_outer_iter Max number of iterations for the outer loop (Algorithm 1)
 #' @param duration
 #'
-#' @returns
+#' @returns ggplot object
 #' @export
 plot_cluster_path <- function(res, psi, tau, theta, gammas, max_admm_iter, max_outer_iter, duration){
   # Cluster progress:
@@ -303,7 +299,7 @@ plot_cluster_path <- function(res, psi, tau, theta, gammas, max_admm_iter, max_o
 #'
 #' @param res Cleverly model object
 #'
-#' @returns ggplot
+#' @returns ggplot object
 #' @export
 plot_alg2_convergence <- function(res){
   # alg2 convergence
@@ -326,9 +322,8 @@ plot_alg2_convergence <- function(res){
 #'
 #' @param res Cleverly model object
 #'
-#' @returns
+#' @returns ggplot object
 #' @export
-
 plot_d_convergence <- function(res){
   plot <- purrr::imap_dfr(res$d_list,
                   ~data.frame(cluster = unlist(.x),
@@ -347,9 +342,8 @@ plot_d_convergence <- function(res){
 #'
 #' @param res Cleverly model object
 #'
-#' @returns
+#' @returns ggplot
 #' @export
-
 plot_r_convergence <- function(res){
   plot <- purrr::imap_dfr(res$r_list,
                   ~data.frame(cluster = unlist(.x),

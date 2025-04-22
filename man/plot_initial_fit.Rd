@@ -13,6 +13,9 @@ plot_initial_fit(res, K, gammas)
 
 \item{gammas}{Vector of dimension L + 1 for penalizing the D matrix}
 }
+\value{
+ggplot object
+}
 \description{
 plot_initial_fit
 }

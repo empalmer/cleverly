@@ -9,9 +9,9 @@
 #' @param K Number of responses
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #' @param Y0 Vector of total count for each sample
-#' @param alpha
+#' @param alpha list of alpha that can be subsetted by i and j
 #' @param i_index starting index of the ith subject in the data
-#' @param M
+#' @param M Number of samples times timepoints for each sample
 #'
 #' @returns scalar phi
 #' @export
@@ -43,9 +43,9 @@ get_phi <- function(Y, Y0, beta, alpha, Z, B, K, mi_vec, i_index, M){
 #' @param K Number of responses
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #' @param Y0 Vector of total count for each sample
-#' @param alpha
+#' @param alpha list of alpha that can be subsetted by i and j
 #' @param i_index starting index of the ith subject in the data
-#' @param M
+#' @param M Number of samples times timepoints for each sample
 #'
 #' @returns Pearson residuals vector for all i, j, k
 #' @export
@@ -88,7 +88,7 @@ get_pearson_residuals <- function(Y,
 #' @param K Number of responses
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #' @param Y0 Vector of total count for each sample
-#' @param alpha
+#' @param alpha list of alpha that can be subsetted by i and j
 #' @param i_index starting index of the ith subject in the data
 #'
 #' @returns pearson residual vector for each i

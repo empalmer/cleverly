@@ -2,19 +2,30 @@
 % Please edit documentation in R/helpers.R
 \name{get_alpha_list}
 \alias{get_alpha_list}
-\title{Title}
+\title{get_alpha_list}
 \usage{
 get_alpha_list(beta, Z, B, K, i_index, mi_vec, L, P)
 }
 \arguments{
+\item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
+
+\item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
+
+\item{B}{B spline basis matrix of dimension (N x P)}
+
 \item{K}{Number of responses}
 
 \item{i_index}{starting index of the ith subject in the data}
 
+\item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
+
 \item{L}{Number of external variables}
 
-\item{P}{}
+\item{P}{Number of B-spline coefficients (order + nknots)}
+}
+\value{
+list
 }
 \description{
-Title
+get_alpha_list
 }

@@ -15,7 +15,9 @@ estimate_y(beta, B, Z, K, Y, time)
 
 \item{K}{Number of responses}
 
-\item{time}{}
+\item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
+
+\item{time}{either a vector of length(Y) or a column reference if Y is a data frame. Must be numeric}
 }
 \value{
 Vector of RA values for y

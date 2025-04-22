@@ -2,13 +2,18 @@
 % Please edit documentation in R/V_inverse.R
 \name{get_R_ijjp}
 \alias{get_R_ijjp}
-\title{Title}
+\title{get_R_ijjp}
 \usage{
-get_R_ijjp(corstr, rho, K)
+get_R_ijjp(cor_str, rho, K)
 }
 \arguments{
+\item{cor_str}{Type of correlation structure (IND, CON, AR1)}
+
 \item{K}{Number of responses}
 }
+\value{
+Matrix of correlation structure
+}
 \description{
-Title
+get_R_ijjp
 }

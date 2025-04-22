@@ -9,7 +9,7 @@ Dirichlet.multinomial(Y0, alpha)
 \arguments{
 \item{Y0}{Total sum of counts in DM}
 
-\item{alpha}{}
+\item{alpha}{Vector of Dirichlet parameters}
 }
 \value{
 DM counts

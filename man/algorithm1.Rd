@@ -69,6 +69,10 @@ algorithm1(
 \item{max_admm_iter}{Max number of iterations for the ADMM loop}
 
 \item{max_2_iter}{Maximum number of iterations for algorithm 2 to run each loop}
+
+\item{epsilon_2}{Tolerance for convergence of algorithm 2}
+
+\item{cor_str}{Type of correlation structure (IND, CON, AR1)}
 }
 \value{
 List of beta, clusters, y_hat, v, admm_diffs, admm_beta_list, loop_list_beta, loop_list_diff, phis_list

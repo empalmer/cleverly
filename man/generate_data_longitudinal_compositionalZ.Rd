@@ -17,7 +17,7 @@ generate_data_longitudinal_compositionalZ(n, time, miss_n, cor_matrix, ranges)
 
 \item{ranges}{ranges}
 
-\item{Z}{}
+\item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
 }
 \value{
 Simulated data frame

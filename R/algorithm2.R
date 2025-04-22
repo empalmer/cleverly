@@ -12,13 +12,13 @@
 #' @param C Constant for determining the hessian change.
 #' @param Y0 Vector of total count for each sample
 #' @param max_2_iter Maximum number of iterations for algorithm 2 to run each loop
-#' @param epsilon_2
-#' @param time
+#' @param epsilon_2 Tolerance for convergence of algorithm 2
+#' @param time either a vector of length(Y) or a column reference if Y is a data frame. Must be numeric
 #' @param s
 #' @param L Number of external variables
-#' @param P
+#' @param P Number of B-spline coefficients (order + nknots)
 #' @param K Number of responses
-#' @param M
+#' @param M Number of samples times timepoints for each sample
 #' @param i_index starting index of the ith subject in the data
 #'
 #' @returns Vector of length PK x L
@@ -160,7 +160,7 @@ algorithm2 <- function(Y,
       # #beta_l_s <- Matrix::Matrix(first_term_inv, sparse = T) %*% second_term
       # #beta_l_s <- MASS::ginv(first_term) %*% second_term
       # beta_l_s <- fast_mat_mult2(MASS::ginv(first_term), second_term)
-
+      # Use C++ to calculate the update for beta_l
       beta_l_s <- calculate_alg2(H = Hessian_l,
                                  gamma = gamma_l,
                                  D = D,

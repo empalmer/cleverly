@@ -2,7 +2,7 @@
 % Please edit documentation in R/simulation_helpers.R
 \name{sim_noZ}
 \alias{sim_noZ}
-\title{Use Chenyangs setup to simulate count data wtih 3 clusters}
+\title{Simulate data with no external variable}
 \usage{
 sim_noZ(
   n = 20,
@@ -12,12 +12,29 @@ sim_noZ(
   order = 3,
   user_var = 1000,
   cor_str = "IND",
-  al = 0.4
+  rho = 0.4
 )
+}
+\arguments{
+\item{n}{number of subjects}
+
+\item{range_start}{Starting count range for the Dirichlet multinomial}
+
+\item{range_end}{Ending count range for the Dirichlet multinomial}
+
+\item{nknots}{Number of knots}
+
+\item{order}{Order of the B-spline basis}
+
+\item{user_var}{User supplied variance}
+
+\item{cor_str}{Type of correlation structure (IND, CON, AR1)}
+
+\item{rho}{Correlation parameter}
 }
 \value{
 data Matrix with columns time, individual, capture number, totaln, counts
 }
 \description{
-No external variables.
+Use Chenyangs setup to simulate count data wtih 3 clusters, No external variables. This code uses the same setup as Chenyang, but with my naming conventions and coding style
 }

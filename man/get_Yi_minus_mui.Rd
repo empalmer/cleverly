@@ -13,6 +13,8 @@ get_Yi_minus_mui(i, Y, Y0, alpha, mi_vec, i_index, K)
 
 \item{Y0}{Vector of total count for each sample}
 
+\item{alpha}{list of alpha that can be subsetted by i and j}
+
 \item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
 
 \item{i_index}{starting index of the ith subject in the data}

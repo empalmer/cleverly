@@ -7,7 +7,14 @@
 plot_clusters_yhat(yhat, chosen_cluster, K = 12)
 }
 \arguments{
+\item{yhat}{Matrix that contains yhat, y, Z, and time}
+
+\item{chosen_cluster}{Cluster object}
+
 \item{K}{Number of responses}
+}
+\value{
+ggplot object
 }
 \description{
 yhat should contain yhat, y, Z, and time

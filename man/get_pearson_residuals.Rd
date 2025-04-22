@@ -13,6 +13,8 @@ get_pearson_residuals(Y, Y0, beta, alpha, Z, B, K, mi_vec, i_index, M)
 
 \item{beta}{beta matrix of beta (or beta hat) of dimension (P*K) x L}
 
+\item{alpha}{list of alpha that can be subsetted by i and j}
+
 \item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
 
 \item{B}{B spline basis matrix of dimension (N x P)}
@@ -23,7 +25,7 @@ get_pearson_residuals(Y, Y0, beta, alpha, Z, B, K, mi_vec, i_index, M)
 
 \item{i_index}{starting index of the ith subject in the data}
 
-\item{M}{}
+\item{M}{Number of samples times timepoints for each sample}
 }
 \value{
 Pearson residuals vector for all i, j, k

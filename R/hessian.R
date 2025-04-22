@@ -15,7 +15,7 @@
 #' @param Y0 Vector of total count for each sample
 #' @param alpha_i Vector of DM parameters for i
 #' @param K Number of responses
-#' @param P
+#' @param P Number of B-spline coefficients (order + nknots)
 #'
 #' @returns Matrix of dimension KP times KP
 #' @export
@@ -77,7 +77,7 @@ get_dHessian_il <- function(i,
 #' @param Y0 Vector of total count for each sample
 #' @param alpha_i Vector of DM parameters for i
 #' @param K Number of responses
-#' @param P
+#' @param P Number of B-spline coefficients (order + nknots)
 #'
 #' @returns Matrix of dimension KP times KP
 #' @export
@@ -117,9 +117,9 @@ get_Hessian_il <- function(i,
 #' @param i_index starting index of the ith subject in the data
 #' @param V_inv (optional) List of V inverses for each i. If supplied is faster
 #' @param Y0 Vector of total count for each sample
-#' @param partials_l
-#' @param alpha
-#' @param P
+#' @param partials_l List of partials vectors for each i
+#' @param alpha list of alpha that can be subsetted by i and j
+#' @param P Number of B-spline coefficients (order + nknots)
 #' @param K Number of responses
 #'
 #' @returns Matrix of dimension KP times KP
@@ -201,9 +201,9 @@ get_DHessian_l <- function(l,
 #' @param i_index starting index of the ith subject in the data
 #' @param V_inv (optional) List of V inverses for each i. If supplied is faster
 #' @param Y0 Vector of total count for each sample
-#' @param partials_l
-#' @param alpha
-#' @param P
+#' @param partials_l List of partials vectors for each i
+#' @param alpha list of alpha that can be subsetted by i and j
+#' @param P Number of B-spline coefficients (order + nknots)
 #' @param K Number of responses
 #'
 #' @returns Matrix of dimension KP times KP

@@ -13,7 +13,7 @@ cor_user(mi, user_var, cor_str, rho)
 
 \item{rho}{rho}
 
-\item{structure}{Type of correlation 1 for (?) 2 for (?) 1: compound symmetry, 2: autoregressive, 3: indepdendent}
+\item{structure}{Type of correlation 1 for (?) 2 for (?) 1: compound symmetry, 2: autoregressive, 3: independent}
 }
 \value{
 User defined correlation matrix.

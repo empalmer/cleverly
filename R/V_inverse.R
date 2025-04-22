@@ -33,7 +33,7 @@ get_V_ijj <- function(Y_ij0,
 #' @param i_index starting index of the ith subject in the data
 #' @param Y0 Vector of total count for each sample
 #' @param L Number of external variables
-#' @param P
+#' @param P Number of B-spline coefficients (order + nknots)
 #'
 #' @returns Diagonal matrix of Kmi x Kmi Each block is for a single j of block size K x K
 #' @export
@@ -92,11 +92,11 @@ get_V_i <- function(i,
 #' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
 #' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
 #' @param B B spline basis matrix of dimension (N x P)
-#' @param alpha
+#' @param alpha list of alpha that can be subsetted by i and j
 #' @param i_index starting index of the ith subject in the data
 #' @param K Number of responses
-#' @param Y0
-#' @param cor_str
+#' @param Y0 Vector of total count for each sample
+#' @param cor_str Type of correlation structure (IND, CON, AR1)
 #' @param rho_cor
 #'
 #' @returns Matrix of dimension Kmi x Kmi
@@ -214,7 +214,7 @@ get_Vi_inv <- function(i,
 
   }
   else{
-    stop("Invalid corstr")
+    stop("Invalid cor_str")
   }
 
   return(V_i_inv)
@@ -224,21 +224,19 @@ get_Vi_inv <- function(i,
 #'
 #' for all i
 #'
-#' @param Y
-#' @param mi_vec
+#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
+#' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #' @param i_index starting index of the ith subject in the data
 #' @param phi Current value of overdispersion parameter
-#' @param beta
-#' @param Z
-#' @param B
+#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param B B spline basis matrix of dimension (N x P)
 #' @param K Number of responses
-#' @param alpha
+#' @param alpha list of alpha that can be subsetted by i and j
 #' @param Y0 Vector of total count for each sample
 #'
-#' @returns
+#' @returns V inverse list
 #' @export
-#'
-#' @examples
 get_V_inv <- function(Y,
                       Y0,
                       alpha,
@@ -276,29 +274,27 @@ get_V_inv <- function(Y,
 # Correlation structures --------------------------------------------------
 
 
-#' Title
+#' get_R_ijjp
 #'
-#' @param corstr
+#' @param cor_str Type of correlation structure (IND, CON, AR1)
 #' @param K Number of responses
 #'
-#' @returns
+#' @returns Matrix of correlation structure
 #' @export
-#'
-#' @examples
-get_R_ijjp <- function(corstr, rho, K){
-  if (corstr == "IND") {
-    str <- diag(K) * corstr
+get_R_ijjp <- function(cor_str, rho, K){
+  if (cor_str == "IND") {
+    str <- diag(K) * cor_str
     R_ijjp <- str * rho
   }
-  else if (corstr == "AR1") {
+  else if (cor_str == "AR1") {
     R_ijjp <- outer(1:K, 1:K, function(i, j) rho^abs(i - j))
   }
-  else if (corstr == "CON") {
+  else if (cor_str == "CON") {
     str <- matrix(1, nrow = K, ncol = K) - diag(K)
     R_ijjp <- str * rho
   }
   else{
-    stop("Invalid corstr")
+    stop("Invalid cor_str")
   }
   return(R_ijjp)
 }
@@ -307,11 +303,20 @@ get_R_ijjp <- function(corstr, rho, K){
 
 #' Get rho
 #'
-#' @returns
-#' @export
+#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
+#' @param Y0 Vector of total count for each sample
+#' @param beta beta matrix of beta (or beta hat) of dimension (P*K) x L
+#' @param alpha alpha matrix of alpha (or alpha hat) of dimension (P*K) x L
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#' @param B B spline basis matrix of dimension (N x P)
+#' @param K Number of responses
+#' @param mi_vec vector of the number of timepoints for each sample. Of length n
+#' @param i_index starting index of the ith subject in the data
+#' @param M Number of subjects times timepoints for each subject
+#' @param cor_str Type of correlation structure (IND, CON, AR1)
 #'
-#' @examples
-
+#' @returns Numberic estimate of rho
+#' @export
 get_rho <- function(Y,
                     Y0,
                     beta,

@@ -48,7 +48,7 @@ get_dHessian_il(
 
 \item{K}{Number of responses}
 
-\item{P}{}
+\item{P}{Number of B-spline coefficients (order + nknots)}
 }
 \value{
 Matrix of dimension KP times KP

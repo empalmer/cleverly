@@ -9,6 +9,9 @@ plot_r_convergence(res)
 \arguments{
 \item{res}{Cleverly model object}
 }
+\value{
+ggplot
+}
 \description{
 plot_r_convergence
 }

@@ -2,7 +2,7 @@
 #' Simulate Dirichlet multinomial counts.
 #'
 #' @param Y0 Total sum of counts in DM
-#' @param alpha
+#' @param alpha Vector of Dirichlet parameters
 #'
 #' @returns DM counts
 #' @export
@@ -34,7 +34,7 @@ Dirichlet.multinomial <- function(Y0, alpha) {
 #'
 #' @param mi number of timepoints for ith sample
 #' @param user_var User supplied variance
-#' @param structure Type of correlation 1 for (?) 2 for (?) 1: compound symmetry, 2: autoregressive, 3: indepdendent
+#' @param structure Type of correlation 1 for (?) 2 for (?) 1: compound symmetry, 2: autoregressive, 3: independent
 #' @param rho rho
 #'
 #' @returns User defined correlation matrix.
@@ -68,7 +68,7 @@ cor_user <- function(mi, user_var, cor_str, rho) {
 #' @param cor_matrix correlation matrix
 #' @param ranges ranges
 #' @param alpha alphas for the Dirichlet multinomial
-#' @param Z
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
 #'
 #' @returns Simulated data frame
 #' @export
@@ -133,7 +133,7 @@ generate_data_longitudinal_compositional <- function(n,
 #' @param miss_n missingness
 #' @param cor_matrix correlation matrix
 #' @param ranges ranges
-#' @param Z
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
 #'
 #' @returns Simulated data frame
 #' @export
@@ -327,9 +327,18 @@ sim_data_same_base_different_slope <- function(n,
 # Simulate the data (DM) --------------------------------------------------
 
 
-#' Use Chenyangs setup to simulate count data wtih 3 clusters
+#' Simulate data with no external variable
 #'
-#' No external variables.
+#' Use Chenyangs setup to simulate count data wtih 3 clusters, No external variables. This code uses the same setup as Chenyang, but with my naming conventions and coding style
+#'
+#' @param n number of subjects
+#' @param range_start Starting count range for the Dirichlet multinomial
+#' @param range_end Ending count range for the Dirichlet multinomial
+#' @param nknots Number of knots
+#' @param order Order of the B-spline basis
+#' @param user_var User supplied variance
+#' @param cor_str Type of correlation structure (IND, CON, AR1)
+#' @param rho Correlation parameter
 #'
 #' @returns data Matrix with columns time, individual, capture number, totaln, counts
 #' @export
@@ -340,7 +349,7 @@ sim_noZ <- function(n = 20,
                     order = 3,
                     user_var = 1000,
                     cor_str = "IND",
-                    al = 0.4
+                    rho = 0.4
                     ){
   # Time points are a sequence between 0 and 1
   time <- seq(0, 1, 0.05)
@@ -398,22 +407,23 @@ sim_noZ <- function(n = 20,
 
 
 
-#' Use Chenyangs setup to simulate count data wtih 3 clusters
+#' Simulate data
 #'
-#' One external variable binary with prob prob1 of being 1
+#' Use Chenyang's setup to simulate count data with 3 clusters,
+#' one external variable binary with prob prob1 of being 1
 #'
-#' @param n
-#' @param range_start
-#' @param range_end
-#' @param nknots
+#' @param n Number of subjects
+#' @param range_start Starting count range for the Dirichlet multinomial
+#' @param range_end Ending count range for the Dirichlet multinomial
+#' @param nknots Number of knots
 #' @param K Number of responses
-#' @param order
-#' @param user_var
-#' @param cor_str
-#' @param rho
+#' @param order Order of the B-spline basis
+#' @param user_var User supplied variance
+#' @param cor_str Type of correlation structure (IND, CON, AR1)
+#' @param rho Correlation parameter
 #' @param miss_p proportion of missing samples
 #' @param slope_base type of slope/intercept clustering curves to generate
-#' @param prob1
+#' @param prob1 Probability of the binary external variable being 1
 #'
 #' @returns data Matrix with columns time, individual, capture number, totaln, counts
 #' @export
@@ -595,12 +605,11 @@ sim_Y <- function(beta, Z, B, K, mi_vec, i_index){
 }
 
 
-#' Title
+#' base_sim B spline simulation
 #'
 #' @param seed Seed for the random number generator
 #'
 #' @returns list
-#' @export
 base_sim <- function(seed = 124){
   set.seed(seed)
   time_list <- sim_timepoints(n = 5)
@@ -638,75 +647,3 @@ base_sim <- function(seed = 124){
               K = K,
               P = P))
 }
-
-#' Title
-#'
-#' @param parralel
-#' @param max_outer_iter
-#'
-#' @returns
-#' @export
-one_sim <- function(parralel, max_outer_iter = 10, npsi = 10){
-  sim <- sim_Z_longitudinal(n = 20,
-                            range_start = 5000,
-                            range_end = 10000,
-                            nknots = 3,
-                            K = 12,
-                            order = 3,
-                            user_var = 500,
-                            cor_str = "IND",
-                            al = 0.4,
-                            slope_base = "cluster_base_alldiff_slope")
-  Y <- dplyr::select(sim, -c(
-    "total_n",
-    "Capture.Number",
-    "Z"))
-  Z <- sim$Z
-
-
-  start <- Sys.time()
-  res_psi <- cleverly_bestpsi(psi_min = 100,
-                              psi_max = 2000,
-                              npsi = npsi,
-                              parralel = parralel,
-                              Y = Y,
-                              Z = Z,
-                              lp = 0,
-                              time = time,
-                              # Hyperparameters
-                              gammas = c(1, 1),
-                              tau = 0.01,
-                              theta = 300,
-                              C = 100,
-                              # Iterations max
-                              max_admm_iter = 200,
-                              max_outer_iter = max_outer_iter,
-                              max_2_iter = 100,
-                              # Convergence criteria
-                              epsilon_r = .001,
-                              epsilon_d = .05,
-                              epsilon_b = .01,
-                              epsilon_2 = .001,
-                              cor_str = "IND")
-  end <- Sys.time()
-  (duration <- end - start)
-
-  sim_result <- list("chosen_cluster" = res_psi$clusters,
-                     "possible_cluster" = res_psi$all_clusters_psi,
-                     "duration" = duration)
-
-  cluster <- res_psi$clusters$membership
-  true_cluster <- c(1, 1, 1, 1,
-                    2, 2, 2, 2,
-                    3, 3, 3, 3)
-
-  sim_result$cluster_result <- data.frame("rand" = fossil::rand.index(cluster, true_cluster),
-                                          "adj.rand" = mclust::adjustedRandIndex(cluster, true_cluster),
-                                          "jacc" = length(intersect(cluster, true_cluster)) /
-                                            length(union(cluster, true_cluster)))
-  return(sim_result)
-
-}
-
-
-

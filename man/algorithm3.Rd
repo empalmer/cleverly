@@ -48,7 +48,11 @@ algorithm3(
 
 \item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
 
+\item{lambda}{ADMM vector of dimension (P*|Kappa|) x1}
+
 \item{A}{Matrix keeping track of pairs of responses to calculate pairwise differences}
+
+\item{AtA}{Pre-calculated A transpose times A for speed}
 
 \item{P}{Number of B-spline coefficients (order + nknots)}
 
@@ -82,7 +86,7 @@ algorithm3(
 
 \item{K}{Number of responses}
 
-\item{M}{}
+\item{M}{Number of samples times timepoints for each sample}
 }
 \value{
 List with the updated betas, updated vs, and lists tracking the betas, vs, and lambdas for each iteration

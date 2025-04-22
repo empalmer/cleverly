@@ -7,9 +7,18 @@
 get_r_norm(beta, v, Kappa, P, lp)
 }
 \arguments{
+\item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
+
+\item{v}{differences for each pair of betas of dimension (P*|Kappa|) x1}
+
 \item{Kappa}{keeps track of each possible response pair}
 
-\item{lp}{}
+\item{P}{Number of B-spline coefficients (order + nknots)}
+
+\item{lp}{clustering index (integer between 0 and L)}
+}
+\value{
+L2 norm of the difference between beta_k1 and beta_k2
 }
 \description{
 Get the L2 norm of convergence criteria r

@@ -13,13 +13,18 @@ plot_clusters(res, K, tau, psi, gammas, theta, max_admm_iter, max_outer_iter)
 
 \item{tau}{MCP hyper parameter.}
 
+\item{psi}{Hyperparameter for clustering penalty (larger drives pairwise differences to zero)}
+
 \item{gammas}{Vector of dimension L + 1 for penalizing the D matrix}
 
 \item{theta}{ADMM hyper parameter.}
 
 \item{max_admm_iter}{Max number of iterations for the ADMM loop}
 
-\item{max_outer_iter}{}
+\item{max_outer_iter}{Max number of iterations for the outer loop (Algorithm 1)}
+}
+\value{
+ggplot object
 }
 \description{
 Title
