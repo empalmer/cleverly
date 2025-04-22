@@ -469,7 +469,7 @@ get_alpha_list <- function(beta, Z, B, K, i_index, mi_vec, L, P){
   n <- length(mi_vec)
 
   beta_ks <- list()
-  for(k in 1:K){
+  for (k in 1:K) {
     beta_ks[[k]] <- beta[rep(1:12, each = 6) == k, ]
   }
 
