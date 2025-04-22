@@ -28,7 +28,7 @@ get_pearson_residuals(Y, Y0, beta, alpha, Z, B, K, mi_vec, i_index, M)
 \item{M}{Number of samples times timepoints for each sample}
 }
 \value{
-Pearson residuals vector for all i, j, k
+List of Pearson residuals for all i, j, k, indexed by i
 }
 \description{
 Get pearson residuals

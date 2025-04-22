@@ -116,10 +116,7 @@ get_Vi_inv <- function(i,
                        cor_str,
                        rho_cor){
 
-
-
   if (cor_str == "IND") {
-    # V_i_inv_list <- list()
     mi <- mi_vec[i]
     V_i_inv_mat <- matrix(0, nrow = mi*K, ncol = mi*K)
     for (j in 1:mi) {
@@ -138,7 +135,9 @@ get_Vi_inv <- function(i,
     }
     V_i_inv <- V_i_inv_mat
   }
-  else if (cor_str == "CON") {
+  else if (cor_str == "CON" | cor_str == "AR1") {
+    # If not independent, we have to invert the entire matrix, and there are
+    # cross correlations
     V_i_list <- list()
     R_i_list <- list()
     mi <- mi_vec[i]
@@ -166,53 +165,26 @@ get_Vi_inv <- function(i,
 
     }
 
+    # Calculate the longitudinal blocks of the correlation structure
+    if (cor_str == "CON") {
+      # For CON, this is a matrix of 1s everywhere except on the block diagonal which has 0s
+      # Then scaled by the calculated rho_cor
+      corR <- rho_cor * kronecker(matrix(1, nrow = mi, ncol = mi) - diag(mi),
+                                  matrix(1, nrow = K, ncol = K))
+
+    } else if (cor_str == "AR1") {
+      # For AR1, this is rho^{|j1 - j2|}
+      j1s <- matrix(rep(1:mi, each = mi), nrow = mi)
+      j2s <- matrix(rep(1:mi, each = mi), ncol = mi, byrow = TRUE)
+      corR <- kronecker(rho_cor^abs(j1s - j2s), matrix(1, nrow = K, ncol = K))
+
+    }
+
     A_inv <- diag(1/sqrt(diag(V_i)))
-
-    # For CON, this is a matrix of 1s everywhere except on the block diagonal which has 0s
-    # Then scaled by the calculated rho_cor
-    corR <- rho_cor * kronecker(matrix(1, nrow = mi, ncol = mi) - diag(mi),
-                                matrix(1, nrow = K, ncol = K))
-
     #V_i_inv <- (1/phi) * A_inv %*% MASS::ginv(R_i + corR) %*% A_inv
     V_i_inv <- (1/phi) * fast_mat_mult3(A_inv, MASS::ginv(R_i + corR), A_inv)
   }
-  else if (cor_str == "AR1") {
-    V_i_list <- list()
-    R_i_list <- list()
-    mi <- mi_vec[i]
-    V_i <- matrix(nrow = 0, ncol = 0)
-    R_i <- matrix(nrow = 0, ncol = 0)
-    for (j in 1:mi) {
-      Y_ij0 <- get_Y_ij0(i = i,
-                         j = j,
-                         Y0 = Y0,
-                         i_index)
-      alpha_ij <- alpha[[i]][[j]]
 
-      V_ijj <- get_V_ijj(Y_ij0 = Y_ij0,
-                         phi = phi,
-                         alpha_ij = alpha_ij)
-      A_ijj <- diag(1/sqrt(diag(V_ijj)))
-
-      #R_ijj <- A_ijj %*% V_ijj %*% A_ijj
-      R_ijj <- fast_mat_mult3(A_ijj, V_ijj, A_ijj)
-
-      V_i <- magic::adiag(V_i, V_ijj)
-      R_i <- magic::adiag(R_i, R_ijj)
-
-    }
-    A_inv <- diag(1/sqrt(diag(V_i)))
-
-    # For AR1, this is rho^{|j1 - j2|}
-    j1s <- matrix(rep(1:mi, each = mi), nrow = mi)
-    j2s <- matrix(rep(1:mi, each = mi), ncol = mi, byrow = TRUE)
-    corR_ar1 <- kronecker(rho_cor^abs(j1s - j2s), matrix(1, nrow = K, ncol = K))
-
-    # Use C++ version of multiplying three matrices
-    #V_i_inv <- (1/phi) * A_inv %*% MASS::ginv(R_i + corR) %*% A_inv
-    V_i_inv <- (1/phi) * fast_mat_mult3(A_inv, MASS::ginv(R_i + corR_ar1), A_inv)
-
-  }
   else{
     stop("Invalid cor_str")
   }
@@ -303,71 +275,52 @@ get_R_ijjp <- function(cor_str, rho, K){
 
 #' Get rho
 #'
-#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
-#' @param Y0 Vector of total count for each sample
-#' @param beta beta matrix of beta (or beta hat) of dimension (P*K) x L
-#' @param alpha alpha matrix of alpha (or alpha hat) of dimension (P*K) x L
-#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
-#' @param B B spline basis matrix of dimension (N x P)
 #' @param K Number of responses
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
-#' @param i_index starting index of the ith subject in the data
 #' @param M Number of subjects times timepoints for each subject
 #' @param cor_str Type of correlation structure (IND, CON, AR1)
+#' @param pearson_residuals
 #'
 #' @returns Numberic estimate of rho
 #' @export
-get_rho <- function(Y,
-                    Y0,
-                    beta,
-                    alpha,
-                    Z,
-                    B,
+get_rho <- function(pearson_residuals,
                     K,
                     mi_vec,
-                    i_index,
                     M,
-                    cor_str){
+                    cor_str,
+                    off_bdiag_list,
+                    j1_j2_list){
 
   if (cor_str == "IND") {
     return(0)
   }
 
-
   # Initialize list for each subject
   regression_data_list <- vector("list", length(mi_vec))
 
   for (i in seq_along(mi_vec)) {
-    mi <- mi_vec[i]
-    capture_number <- 1:mi_vec[i]
+    # capture_number <- 1:mi_vec[i]
+    #
+    # # Compute the difference matrix efficiently
+    # diag_values <- rep(capture_number, each = K)
+    # # This lets us find the blocks of the matrix, only matters
+    # # if they are zero, not the actual value.
+    # block_diagonal_elements <- outer(diag_values, diag_values, "-")
 
-    # Compute the difference matrix efficiently
-    diag_values <- rep(capture_number, each = K)
-    # This lets us find the blocks of the matrix, only matters
-    # if they are zero, not the actual value.
-    block_diagonal_elements <- outer(diag_values, diag_values, "-")
 
-    # Compute Pearson residual matrix
-    pearson_residual_i <- get_pearson_residual_i(Y,
-                                                 Y0,
-                                                 i,
-                                                 beta,
-                                                 alpha,
-                                                 Z,
-                                                 B,
-                                                 K,
-                                                 mi_vec,
-                                                 i_index)
+    is_off_bdiag <- off_bdiag_list[[i]]
+
+    # Extract ith pearson residual vector
+    pearson_residual_i <- pearson_residuals[[i]]
     matrix_pearson_residual <- tcrossprod(pearson_residual_i)
 
     # We only want the upper non-block triangle of the matrix
     # Extract non-NA values (which are the upper triangular non-block)
-    rijk_rijk <- matrix_pearson_residual[!(block_diagonal_elements == 0 |
-                                            lower.tri(matrix_pearson_residual))]
+    rijk_rijk <- matrix_pearson_residual[is_off_bdiag]
 
-    # Used for AR1 cor str
-    abs_j1_j2 <- abs(block_diagonal_elements[!(block_diagonal_elements == 0 |
-                                            lower.tri(matrix_pearson_residual))])
+    # Used for AR1 cor structure
+    j1_j2 <- j1_j2_list[[i]]
+    abs_j1_j2 <- abs(j1_j2[is_off_bdiag])
 
     # save for i
     regression_data_list[[i]] <- data.frame(rijk_rijk,

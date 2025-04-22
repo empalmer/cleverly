@@ -81,36 +81,50 @@ algorithm1 <- function(Y,
   Y0 <- rowSums(Y)
 
 
+  # Calculate helpers for correlation matrices:
+  j1_j2_list <- lapply(mi_vec, function(mi) {
+    # How many data points each i was collected on
+    times <- 1:mi
+    diag_values <- rep(times, each = K)
+    outer(diag_values, diag_values, "-")
+  })
+  off_bdiag_list <- lapply(j1_j2_list, function(block) {
+    # return T if off the block diagonal
+    !(block == 0 | lower.tri(block))
+  })
+
+
   # Initialize phi to be 1
   #Dirichlet Multinomial over dispersion parameter.
   phi <- 1
 
   # Initialize using Algorithm 2 for ALL responses
+  print("Initializing beta values")
   zeros_beta <- matrix(0, nrow = K * P, ncol = L + 1)
   beta_init <- algorithm2(Y = Y,
-                     Y0 = Y0,
-                     Z = Z,
-                     mi_vec = mi_vec,
-                     i_index = i_index,
-                     lp = -1,
-                     B = B,
-                     beta = zeros_beta,
-                     D = D,
-                     gammas = gammas,
-                     phi = phi,
-                     C = C,
-                     max_2_iter = max_2_iter,
-                     epsilon_2 = epsilon_2,
-                     time = time,
-                     s = "Initial fit",
-                     L = L,
-                     P = P,
-                     K = K,
-                     M = M,
-                     cor_str = cor_str)
+                          Y0 = Y0,
+                          Z = Z,
+                          mi_vec = mi_vec,
+                          i_index = i_index,
+                          lp = -1,
+                          B = B,
+                          beta = zeros_beta,
+                          D = D,
+                          gammas = gammas,
+                          phi = phi,
+                          C = C,
+                          max_2_iter = max_2_iter,
+                          epsilon_2 = epsilon_2,
+                          time = time,
+                          s = "Initial fit",
+                          L = L,
+                          P = P,
+                          K = K,
+                          M = M,
+                          cor_str = cor_str,
+                          off_bdiag_list = off_bdiag_list,
+                          j1_j2_list = j1_j2_list)
   beta <- beta_init$beta
-
-
 
   # Initialize lambda to all 0
   lambda <- numeric(nrow(Kappa)*P)
@@ -130,7 +144,6 @@ algorithm1 <- function(Y,
   diff <- Inf
   s <- 1
   rs[[1]] <- beta_init$r
-
 
 
   for (s in 1:max_outer_iter) {
@@ -160,23 +173,24 @@ algorithm1 <- function(Y,
                    P = P,
                    K = K,
                    M = M,
-                   cor_str = cor_str)
+                   cor_str = cor_str,
+                   off_bdiag_list = off_bdiag_list,
+                   j1_j2_list = j1_j2_list)
       }, error = function(e) {
-        print(paste0("ERROR!!!!: ", e$message))
+        print(paste0("ERROR alg2: ", e$message))
         return(e$message)
       })
       rs[[s + 1]] <- alg2$r
       alg_2_beta_diff[[s]] <- alg2$beta_diff
       # If there is an error, exit out of the loop
       if (is.character(alg2)) {
-        error <- beta_lp_minus
+        error <- alg2
         break
       }
       beta_lp_minus <- alg2$beta
     } else {
       beta_lp_minus <- beta
     }
-
 
 
     # Solution for l p (ADMM) with beta l_p minus fixed
@@ -208,9 +222,11 @@ algorithm1 <- function(Y,
                  K = K,
                  L = L,
                  M = M,
-                 cor_str = cor_str)
+                 cor_str = cor_str,
+                 off_bdiag_list = off_bdiag_list,
+                 j1_j2_list = j1_j2_list)
     }, error = function(e) {
-      print(paste0("ERROR!!!!: ", e$message))
+      print(paste0("ERROR alg3: ", e$message))
       return(e$message)
     })
     if (is.character(alg3)) {
@@ -225,10 +241,10 @@ algorithm1 <- function(Y,
     lambda <- alg3$lambda
     v <- alg3$v
 
-    ts[[s]] <- alg3$t
-    r_list[[s]] <- alg3$r_list
-    d_list[[s]] <- alg3$d_list
-    cluster_list[[s]] <- alg3$cluster_list
+    # ts[[s]] <- alg3$t
+    # r_list[[s]] <- alg3$r_list
+    # d_list[[s]] <- alg3$d_list
+
 
 
     alpha <- get_alpha_list(beta = beta,
@@ -239,26 +255,39 @@ algorithm1 <- function(Y,
                             mi_vec = mi_vec,
                             L = L,
                             P = P)
-    phi <- get_phi(Y = Y,
-                   Y0 = Y0,
-                   beta = beta_lp_minus,
-                   alpha = alpha,
-                   Z = Z,
-                   B = B,
-                   K = ncol(Y),
-                   mi_vec = mi_vec,
-                   i_index = i_index,
+    pearson_residuals <- get_pearson_residuals(Y = Y,
+                                               Y0 = Y0,
+                                               beta = beta,
+                                               alpha = alpha,
+                                               Z = Z,
+                                               B = B,
+                                               K = K,
+                                               mi_vec = mi_vec,
+                                               i_index = i_index,
+                                               M = M)
+    # Update dispersion parameter
+    phi <- get_phi(pearson_residuals = pearson_residuals,
+                   K = K,
                    M = M)
+
+    rho_cor <- get_rho(pearson_residuals = pearson_residuals,
+                       K = K,
+                       mi_vec = mi_vec,
+                       M = M,
+                       cor_str = cor_str,
+                       off_bdiag_list = off_bdiag_list,
+                       j1_j2_list = j1_j2_list)
 
     # Difference in betas between this loop and the last
     diff <- sum(abs(beta - beta_old)) # matrix difference
-    alg1_diff[[s]] <- diff
+    # alg1_diff[[s]] <- diff
 
     # Exit outer loop early if convergence is reached
     if (diff < epsilon_b) {
       break
     }
 
+    cluster_list[[s]] <- alg3$cluster_list
     # Exit if constant cluster results for the past 3 iterations
     if (s >= run_min) {
       current <-  alg3$cluster_list[[length(alg3$cluster_list)]]$membership
@@ -272,18 +301,6 @@ algorithm1 <- function(Y,
       }
     }
   }
-
-  rho_cor <- get_rho(Y,
-                     Y0,
-                     beta,
-                     alpha,
-                     Z,
-                     B,
-                     K,
-                     mi_vec,
-                     i_index,
-                     M,
-                     cor_str = cor_str)
 
 
   # After loop:
@@ -315,8 +332,6 @@ algorithm1 <- function(Y,
                       K = K,
                       Y = Y,
                       time = time)
-
-
   BIC <- BIC_cluster(y_ra_df = y_hat,
                      K = K,
                      n_clusters = clusters$no,
@@ -324,28 +339,27 @@ algorithm1 <- function(Y,
                      nknots = nknots,
                      order = order)
 
-  return(list(beta = beta,
-              beta_init = beta_init$beta,
-              clusters = clusters,
+  return(list(clusters = clusters,
               y_hat = y_hat,
               y_hat_init = y_hat_init,
-              v = v,
-              B = B,
-              rs = rs,
-              ts = ts,
-              u_list = alg3$u_list,
-              admm_diffs = admm_diffs,
-              admm_beta_list = admm_beta_list,
-              alg1_beta = alg1_beta,
-              alg1_diff = alg1_diff,
-              alg_2_beta_diff = alg_2_beta_diff,
-              cluster_list = cluster_list,
-              phis_list = phis_list,
-              r_list = r_list,
-              d_list = d_list,
+              # beta = beta,
+              # beta_init = beta_init$beta,
+              # v = v,
+              # B = B,
+              # rs = rs,
+              # ts = ts,
+              # u_list = alg3$u_list,
+              # admm_diffs = admm_diffs,
+              # admm_beta_list = admm_beta_list,
+              # alg1_beta = alg1_beta,
+              # alg1_diff = alg1_diff,
+              # alg_2_beta_diff = alg_2_beta_diff,
+              # cluster_list = cluster_list,
+              # phis_list = phis_list,
+              # r_list = r_list,
+              # d_list = d_list,
               BIC = BIC,
-              error = error,
-              rho_cor = rho_cor))
+              error = error))
 }
 
 

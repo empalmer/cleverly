@@ -32,7 +32,9 @@ algorithm3(
   L,
   K,
   M,
-  cor_str
+  cor_str,
+  off_bdiag_list = off_bdiag_list,
+  j1_j2_list = j1_j2_list
 )
 }
 \arguments{

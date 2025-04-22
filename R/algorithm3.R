@@ -61,7 +61,9 @@ algorithm3 <- function(Y,
                        L,
                        K,
                        M,
-                       cor_str) {
+                       cor_str,
+                       off_bdiag_list = off_bdiag_list,
+                       j1_j2_list = j1_j2_list) {
 
   # Initialize all return lists
   beta_admm_track <- list()
@@ -95,17 +97,32 @@ algorithm3 <- function(Y,
                             mi_vec = mi_vec,
                             L = L,
                             P = P)
+
+    # Calculate pearson residuals (used to calculate phi and rho)
+    # Creates a list of length i
+    pearson_residuals <- get_pearson_residuals(Y = Y,
+                                               Y0 = Y0,
+                                               beta = beta,
+                                               alpha = alpha,
+                                               Z = Z,
+                                               B = B,
+                                               K = K,
+                                               mi_vec = mi_vec,
+                                               i_index = i_index,
+                                               M = M)
     # Update dispersion parameter
-    phi <- get_phi(Y = Y,
-                   Y0 = Y0,
-                   beta = beta,
-                   alpha = alpha,
-                   Z = Z,
-                   B = B,
-                   K = ncol(Y),
-                   mi_vec = mi_vec,
-                   i_index = i_index,
+    phi <- get_phi(pearson_residuals = pearson_residuals,
+                   K = K,
                    M = M)
+
+    # Update correlation parameter
+    rho_cor <- get_rho(pearson_residuals = pearson_residuals,
+                       K = K,
+                       mi_vec = mi_vec,
+                       M = M,
+                       cor_str = cor_str,
+                       off_bdiag_list = off_bdiag_list,
+                       j1_j2_list = j1_j2_list)
 
 
     v_new <- update_v(beta = beta,
@@ -139,7 +156,8 @@ algorithm3 <- function(Y,
                                  K = K,
                                  P = P,
                                  L = L,
-                                 cor_str = cor_str)
+                                 cor_str = cor_str,
+                                 rho_cor = rho_cor)
 
     lambda_new <- update_lambda(beta_lp = beta_new[,lp + 1],
                                 v = v_new$v,
@@ -197,17 +215,18 @@ algorithm3 <- function(Y,
   #print(paste("Last ADMM Iteration: ", t - 1))
   return(list(beta = beta,
               lambda = lambda,
-              v = v,
-              t = t,
-              beta_admm_track = beta_admm_track,
-              lambda_admm_track = lambda_admm_track,
-              v_admm_track = v_admm_track,
-              cluster_list = cluster_list,
-              phi_track = phi_track,
-              diff_admm = diff_admm,
-              r_list = r_list,
-              d_list = d_list,
-              u_list = u_list))
+              v = v
+              # t = t,
+              # beta_admm_track = beta_admm_track,
+              # lambda_admm_track = lambda_admm_track,
+              # v_admm_track = v_admm_track,
+              # cluster_list = cluster_list,
+              # phi_track = phi_track,
+              # diff_admm = diff_admm,
+              # r_list = r_list,
+              # d_list = d_list,
+              # u_list = u_list
+              ))
 }
 
 
@@ -326,7 +345,8 @@ update_beta_admm <- function(Y,
                              K,
                              L,
                              P,
-                             cor_str){
+                             cor_str,
+                             rho_cor){
 
 
   gamma <- gammas[lp + 1]
@@ -342,18 +362,6 @@ update_beta_admm <- function(Y,
   #                         mi_vec = mi_vec)
   # Get V inverse for all is
   # compute it just once first so we don't have to calculate it for both H and Q.
-
-  rho_cor <- get_rho(Y,
-                     Y0,
-                     beta,
-                     alpha,
-                     Z,
-                     B,
-                     K,
-                     mi_vec,
-                     i_index,
-                     M,
-                     cor_str = cor_str)
 
   V_inv <- get_V_inv(Y = Y,
                      Y0 = Y0,
@@ -452,7 +460,8 @@ update_beta_admm <- function(Y,
 #' @returns vector of updated lambdas for the ADMM step
 #' @export
 update_lambda <- function(beta_lp, v, lambda, A, theta){
-  lambda_new <- lambda + theta * (A %*% beta_lp - v)
+  #lambda_new <- lambda + theta * (A %*% beta_lp - v)
+  lambda_new <- lambda + theta * (fast_mat_mult2(A, matrix(beta_lp)) - v)
 
   # if (any(is.nan(lambda_new))) {
   #   stop("Lambda is NaN")

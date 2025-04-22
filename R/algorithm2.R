@@ -20,6 +20,8 @@
 #' @param K Number of responses
 #' @param M Number of samples times timepoints for each sample
 #' @param i_index starting index of the ith subject in the data
+#' @param cor_str
+#' @param off_bdiag_list
 #'
 #' @returns Vector of length PK x L
 #' @export
@@ -43,7 +45,9 @@ algorithm2 <- function(Y,
                        P,
                        K,
                        M,
-                       cor_str){
+                       cor_str,
+                       off_bdiag_list,
+                       j1_j2_list){
 
   lp_minus <- NULL
   beta_diffs <- list()
@@ -73,30 +77,31 @@ algorithm2 <- function(Y,
                               mi_vec = mi_vec,
                               L = L,
                               P = P)
-
+      # Calculate pearson residuals (used to calculate phi and rho)
+      # Creates a list of length i
+      pearson_residuals <- get_pearson_residuals(Y = Y,
+                                                 Y0 = Y0,
+                                                 beta = beta,
+                                                 alpha = alpha,
+                                                 Z = Z,
+                                                 B = B,
+                                                 K = K,
+                                                 mi_vec = mi_vec,
+                                                 i_index = i_index,
+                                                 M = M)
       # Update dispersion parameter
-      phi <- get_phi(Y = Y,
-                     Y0 = Y0,
-                     beta = beta,
-                     alpha = alpha,
-                     Z = Z,
-                     B = B,
+      phi <- get_phi(pearson_residuals = pearson_residuals,
                      K = K,
-                     mi_vec = mi_vec,
-                     i_index = i_index,
                      M = M)
 
-      rho_cor <- get_rho(Y,
-                             Y0,
-                             beta,
-                             alpha,
-                             Z,
-                             B,
-                             K,
-                             mi_vec,
-                             i_index,
-                             M,
-                             cor_str = cor_str)
+      # Update correlation parameter
+      rho_cor <- get_rho(pearson_residuals = pearson_residuals,
+                         K = K,
+                         mi_vec = mi_vec,
+                         M = M,
+                         cor_str = cor_str,
+                         off_bdiag_list = off_bdiag_list,
+                         j1_j2_list = j1_j2_list)
 
       # Get V inverse for all is (and ls... )
       V_inv <- get_V_inv(Y = Y,
@@ -184,7 +189,6 @@ algorithm2 <- function(Y,
 
   return(list(beta = beta,
               r = r,
-              beta_diffs = beta_diffs,
-              rho_cor = rho_cor))
+              beta_diffs = beta_diffs))
 }
 

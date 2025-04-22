@@ -25,7 +25,9 @@ algorithm2(
   P,
   K,
   M,
-  cor_str
+  cor_str,
+  off_bdiag_list,
+  j1_j2_list
 )
 }
 \arguments{
@@ -66,6 +68,8 @@ algorithm2(
 \item{K}{Number of responses}
 
 \item{M}{Number of samples times timepoints for each sample}
+
+\item{off_bdiag_list}{}
 }
 \value{
 Vector of length PK x L

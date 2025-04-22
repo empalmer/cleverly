@@ -26,7 +26,8 @@ update_beta_admm(
   K,
   L,
   P,
-  cor_str
+  cor_str,
+  rho_cor
 )
 }
 \arguments{

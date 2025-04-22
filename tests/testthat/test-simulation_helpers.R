@@ -71,7 +71,7 @@ test_that("Simulation With Z", {
                             nknots = 3,
                             K = 12,
                             order = 3,
-                            user_var = 100000,
+                            user_var = 1000000,
                             cor_str = "CON",
                             rho = 0.8,
                             prob1 = .5,
@@ -107,9 +107,9 @@ test_that("Simulation With Z", {
   tau = .005
   theta = 300
   psi = 800
-  gammas = c(10, 10)
-  #start <- Sys.time()
-  #Rprof("test.out", interval = .02)
+  gammas = c(1, 1)
+  start <- Sys.time()
+  Rprof("test.out", interval = .02)
   #profvis::profvis({
   res <- cleverly(Y = Y,
                   Z = Z,
@@ -123,20 +123,23 @@ test_that("Simulation With Z", {
                   psi = psi,
                   C = 100,
                   # Iterations max
-                  max_admm_iter = 100,
-                  max_outer_iter = 10,
-                  max_2_iter = 100,
+                  max_admm_iter = 10,
+                  max_outer_iter = 1,
+                  max_2_iter = 10,
                   # Convergence criteria
                   epsilon_r = .001,
                   epsilon_d = .05,
                   epsilon_b = .01,
                   epsilon_2 = .001,
-                  cor_str = "AR1")
-   #})
-  #end <- Sys.time()
-  #Rprof(NULL)
-  #summaryRprof("test.out")$by.self[1:10,1:2]
-  #(duration <- end - start)
+                  cor_str = "CON")
+  #})
+  end <- Sys.time()
+  Rprof(NULL)
+
+  summaryRprof("test.out")$by.self[1:15,1:2]
+  summaryRprof("test.out")$by.total[1:20,1:2]
+
+  (duration <- end - start)
   res$clusters
 
   # Diagnostic plots:
