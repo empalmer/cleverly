@@ -138,8 +138,6 @@ get_Vi_inv <- function(i,
   else if (cor_str == "CON" | cor_str == "AR1") {
     # If not independent, we have to invert the entire matrix, and there are
     # cross correlations
-    V_i_list <- list()
-    R_i_list <- list()
     mi <- mi_vec[i]
     V_i <- matrix(nrow = 0, ncol = 0)
     R_i <- matrix(nrow = 0, ncol = 0)
