@@ -109,7 +109,7 @@ test_that("Simulation With Z", {
   psi = 800
   gammas = c(1, 1)
   start <- Sys.time()
-  Rprof("test.out", interval = .02)
+  #Rprof("test.out", interval = .02)
   #profvis::profvis({
   res <- cleverly(Y = Y,
                   Z = Z,
@@ -133,13 +133,13 @@ test_that("Simulation With Z", {
                   epsilon_2 = .001,
                   cor_str = "CON")
   #})
-  end <- Sys.time()
-  Rprof(NULL)
+  #end <- Sys.time()
+  #Rprof(NULL)
 
-  summaryRprof("test.out")$by.self[1:15,1:2]
-  summaryRprof("test.out")$by.total[1:20,1:2]
+  #summaryRprof("test.out")$by.self[1:15,1:2]
+  #summaryRprof("test.out")$by.total[1:20,1:2]
 
-  (duration <- end - start)
+  #(duration <- end - start)
   res$clusters
 
   # Diagnostic plots:
@@ -199,6 +199,65 @@ test_that("Simulation With Z", {
                    epsilon_b = .01,
                    epsilon_2 = .001,
                    cor_str = "IND")
+
+
+                   psi_max = psi_max,
+                   npsi = npsi,
+                   parralel = parralel,
+                   Y = Y,
+                   Z = Z,
+                   lp = 0,
+                   time = time,
+                   # Non-tuned Hyperparameters
+                   gammas = gammas,
+                   tau = tau,
+                   theta = 300,
+                   C = 100,
+                   # Iterations max
+                   max_admm_iter = max_admm_iter,
+                   max_outer_iter = max_outer_iter,
+                   max_2_iter = max_2_iter,
+                   # Convergence criteria
+                   epsilon_r = .001,
+                   epsilon_d = .05,
+                   epsilon_b = .01,
+                   epsilon_2 = .001,
+                   cor_str = "IND")
+
+
+npsi <- 11
+psi_min <- 400
+psi_max <- 1400
+tau <- 0.005
+parralel <- F
+gammas <- c(1,1)
+
+max_admm_iter <- 200
+max_2_iter <- 100
+max_outer_iter <- 20
+cleverly_bestpsi(psi_min = psi_min,
+                 psi_max = psi_max,
+                 npsi = npsi,
+                 parralel = parralel,
+                 Y = Y,
+                 Z = Z,
+                 lp = 0,
+                 time = time,
+                 # Non-tuned Hyperparameters
+                 gammas = gammas,
+                 tau = tau,
+                 theta = 300,
+                 C = 100,
+                 # Iterations max
+                 max_admm_iter = max_admm_iter,
+                 max_outer_iter = max_outer_iter,
+                 max_2_iter = max_2_iter,
+                 # Convergence criteria
+                 epsilon_r = .001,
+                 epsilon_d = .05,
+                 epsilon_b = .01,
+                 epsilon_2 = .001,
+                 cor_str = "IND")
 
 })
 
@@ -649,11 +708,12 @@ test_that("Simulation filter Z", {
   res$clusters$no
 
 
-  res_psi <- cleverly_bestpsi(psi_min = 100,
-                              psi_max = 2000,
+  res_psi <- cleverly_bestpsi(psi_min = 800,
+                              psi_max = 1200,
                               npsi = 2,
                               parralel = F,
                               Y = Y,
+                              Z = Z,
                               lp = 0,
                               time = time,
                               # Hyperparameters

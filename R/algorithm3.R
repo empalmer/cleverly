@@ -215,12 +215,12 @@ algorithm3 <- function(Y,
   #print(paste("Last ADMM Iteration: ", t - 1))
   return(list(beta = beta,
               lambda = lambda,
-              v = v
+              v = v,
               # t = t,
               # beta_admm_track = beta_admm_track,
               # lambda_admm_track = lambda_admm_track,
               # v_admm_track = v_admm_track,
-              # cluster_list = cluster_list,
+              cluster_list = cluster_list
               # phi_track = phi_track,
               # diff_admm = diff_admm,
               # r_list = r_list,
