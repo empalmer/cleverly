@@ -176,6 +176,30 @@ test_that("Simulation With Z", {
   unlist(res$alg1_diff)
 
 
+  test <- cleverly_bestpsi(psi_min = 400,
+                   psi_max = 1400,
+                   npsi = 2,
+                   parralel = F,
+                   Y = Y,
+                   Z = Z,
+                   lp = 0,
+                   time = time,
+                   # Non-tuned Hyperparameters
+                   gammas = c(1,1),
+                   tau = 0.005,
+                   theta = 300,
+                   C = 100,
+                   # Iterations max
+                   max_admm_iter = 10,
+                   max_outer_iter = 2,
+                   max_2_iter = 10,
+                   # Convergence criteria
+                   epsilon_r = .001,
+                   epsilon_d = .05,
+                   epsilon_b = .01,
+                   epsilon_2 = .001,
+                   cor_str = "IND")
+
 })
 
 
