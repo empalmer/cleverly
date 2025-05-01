@@ -35,9 +35,9 @@ cleverly_onepsi(
 
 \item{Z}{Matrix or data frame containing a column for each external variable. There should be M rows and L columns.}
 
-\item{subject_ids}{either a vector of length(Y) or a column reference if Y is a data frame}
+\item{subject_ids}{quosure}
 
-\item{time}{either a vector of length(Y) or a column reference if Y is a data frame. Must be numeric}
+\item{time}{quosure}
 
 \item{lp}{either a numeric index of which external variable to cluster on, or the name of the column of Z that contains the clustering variable. Specify numeric 0 to cluster via baseline.}
 

@@ -11,14 +11,14 @@ get_rho(pearson_residuals, K, mi_vec, M, cor_str, off_bdiag_list, j1_j2_list)
 
 \item{K}{Number of responses}
 
-\item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
+\item{mi_vec}{vector of the number of time points for each sample. Of length n}
 
-\item{M}{Number of subjects times timepoints for each subject}
+\item{M}{Number of subjects times time points for each subject}
 
 \item{cor_str}{Type of correlation structure (IND, CON, AR1)}
 }
 \value{
-Numberic estimate of rho
+Numeric estimate of rho
 }
 \description{
 Get rho

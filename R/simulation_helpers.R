@@ -689,87 +689,90 @@ base_sim <- function(seed = 124){
 #'
 #' @returns list of
 #' @export
-cleverly_bestpsi <- function(psi_min,
-                             psi_max,
-                             npsi,
-                             parralel = FALSE,
-                             Y,
-                             Z,
-                             time,
-                             lp = 0,
-                             response_type = "counts",
-                             cor_str = "IND",
-                             gammas,
-                             tau = 8/100,
-                             theta = 300,
-                             C = 10,
-                             d = 2,
-                             run_min = 3,
-                             nknots = 3,
-                             order = 3,
-                             epsilon_b = 1e-3,
-                             epsilon_r = 1e-3,
-                             epsilon_d = 1e-3,
-                             max_outer_iter = 10,
-                             max_admm_iter = 100,
-                             max_2_iter = 100,
-                             epsilon_2 = 1e-3){
+cleverly_bestpsi_sim <- function(psi_min,
+                                 psi_max,
+                                 npsi,
+                                 parralel = FALSE,
+                                 Y,
+                                 Z,
+                                 time,
+                                 subject_ids,
+                                 lp = 0,
+                                 response_type = "counts",
+                                 cor_str = "IND",
+                                 true_cluster = rep(1:3, each = 4),
+                                 gammas,
+                                 tau = 8/100,
+                                 theta = 300,
+                                 C = 100,
+                                 d = 2,
+                                 run_min = 3,
+                                 nknots = 3,
+                                 order = 3,
+                                 epsilon_b = 1e-3,
+                                 epsilon_r = 1e-3,
+                                 epsilon_d = 1e-3,
+                                 max_outer_iter = 10,
+                                 max_admm_iter = 100,
+                                 max_2_iter = 100,
+                                 epsilon_2 = 1e-3){
 
   psis <- seq(psi_min, psi_max, length.out = npsi)
 
+  subject_ids <- rlang::enquo(subject_ids)
+  time <- rlang::enquo(time)
 
   if (parralel) {
     future::plan(future::multisession, workers = future::availableCores())
-    res_list <- furrr::future_map(psis, ~cleverly(Y = Y,
-                                                  Z = Z,
-                                                  subject_ids = individual,
-                                                  lp = 0,
-                                                  time = time,
-                                                  # Hyperparameters
-                                                  gammas = gammas,
-                                                  tau = tau,
-                                                  theta = theta,
-                                                  psi = ..1,
-                                                  C = 100,
-                                                  run_min = run_min,
-                                                  # Iterations max
-                                                  max_admm_iter = max_admm_iter,
-                                                  max_outer_iter = max_outer_iter,
-                                                  max_2_iter = max_2_iter,
-                                                  # Convergence criteria
-                                                  epsilon_r = .001,
-                                                  epsilon_d = .05,
-                                                  epsilon_b = .01,
-                                                  epsilon_2 = .001,
-                                                  cor_str = cor_str))
+    res_list <- furrr::future_map(psis, ~cleverly_onepsi(Y = Y,
+                                                         Z = Z,
+                                                         subject_ids = subject_ids,
+                                                         lp = lp,
+                                                         time = time,
+                                                         cor_str = cor_str,
+                                                         # Hyperparameters
+                                                         gammas = gammas,
+                                                         tau = tau,
+                                                         theta = theta,
+                                                         psi = ..1,
+                                                         C = C,
+                                                         # Iterations max
+                                                         run_min = run_min,
+                                                         max_admm_iter = max_admm_iter,
+                                                         max_outer_iter = max_outer_iter,
+                                                         max_2_iter = max_2_iter,
+                                                         # Convergence criteria
+                                                         epsilon_r = epsilon_r,
+                                                         epsilon_d = epsilon_d,
+                                                         epsilon_b = epsilon_b,
+                                                         epsilon_2 = epsilon_2))
   } else {
     res_list <- list()
     for (p in 1:length(psis)) {
       psi <- psis[p]
-
-      res_list[[p]] <- cleverly(Y = Y,
-                                Z = Z,
-                                subject_ids = individual,
-                                time = time,
-                                lp = lp,
-                                response_type = response_type,
-                                cor_str = cor_str,
-                                gammas = gammas,
-                                psi = psi,
-                                tau = tau,
-                                theta = theta,
-                                C = C,
-                                d = d,
-                                run_min = run_min,
-                                nknots = nknots,
-                                order = order,
-                                epsilon_b = epsilon_b,
-                                epsilon_r = epsilon_r,
-                                epsilon_d = epsilon_d,
-                                max_outer_iter = max_outer_iter,
-                                max_admm_iter = max_admm_iter,
-                                max_2_iter = max_2_iter,
-                                epsilon_2 = epsilon_2)
+      res_list[[p]] <- cleverly_onepsi(Y = Y,
+                                       Z = Z,
+                                       subject_ids = subject_ids,
+                                       time = time,
+                                       lp = lp,
+                                       response_type = response_type,
+                                       cor_str = cor_str,
+                                       gammas = gammas,
+                                       psi = psi,
+                                       tau = tau,
+                                       theta = theta,
+                                       C = C,
+                                       d = d,
+                                       run_min = run_min,
+                                       nknots = nknots,
+                                       order = order,
+                                       epsilon_b = epsilon_b,
+                                       epsilon_r = epsilon_r,
+                                       epsilon_d = epsilon_d,
+                                       max_outer_iter = max_outer_iter,
+                                       max_admm_iter = max_admm_iter,
+                                       max_2_iter = max_2_iter,
+                                       epsilon_2 = epsilon_2)
     }
   }
 
@@ -777,20 +780,18 @@ cleverly_bestpsi <- function(psi_min,
   res <- res_list[[best]]
   res$all_clusters_psi <- purrr::map(res_list, ~.x$clusters)
 
-
-  print(paste0("all clusters: psi:", psis,", cluster:", purrr::map(res_list, ~.x$clusters)))
-  print(paste0("chosen psi cluster", purrr::map_dbl(res_list, ~.x$clusters$no)[best]))
-  print(paste0("chosen psi", psis[best]))
-
+  clusters <- purrr::map(res_list, ~.x$clusters)
+  print(paste0("all clusters: psi:", psis,", cluster:", clusters))
+  print(paste0("chosen psi cluster", clusters[best]))
+  print(paste0("chosen psi", psis[best], ", cluster", clusters[best]))
 
   sim_result <- list("chosen_cluster" = res$clusters,
                      "possible_cluster" = res$all_clusters_psi,
                      "chosen_psi" = psis[best],
                      "y_hat_init" = res$y_hat_init,
-                     "y_hat_final" = res$y_hat)
+                     "y_hat" = res$y_hat)
 
   cluster <- res$clusters$membership
-  true_cluster <- rep(1:3, each = 4)
   sim_result$cluster_result <- data.frame("rand" = fossil::rand.index(cluster, true_cluster),
                                           "adj.rand" = mclust::adjustedRandIndex(cluster, true_cluster),
                                           "jacc" = length(intersect(cluster, true_cluster)) /

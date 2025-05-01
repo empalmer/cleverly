@@ -68,6 +68,8 @@ cleverly <- function(Y,
                      max_2_iter = 100) {
 
   psis <- seq(psi_min, psi_max, length.out = npsi)
+  subject_ids <- rlang::enquo(subject_ids)
+  time <- rlang::enquo(time)
 
   if (parralel) {
     future::plan(future::multisession, workers = nworkers)
@@ -130,15 +132,14 @@ cleverly <- function(Y,
   res$all_clusters_psi <- purrr::map(res_list, ~.x$clusters)
 
   clusters <- purrr::map(res_list, ~.x$clusters)
-  print(paste0("all clusters: psi:", psis,", cluster:", clusters))
-  print(paste0("chosen psi cluster", purrr::map_dbl(res_list, ~.x$clusters$no)[best]))
-  print(paste0("chosen psi", psis[best], ", cluster", clusters[[best]]))
+  print(paste0("psi:", psis,", cluster:", clusters))
+  print(paste0("chosen psi: ", psis[best], ", cluster", clusters[[best]]))
 
   result <- list("cluster" = res$clusters,
                  "possible_clusters" = res$all_clusters_psi,
                  "chosen_psi" = psis[best],
                  "y_hat_init" = res$y_hat_init,
-                 "y_hat_final" = res$y_hat)
+                 "y_hat" = res$y_hat)
 
   return(result)
 
@@ -157,8 +158,8 @@ cleverly <- function(Y,
 #'
 #' @param Y either a data frame or matrix of numeric response variables. Each response should be a separate column. Each row should be a separate subject/time combination. There should be M total rows. Must be ordered in time.
 #' @param Z Matrix or data frame containing a column for each external variable. There should be M rows and L columns.
-#' @param subject_ids either a vector of length(Y) or a column reference if Y is a data frame
-#' @param time either a vector of length(Y) or a column reference if Y is a data frame. Must be numeric
+#' @param subject_ids quosure
+#' @param time quosure
 #' @param lp either a numeric index of which external variable to cluster on, or the name of the column of Z that contains the clustering variable. Specify numeric 0 to cluster via baseline.
 #' @param response_type Counts or continuous response
 #' @param d Order for the difference matrix
@@ -180,7 +181,6 @@ cleverly <- function(Y,
 #' @param run_min
 #'
 #' @returns
-#' @export
 cleverly_onepsi <- function(Y,
                             Z,
                             subject_ids,
@@ -217,26 +217,28 @@ cleverly_onepsi <- function(Y,
   # Format Y
   Y_user <- Y
 
-  id_quo <- rlang::enquo(subject_ids)
-  time_quo <- rlang::enquo(time)
+  id_quo <- subject_ids
+  time_quo <- time
 
   if (is.data.frame(Y)) {
     # For ID:
-    if (rlang::quo_name(id_quo) %in% colnames(Y)) {
+    if (rlang::is_symbol(rlang::get_expr(id_quo)) &&
+        rlang::as_name(id_quo) %in% colnames(Y)) {
       subject_ids <- dplyr::pull(Y, !!id_quo) # Extract the column
       Y <- dplyr::select(Y, -!!id_quo) # Remove the column
-    } else if (length(subject_ids) == nrow(Y)) {
-      subject_ids <- subject_ids # Assume it's an external vector
+    } else if (length(rlang::eval_tidy(subject_ids)) == nrow(Y)) {
+      subject_ids <- rlang::eval_tidy(id_quo) # Assume it's an external vector
     } else {
       stop("Invalid subject: must be a column name in Y or a vector of length nrow(Y)")
     }
 
     # For time:
-    if (rlang::quo_name(time_quo) %in% colnames(Y)) {
+    if (rlang::is_symbol(rlang::get_expr(time_quo)) &&
+        rlang::quo_name(time_quo) %in% colnames(Y)) {
       time <- dplyr::pull(Y, !!time_quo) # Extract the column
       Y <- dplyr::select(Y, -!!time_quo) # Remove the column
-    } else if (length(time) == nrow(Y)) {
-      time <- time # Assume it's an external vector
+    } else if (length(rlang::eval_tidy(time_quo)) == nrow(Y)) {
+      time <- rlang::eval_tidy(time_quo) # Assume it's an external vector
     } else {
       stop("Invalid time: must be a column name in Y or a vector of length nrow(Y)")
     }

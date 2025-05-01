@@ -93,8 +93,6 @@ test_that("Simulation With Z", {
                   y = "Count",
                   x = "Time")
 
-
-
   Y <- dplyr::select(sim, -c(
     "total_n",
     "Capture.Number",
@@ -105,20 +103,20 @@ test_that("Simulation With Z", {
   #start <- Sys.time()
   #Rprof("test.out", interval = .02)
   #profvis::profvis({
-  res <- cleverly_onepsi(Y = Y,
-                         Z = Z,
-                         subject_ids = individual,
-                         time = time,
-                         lp = 0,
-                         cor_str = "AR1-d",
-                         # Hyperparameters
-                         gammas = c(1,1),
-                         psi = psi,
-                         # Iterations max
-                         max_admm_iter = 10,
-                         max_outer_iter = 1,
-                         max_2_iter = 10,
-                         )
+  res <- cleverly(Y = Y,
+                  Z = Z,
+                  subject_ids = individual,
+                  time = time,
+                  lp = 0,
+                  cor_str = "AR1-d",
+                  # Hyperparameters
+                  gammas = c(1,1),
+                  npsi = 2,
+                  # Iterations max
+                  max_admm_iter = 10,
+                  max_outer_iter = 1,
+                  max_2_iter = 10,
+  )
   #})
   # end <- Sys.time()
   # Rprof(NULL)
@@ -139,20 +137,7 @@ test_that("Simulation With Z", {
     cluster = factor(res$clusters$membership))
   knitr::kable(table(cluster_df$cluster, rep(1:3, each = 4)))
 
-  res_psi <- cleverly(Y = Y,
-                      Z = Z,
-                      subject_ids = individual,
-                      time = time,
-                      lp = 0,
-                      cor_str = "AR1-d",
-                      # Hyperparameters
-                      gammas = c(1,1),
-                      npsi = 2,
-                      # Iterations max
-                      max_admm_iter = 10,
-                      max_outer_iter = 1,
-                      max_2_iter = 10,
-  )
+
 
 
 })

@@ -353,7 +353,6 @@ get_rho <- function(pearson_residuals,
     rho_cor <- mean(regressiondata$rijk_rijk)
   }
   if (cor_str == "AR1-d") {
-    browser()
     objective_f <- purrr::map_dbl(seq(-1,1,0.1), ~sum((regressiondata$rijk_rijk -
                                                          .x^(regressiondata$abs_j1_j2))^2) )
     rho_cor <- seq(-1,1,0.1)[which.min(objective_f)]
