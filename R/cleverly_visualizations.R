@@ -1,4 +1,111 @@
-# Plots -------------------------------------------------------------------
+
+# Plots for cleverly ------------------------------------------------------
+
+#' Plot clusters
+#'
+#' For binary EV
+#'
+#' @param res cleverly model object
+#' @param response_names vector of names for each response
+#' @param scales "free_y" or "fixed" to control scaling of the y axis
+#' @param order "response" or "cluster" to have original ordering or cluster ordering of responses on the facet plots
+#' @param nrow number of rows for the facet plot
+#' @param EV_color color for the EV line
+#'
+#' @returns ggplot object
+#' @export
+plot_clusters <- function(res,
+                          response_names,
+                          scales = "free_y",
+                          EV_color = "grey50",
+                          order = "response",
+                          nrow = 3){
+
+  cluster_key <- data.frame(
+    response_names = factor(1:length(response_names),
+                            levels = 1:length(response_names)),
+    cluster = factor(res$clusters$membership))
+
+  if (order == "response") {
+    values <- c(viridis::viridis(length(unique(cluster_key$cluster))), EV_color)
+  } else if (order == "cluster") {
+    values <-  c(sample(viridis::viridis(length(unique(cluster_key$cluster)))), EV_color)
+  } else {
+    stop("order must be either 'response' or 'cluster'")
+    # values = c(RColorBrewer::brewer.pal(n = length(unique(cluster_df$cluster)),
+    #                       name = "Set1"),
+    #            "grey30"),
+    #values = c(rcartocolor::carto_pal(length(unique(cluster_df$cluster)),
+    #                                  "Safe"),
+    #           "grey50"),
+  }
+
+
+  # plot clusters
+  plot <- res$y_hat %>%
+    dplyr::mutate(response = factor(response)) %>%
+    dplyr::left_join(cluster_key, by = c("response" = "response_names")) %>%
+    dplyr::mutate(clusterZ = ifelse(Z == 1, "EV", cluster),
+                  response = factor(response, labels = response_names)) %>%
+    ggplot2::ggplot(ggplot2::aes(x = time)) +
+    ggplot2::geom_point(ggplot2::aes(y = y,
+                                     color = factor(Z),
+                                     shape = factor(Z)),
+                        size = 1, alpha = .8) +
+    ggplot2::guides(color = ggplot2::guide_legend("EV"),
+                    shape = ggplot2::guide_legend("EV")) +
+    # ggplot2::labs(color = "EV",
+    #               shape = "EV") +
+    ggnewscale::new_scale_color() +
+    ggplot2::geom_line(ggplot2::aes(y = yhat,
+                                    color = clusterZ,
+                                    group = factor(Z)),
+                       linewidth = 1) +
+    ggplot2::facet_wrap(~response,
+                        scales = scales,
+                        nrow = nrow) +
+    ggplot2::scale_color_manual(
+      values = values,
+      name = "Cluster"
+    )
+
+  return(plot)
+
+}
+
+
+#' plot_initial_fit
+#'
+#' @param res Cleverly model object
+#' @param K Number of responses
+#' @param gammas Vector of dimension L + 1 for penalizing the D matrix
+#'
+#' @returns ggplot object
+#' @export
+plot_initial_fit <- function(res, K){
+  # Initial fit:
+  y_hat_init <- res$y_hat_init
+  # plot clusters
+  plot <- y_hat_init %>%
+    dplyr::mutate(response = factor(response, levels = 1:K)) %>%
+    ggplot2::ggplot(ggplot2::aes(x = time)) +
+    ggplot2::geom_point(ggplot2::aes(y = y,
+                                     color = factor(Z),
+                                     shape = factor(Z)),
+                        size = .6, alpha = .8) +
+    ggplot2::geom_line(ggplot2::aes(y = yhat,
+                                    color = factor(Z),
+                                    group = factor(Z)),
+                       linewidth = 1) +
+    ggplot2::facet_wrap(~response)
+
+  return(plot)
+}
+
+
+
+
+# Plots for understanding algorithm  -------------------------------------------------------------------
 
 #' Plot the final fit
 #'
@@ -129,61 +236,6 @@ beta_path <- function(betas, K, B, Z, time){
 
 
 
-#' Title
-#'
-#' @param res Cleverly model object
-#' @param K Number of responses
-#' @param tau MCP hyper parameter.
-#' @param psi Hyperparameter for clustering penalty (larger drives pairwise differences to zero)
-#' @param gammas Vector of dimension L + 1 for penalizing the D matrix
-#' @param theta ADMM hyper parameter.
-#' @param max_admm_iter Max number of iterations for the ADMM loop
-#' @param max_outer_iter Max number of iterations for the outer loop (Algorithm 1)
-#'
-#' @returns ggplot object
-#' @export
-plot_clusters <- function(res, K, tau, psi, gammas, theta, max_admm_iter, max_outer_iter){
-  cluster_df <- data.frame(
-    K = factor(1:K, levels = 1:K),
-    cluster = factor(res$clusters$membership))
-
-  y_hat <- res$y_hat
-  # plot clusters
-  plot <- y_hat %>%
-    dplyr::mutate(response = factor(response, levels = 1:K)) %>%
-    dplyr::left_join(cluster_df, by = c("response" = "K")) %>%
-    dplyr::mutate(clusterZ = ifelse(Z == 1, "EV", cluster)) %>%
-    ggplot2::ggplot(ggplot2::aes(x = time)) +
-    ggplot2::geom_point(ggplot2::aes(y = y,
-                                     color = factor(Z),
-                                     shape = factor(Z)),
-                        size = .6, alpha = .8) +
-    ggnewscale::new_scale_color() +
-    ggplot2::geom_line(ggplot2::aes(y = yhat,
-                                    color = clusterZ,
-                                    group = factor(Z)),
-                       linewidth = 1) +
-    ggplot2::facet_wrap(~response) +
-    ggplot2::scale_color_manual(
-      # values = c(RColorBrewer::brewer.pal(n = length(unique(cluster_df$cluster)),
-      #                       name = "Set1"),
-      #            "grey50"),
-      #values = c(rcartocolor::carto_pal(length(unique(cluster_df$cluster)),
-      #                                  "Safe"),
-      #           "grey50"),
-      values = c(viridis::viridis(length(unique(cluster_df$cluster))), "grey50"),
-      name = "Cluster"
-    ) +
-    ggplot2::labs(subtitle = paste0("psi:",psi,
-                                    ", tau:",round(tau,2),
-                                    ", theta:",theta,
-                                    ", gamma:", gammas[1],",", gammas[2],
-                                    ", admm:",max_admm_iter,
-                                    ", outer:",max_outer_iter))
-
-  return(plot)
-
-}
 
 #' Plot clusters based on a yhat data frame
 #'
@@ -226,34 +278,7 @@ plot_clusters_yhat <- function(yhat, chosen_cluster, K = 12){
 
 }
 
-#' plot_initial_fit
-#'
-#' @param res Cleverly model object
-#' @param K Number of responses
-#' @param gammas Vector of dimension L + 1 for penalizing the D matrix
-#'
-#' @returns ggplot object
-#' @export
-plot_initial_fit <- function(res, K, gammas){
-  # Initial fit:
-  y_hat_init <- res$y_hat_init
-  # plot clusters
-  plot <- y_hat_init %>%
-    dplyr::mutate(response = factor(response, levels = 1:K)) %>%
-    ggplot2::ggplot(ggplot2::aes(x = time)) +
-    ggplot2::geom_point(ggplot2::aes(y = y,
-                                     color = factor(Z),
-                                     shape = factor(Z)),
-                        size = .6, alpha = .8) +
-    ggplot2::geom_line(ggplot2::aes(y = yhat,
-                                    color = factor(Z),
-                                    group = factor(Z)),
-                       linewidth = 1) +
-    ggplot2::facet_wrap(~response) +
-    ggplot2::labs(subtitle   = paste0("gammas:",gammas))
 
-  return(plot)
-}
 
 
 #' plot_cluster_path

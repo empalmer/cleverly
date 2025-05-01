@@ -7,16 +7,16 @@
 cor_user(mi, user_var, cor_str, rho)
 }
 \arguments{
-\item{mi}{number of timepoints for ith sample}
+\item{mi}{number of time points for ith sample}
 
 \item{user_var}{User supplied variance}
 
-\item{rho}{rho}
+\item{rho}{rho correlation parameter}
 
-\item{structure}{Type of correlation 1 for (?) 2 for (?) 1: compound symmetry, 2: autoregressive, 3: independent}
+\item{structure}{Type of correlation structure to simulate, of IND, CON-d, and AR1-d}
 }
 \value{
-User defined correlation matrix.
+User defined correlation matrix (for a single sample i)
 }
 \description{
 User defined correlation structure

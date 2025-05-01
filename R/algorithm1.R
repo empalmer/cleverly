@@ -93,7 +93,6 @@ algorithm1 <- function(Y,
     !(block == 0 | lower.tri(block))
   })
 
-
   # Initialize phi to be 1
   #Dirichlet Multinomial over dispersion parameter.
   phi <- 1
@@ -622,7 +621,18 @@ get_A <- function(Kappa, K, P) {
 }
 
 
+# Calculate cluster BIC ---------------------------------------------------
 
-# Hyperparameter choosing -------------------------------------------------
+BIC_cluster <- function(y_ra_df,
+                        K, n_clusters,
+                        mi_vec,
+                        nknots, order){
 
+  N <- sum(mi_vec)
+  yhat_y <- log(y_ra_df$yhat + .1) - log(y_ra_df$y + .1)
+  first_term <- sum(yhat_y^2)/(N*K)
+  second_term <- log(N * K) * n_clusters * (order + nknots)/(N*K)
 
+  BIC <- log(first_term) + second_term
+  return(BIC)
+}

@@ -67,6 +67,7 @@ algorithm2 <- function(Y,
 
       beta_l <- beta[, l + 1, drop = F]
 
+
       # Things to be calculated once per loop/beta update
       # Which are: alpha, V inverse, and partials
       alpha <- get_alpha_list(beta = beta,

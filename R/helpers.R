@@ -470,7 +470,7 @@ get_alpha_list <- function(beta, Z, B, K, i_index, mi_vec, L, P){
 
   beta_ks <- list()
   for (k in 1:K) {
-    beta_ks[[k]] <- beta[rep(1:12, each = 6) == k, ]
+    beta_ks[[k]] <- beta[rep(1:K, each = P) == k, ]
   }
 
   alpha_list <- purrr::map(1:n, ~get_alpha_i(i = .x,
