@@ -51,6 +51,12 @@ cleverly(
 
 \item{gammas}{Vector of dimension L + 1 for penalizing the D matrix}
 
+\item{psi_min}{Psi, or minimum psi if npsi >1}
+
+\item{psi_max}{Maximum psi}
+
+\item{npsi}{Number of psi values to test. Will create an equally spaced sequence from psi_min to psi_max and find the best (via BIC) choice.}
+
 \item{tau}{MCP hyper parameter. Default is 8/100.}
 
 \item{theta}{ADMM hyper parameter. Default is 300.}
