@@ -662,16 +662,23 @@ base_sim <- function(seed = 124){
 #' @param res model object from cleverly
 #' @param true_cluster vector with the true cluster membership
 #'
-#' @returns
+#' @returns res model with additional list item diagnostics that contains clustering results of rand, adj.rand, jaccard, CER, and nclust
 #' @export
 get_cluster_diagnostics <- function(res, true_cluster){
-  res$cluster_result <- data.frame("rand" = fossil::rand.index(res$clusters$membership, true_cluster),
-                                 "adj.rand" = mclust::adjustedRandIndex(res$clusters$membership, true_cluster),
-                                 "jacc" = length(intersect(res$clusters$membership, true_cluster)) /
-                                   length(union(res$clusters$membership, true_cluster)),
-                                 "miss" = mclust::classError(classification = res$clusters$membership,
-                                                             class = true_cluster)$errorRate,
-                                 "nclust" = res$clusters$no)
+
+  found_cluster <- res$cluster$membership
+
+  rand <- fossil::rand.index(found_cluster, true_cluster)
+  adj_rand <- mclust::adjustedRandIndex(found_cluster, true_cluster)
+  jaccard <- length(intersect(found_cluster, true_cluster)) / length(union(found_cluster, true_cluster))
+  CER <- mclust::classError(classification = found_cluster,
+                            class = true_cluster)$errorRate
+
+  res$cluster_diagnostics <- data.frame("rand" = rand,
+                                        "adj_rand" = adj_rand,
+                                        "jaccard" = jaccard,
+                                        "CER" = CER,
+                                        "nclust" = res$cluster$no)
   return(res)
 }
 

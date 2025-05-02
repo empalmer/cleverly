@@ -117,6 +117,9 @@ test_that("Simulation With Z", {
                   max_outer_iter = 1,
                   max_2_iter = 10,
   )
+
+  res %>%
+    get_cluster_diagnostics(true_cluster = rep(1:3, each = 4))
   #})
   # end <- Sys.time()
   # Rprof(NULL)

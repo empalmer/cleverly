@@ -43,11 +43,11 @@ cleverly_onepsi(
 
 \item{response_type}{Counts or continuous response}
 
-\item{cor_str}{Type of correlation structure (IND, CON, AR1)}
+\item{cor_str}{Type of correlation structure (IND, CON, AR1, CON-d, AR1-d)}
 
 \item{gammas}{Vector of dimension L + 1 for penalizing the D matrix}
 
-\item{psi}{Hyperparameter for clustering penalty (larger drives pairwise differences to zero)}
+\item{psi}{Hyper parameter for clustering penalty (larger drives pairwise differences to zero)}
 
 \item{tau}{MCP hyper parameter. Default is 8/100.}
 
@@ -61,15 +61,15 @@ cleverly_onepsi(
 
 \item{order}{Order of the B-spline basis}
 
-\item{epsilon_b}{Tolerance for alg 1 convergence}
+\item{epsilon_b}{Tolerance for algorithm 1 convergence}
 
-\item{epsilon_r}{Tolerance for ADMM convergence}
+\item{epsilon_r}{Tolerance for ADMM convergence (Algorithm 3)}
 
-\item{epsilon_d}{Tolerance for ADMM convergence}
+\item{epsilon_d}{Tolerance for ADMM convergence (Algorithm 3)}
 
 \item{epsilon_2}{Tolerance for convergence of algorithm 2}
 
-\item{run_min}{}
+\item{run_min}{Minimum amount of times to run Algorithm 1 (cluster convergence)}
 
 \item{max_outer_iter}{Number of iterations for the outer loop (Algorithm 1)}
 

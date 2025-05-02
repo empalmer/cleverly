@@ -13,8 +13,8 @@
 #' @param psi_min Psi, or minimum psi if npsi >1
 #' @param psi_max Maximum psi
 #' @param npsi Number of psi values to test. Will create an equally spaced sequence from psi_min to psi_max and find the best (via BIC) choice.
-#' @param parralel
-#' @param nworkers
+#' @param parralel Use parralelization? Default is FALSE. If TRUE, uses future::plan(future::multisession) to run the algorithm in parallel.
+#' @param nworkers If parralel, how many workers to use
 #' @param tau MCP hyper parameter. Default is 8/100.
 #' @param theta ADMM hyper parameter. Default is 300.
 #' @param C Constant for determining the hessian change. Default is 100.
@@ -30,7 +30,10 @@
 #' @param max_2_iter Maximum number of iterations for algorithm 2 to run each loop (Algorithm 2)
 #' @param max_admm_iter Number of iterations for the clustering step (Algorithm 3)
 #'
-#' @returns
+#' @returns cluster" = res$clusters,
+#' @returns "possible_clusters" = res$all_clusters_psi,
+#' "chosen_psi" = psis[best],
+#' "y_hat_init" = res$y_hat_init,"y_hat" = res$y_hat)
 #' @export
 #'
 #' @examples
@@ -166,19 +169,19 @@ cleverly <- function(Y,
 #' @param nknots Number of knots for the B-spline basis
 #' @param order Order of the B-spline basis
 #' @param gammas Vector of dimension L + 1 for penalizing the D matrix
-#' @param psi Hyperparameter for clustering penalty (larger drives pairwise differences to zero)
+#' @param psi Hyper parameter for clustering penalty (larger drives pairwise differences to zero)
 #' @param tau MCP hyper parameter. Default is 8/100.
 #' @param theta ADMM hyper parameter. Default is 300.
 #' @param C Constant for determining the hessian change. Default is 10.
 #' @param max_outer_iter Number of iterations for the outer loop (Algorithm 1)
 #' @param max_admm_iter Number of iterations for the clustering step (Algorithm 3)
-#' @param epsilon_b Tolerance for alg 1 convergence
-#' @param epsilon_r Tolerance for ADMM convergence
-#' @param epsilon_d Tolerance for ADMM convergence
 #' @param max_2_iter Maximum number of iterations for algorithm 2 to run each loop
+#' @param epsilon_b Tolerance for algorithm 1 convergence
+#' @param epsilon_r Tolerance for ADMM convergence (Algorithm 3)
+#' @param epsilon_d Tolerance for ADMM convergence (Algorithm 3)
 #' @param epsilon_2 Tolerance for convergence of algorithm 2
-#' @param cor_str Type of correlation structure (IND, CON, AR1)
-#' @param run_min
+#' @param cor_str Type of correlation structure (IND, CON, AR1, CON-d, AR1-d)
+#' @param run_min Minimum amount of times to run Algorithm 1 (cluster convergence)
 #'
 #' @returns
 cleverly_onepsi <- function(Y,

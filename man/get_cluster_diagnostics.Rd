@@ -11,6 +11,9 @@ get_cluster_diagnostics(res, true_cluster)
 
 \item{true_cluster}{vector with the true cluster membership}
 }
+\value{
+res model with additional list item diagnostics that contains clustering results of rand, adj.rand, jaccard, CER, and nclust
+}
 \description{
 Look at clustering results if true clusters are known
 }

@@ -57,6 +57,10 @@ cleverly(
 
 \item{npsi}{Number of psi values to test. Will create an equally spaced sequence from psi_min to psi_max and find the best (via BIC) choice.}
 
+\item{parralel}{Use parralelization? Default is FALSE. If TRUE, uses future::plan(future::multisession) to run the algorithm in parallel.}
+
+\item{nworkers}{If parralel, how many workers to use}
+
 \item{tau}{MCP hyper parameter. Default is 8/100.}
 
 \item{theta}{ADMM hyper parameter. Default is 300.}
@@ -84,6 +88,13 @@ cleverly(
 \item{max_admm_iter}{Number of iterations for the clustering step (Algorithm 3)}
 
 \item{max_2_iter}{Maximum number of iterations for algorithm 2 to run each loop (Algorithm 2)}
+}
+\value{
+cluster" = res$clusters,
+
+"possible_clusters" = res$all_clusters_psi,
+"chosen_psi" = psis\link{best},
+"y_hat_init" = res$y_hat_init,"y_hat" = res$y_hat)
 }
 \description{
 Runs cleverly one psi for a range of psi values
