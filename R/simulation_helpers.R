@@ -657,6 +657,25 @@ base_sim <- function(seed = 124){
 # Run cleverly on multiple vales to see what the best is ------------------
 
 
+#' Look at clustering results if true clusters are known
+#'
+#' @param res model object from cleverly
+#' @param true_cluster vector with the true cluster membership
+#'
+#' @returns
+#' @export
+get_cluster_diagnostics <- function(res, true_cluster){
+  res$cluster_result <- data.frame("rand" = fossil::rand.index(res$clusters$membership, true_cluster),
+                                 "adj.rand" = mclust::adjustedRandIndex(res$clusters$membership, true_cluster),
+                                 "jacc" = length(intersect(res$clusters$membership, true_cluster)) /
+                                   length(union(res$clusters$membership, true_cluster)),
+                                 "miss" = mclust::classError(classification = res$clusters$membership,
+                                                             class = true_cluster)$errorRate,
+                                 "nclust" = res$clusters$no)
+  return(res)
+}
+
+
 #' cleverly_bestpsi
 #'
 #' Run cleverly for a range of hyperparameter psi values.
@@ -717,79 +736,38 @@ cleverly_bestpsi_sim <- function(psi_min,
                                  max_2_iter = 100,
                                  epsilon_2 = 1e-3){
 
-  psis <- seq(psi_min, psi_max, length.out = npsi)
-
-  subject_ids <- rlang::enquo(subject_ids)
-  time <- rlang::enquo(time)
-
-  if (parralel) {
-    future::plan(future::multisession, workers = future::availableCores())
-    res_list <- furrr::future_map(psis, ~cleverly_onepsi(Y = Y,
-                                                         Z = Z,
-                                                         subject_ids = subject_ids,
-                                                         lp = lp,
-                                                         time = time,
-                                                         cor_str = cor_str,
-                                                         # Hyperparameters
-                                                         gammas = gammas,
-                                                         tau = tau,
-                                                         theta = theta,
-                                                         psi = ..1,
-                                                         C = C,
-                                                         # Iterations max
-                                                         run_min = run_min,
-                                                         max_admm_iter = max_admm_iter,
-                                                         max_outer_iter = max_outer_iter,
-                                                         max_2_iter = max_2_iter,
-                                                         # Convergence criteria
-                                                         epsilon_r = epsilon_r,
-                                                         epsilon_d = epsilon_d,
-                                                         epsilon_b = epsilon_b,
-                                                         epsilon_2 = epsilon_2))
-  } else {
-    res_list <- list()
-    for (p in 1:length(psis)) {
-      psi <- psis[p]
-      res_list[[p]] <- cleverly_onepsi(Y = Y,
-                                       Z = Z,
-                                       subject_ids = subject_ids,
-                                       time = time,
-                                       lp = lp,
-                                       response_type = response_type,
-                                       cor_str = cor_str,
-                                       gammas = gammas,
-                                       psi = psi,
-                                       tau = tau,
-                                       theta = theta,
-                                       C = C,
-                                       d = d,
-                                       run_min = run_min,
-                                       nknots = nknots,
-                                       order = order,
-                                       epsilon_b = epsilon_b,
-                                       epsilon_r = epsilon_r,
-                                       epsilon_d = epsilon_d,
-                                       max_outer_iter = max_outer_iter,
-                                       max_admm_iter = max_admm_iter,
-                                       max_2_iter = max_2_iter,
-                                       epsilon_2 = epsilon_2)
-    }
-  }
-
-  best <- which.min(purrr::map_dbl(res_list, ~.x$BIC))
-  res <- res_list[[best]]
-  res$all_clusters_psi <- purrr::map(res_list, ~.x$clusters)
-
-  clusters <- purrr::map(res_list, ~.x$clusters)
-  print(paste0("all clusters: psi:", psis,", cluster:", clusters))
-  print(paste0("chosen psi cluster", clusters[best]))
-  print(paste0("chosen psi", psis[best], ", cluster", clusters[best]))
-
-  sim_result <- list("chosen_cluster" = res$clusters,
-                     "possible_cluster" = res$all_clusters_psi,
-                     "chosen_psi" = psis[best],
-                     "y_hat_init" = res$y_hat_init,
-                     "y_hat" = res$y_hat)
+  res <- cleverly(Y,
+                     Z,
+                     subject_ids,
+                     time,
+                     lp = 0,
+                     response_type = "counts",
+                     cor_str = "IND",
+                     gammas,
+                     # optimize psi by BIC
+                     psi_min = 500,
+                     psi_max = 1500,
+                     npsi = 10,
+                     # parrallelilization options:
+                     parralel = FALSE,
+                     nworkers = 2,
+                     # Other hyper parameters
+                     tau = 0.005,
+                     theta = 300,
+                     C = 100,
+                     d = 2,
+                     nknots = 3,
+                     order = 3,
+                     # Convergence criteria
+                     epsilon_b = 1e-3,
+                     epsilon_r = 1e-3,
+                     epsilon_d = 1e-3,
+                     epsilon_2 = 1e-3,
+                     # Run maximums
+                     run_min = 3,
+                     max_outer_iter = 30,
+                     max_admm_iter = 100,
+                     max_2_iter = 100)
 
   cluster <- res$clusters$membership
   sim_result$cluster_result <- data.frame("rand" = fossil::rand.index(cluster, true_cluster),

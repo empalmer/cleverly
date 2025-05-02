@@ -10,9 +10,9 @@
 #' @param response_type Counts or continuous response
 #' @param cor_str Type of correlation structure (IND, CON, AR1, CON-d, AR1-d)
 #' @param gammas Vector of dimension L + 1 for penalizing the D matrix
-#' @param psi_min
-#' @param psi_max
-#' @param npsi
+#' @param psi_min Psi, or minimum psi if npsi >1
+#' @param psi_max Maximum psi
+#' @param npsi Number of psi values to test. Will create an equally spaced sequence from psi_min to psi_max and find the best (via BIC) choice.
 #' @param parralel
 #' @param nworkers
 #' @param tau MCP hyper parameter. Default is 8/100.
