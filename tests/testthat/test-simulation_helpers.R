@@ -1,45 +1,40 @@
 test_that("Simulation Z 0,1", {
-  skip("Skip")
+  skip("Skip - used as test file for cleverly")
   # Generate simulation data
   set.seed(127)
-  sim <- sim_Z_longitudinal(n = 20,
-                            range_start = 5000,
-                            range_end = 20000,
-                            nknots = 3,
-                            K = 12,
-                            order = 3,
-                            user_var = 1000,
-                            cor_str = "CON-d",
-                            rho = 0.9,
-                            prob1 = .5,
-                            slope_base = "cluster_base_alldiff_slope")
+  sim <- simulation_data(n = 20,
+                         range_start = 5000,
+                         range_end = 20000,
+                         nknots = 3,
+                         K = 12,
+                         order = 3,
+                         user_var = 1000,
+                         cor_str = "CON-d",
+                         rho = 0.9,
+                         prob1 = .5,
+                         baseline_fxns = list(
+                           function(t) t,
+                           function(t) t,
+                           function(t) t,
+                           function(t) t,
+                           function(t) t,
+                           function(t) t,
+                           function(t) t,
+                           function(t) t,
+                           function(t) t,
+                           function(t) -3 * t + 3,
+                           function(t) -3 * t + 3,
+                           function(t) -3 * t + 3
+                         ),)
 
   # Visualize simulated data
-  sim %>%
-    tidyr::pivot_longer(-c(individual,
-                           time,
-                           Capture.Number,
-                           total_n, Z)) %>%
-    dplyr::mutate(name = factor(name,
-                                levels = paste0("Taxa.", 1:12))) %>%
-    ggplot2::ggplot(ggplot2::aes(x = time,
-                                 y = value,
-                                 color = factor(Z),
-                                 shape = factor(Z))) +
-    ggplot2::geom_jitter(size = 1) +
-    ggplot2::facet_wrap(~name) +
-    ggplot2::labs(title = "Simulated Data",
-                  color = "EV",
-                  shape = "EV",
-                  y = "Count",
-                  x = "Time")
+  plot_sim_data(sim)
 
   Y <- dplyr::select(sim, -c(
     "total_n",
     "Capture.Number",
     "Z"))
   Z <- sim$Z
-
   #start <- Sys.time()
   #Rprof("test.out", interval = .02)
   #profvis::profvis({
@@ -53,26 +48,27 @@ test_that("Simulation Z 0,1", {
                   gammas = c(1,1),
                   npsi = 1,
                   # Iterations max
-                  max_admm_iter = 100,
+                  max_admm_iter = 10,
                   max_outer_iter = 5,
-                  max_2_iter = 100,
+                  max_2_iter = 10,
   )
 
-  res %>%
-    get_cluster_diagnostics(true_cluster = rep(1:3, each = 4))
+
   #})
   # end <- Sys.time()
   # Rprof(NULL)
   # summaryRprof("test.out")$by.self[1:15,1:2]
   #(duration <- end - start)
-  res$clusters
 
+  res %>%
+    get_cluster_diagnostics(true_cluster = rep(1:3, each = 4))
+  res$clusters
   # Diagnostic plots:
   plot_clusters(res = res,
                 response_names = LETTERS[1:12])
 
-res$phi
-res$rho
+  res$phi
+  res$rho
 
 
   plot_initial_fit(res, K = 12)
