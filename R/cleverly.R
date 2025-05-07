@@ -142,7 +142,9 @@ cleverly <- function(Y,
                  "possible_clusters" = res$all_clusters_psi,
                  "chosen_psi" = psis[best],
                  "y_hat_init" = res$y_hat_init,
-                 "y_hat" = res$y_hat)
+                 "y_hat" = res$y_hat,
+                 "rho" = res$rho,
+                 "phi" = res$phi)
 
   return(result)
 
@@ -326,32 +328,8 @@ cleverly_onepsi <- function(Y,
   return(list(clusters = result$clusters,
               y_hat = result$y_hat,
               y_hat_init = result$y_hat_init,
-              # beta = result$beta,
-              # beta_init = result$beta_init,
-              # v = result$v,
-              # ts = result$ts,
-              # rs = result$rs,
-              # u_list = result$u_list,
-              # admm_diffs = result$admm_diffs,
-              # admm_beta_list = result$admm_beta_list,
-              # phis_list = result$phis_list,
-              # admm_beta_list = result$admm_beta_list,
-              # loop_list_beta = result$loop_list_beta,
-              # alg1_diff = result$alg1_diff,
-              # alg_2_beta_diff = result$alg_2_beta_diff,
-              # cluster_list = result$cluster_list,
-              # r_list = result$r_list,
-              # d_list = result$d_list,
               BIC = result$BIC,
-              error = result$error
-              # Input values
-              # B = result$B,
-              # Y = Y,
-              # mi_vec = mi_vec,
-              # time = time,
-              # subject_ids = subject_ids,
-              # Z = Z,
-              # lp = lp,
-              # rho_cor = result$rho_cor
-              ))
+              error = result$error,
+              rho = result$rho,
+              phi = result$phi))
 }

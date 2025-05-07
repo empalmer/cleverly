@@ -4,10 +4,10 @@
 \alias{get_rho}
 \title{Get rho}
 \usage{
-get_rho(pearson_residuals, K, mi_vec, M, cor_str, off_bdiag_list, j1_j2_list)
+get_rho(pearson_residuals, phi, K, mi_vec, M, cor_str, cor_blocks, j1_j2_list)
 }
 \arguments{
-\item{pearson_residuals}{}
+\item{phi}{}
 
 \item{K}{Number of responses}
 

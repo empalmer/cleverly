@@ -26,7 +26,7 @@ algorithm2(
   K,
   M,
   cor_str,
-  off_bdiag_list,
+  cor_blocks,
   j1_j2_list
 )
 }

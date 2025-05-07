@@ -62,8 +62,8 @@ algorithm3 <- function(Y,
                        K,
                        M,
                        cor_str,
-                       off_bdiag_list = off_bdiag_list,
-                       j1_j2_list = j1_j2_list) {
+                       cor_blocks,
+                       j1_j2_list) {
 
   # Initialize all return lists
   beta_admm_track <- list()
@@ -117,11 +117,12 @@ algorithm3 <- function(Y,
 
     # Update correlation parameter
     rho_cor <- get_rho(pearson_residuals = pearson_residuals,
+                       phi = phi,
                        K = K,
                        mi_vec = mi_vec,
                        M = M,
                        cor_str = cor_str,
-                       off_bdiag_list = off_bdiag_list,
+                       cor_blocks = cor_blocks,
                        j1_j2_list = j1_j2_list)
 
 
@@ -216,16 +217,7 @@ algorithm3 <- function(Y,
   return(list(beta = beta,
               lambda = lambda,
               v = v,
-              # t = t,
-              # beta_admm_track = beta_admm_track,
-              # lambda_admm_track = lambda_admm_track,
-              # v_admm_track = v_admm_track,
               cluster_list = cluster_list
-              # phi_track = phi_track,
-              # diff_admm = diff_admm,
-              # r_list = r_list,
-              # d_list = d_list,
-              # u_list = u_list
               ))
 }
 

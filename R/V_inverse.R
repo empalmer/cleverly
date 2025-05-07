@@ -281,82 +281,89 @@ get_corR <- function(cor_str, mi, K, rho) {
 #' @param M Number of subjects times time points for each subject
 #' @param cor_str Type of correlation structure (IND, CON, AR1)
 #' @param pearson_residuals
+#' @param phi
 #'
 #' @returns Numeric estimate of rho
 #' @export
 get_rho <- function(pearson_residuals,
+                    phi,
                     K,
                     mi_vec,
                     M,
                     cor_str,
-                    off_bdiag_list,
+                    cor_blocks,
                     j1_j2_list){
 
   if (cor_str == "IND") {
     return(0)
   }
 
+
   # Initialize list for each subject
   regression_data_list <- vector("list", length(mi_vec))
 
+  # Calculate for each subject i
   for (i in seq_along(mi_vec)) {
-    # # Compute the difference matrix efficiently
-    # diag_values <- rep(capture_number, each = K)
-    # # This lets us find the blocks of the matrix, only matters
-    # # if they are zero, not the actual value.
-    # block_diagonal_elements <- outer(diag_values, diag_values, "-")
-    is_off_bdiag <- off_bdiag_list[[i]]
 
     # Extract ith pearson residual vector
     pearson_residual_i <- pearson_residuals[[i]]
+    # Create a matrix of rijk * rijk' residuals
     matrix_pearson_residual <- tcrossprod(pearson_residual_i)
-
-
 
     # Calculate corR just to select the right elements of the matrix to include in calculations
     # The non-zero elements of corR are what we want to select from the pearson resid matrix.
     # Here we set rho = 1 just so we can get the non-zero elements, really it can be any nonzero number
-    corR <- get_corR(cor_str = cor_str,
-                     mi = mi_vec[i],
-                     K = K,
-                     rho = 1)
+    # cor_blocks <- get_corR(cor_str = cor_str,
+    #                  mi = mi_vec[i],
+    #                  K = K,
+    #                  rho = 1)
 
     # We only want the upper non-block triangle of the matrix
     # Extract non-NA values (which are the upper triangular non-block)
     #rijk_rijk <- matrix_pearson_residual[is_off_bdiag]
-    rijk_rijk <- matrix_pearson_residual[corR != 0]
+    rijk_rijk <- matrix_pearson_residual[cor_blocks[[i]] != 0]
+    # Normalize by phi
+    normalized_rijk_rijk <- 1/phi * rijk_rijk
 
-    # Used for AR1 and AR1-d cor structure
-    j1_j2 <- j1_j2_list[[i]]
-    #abs_j1_j2 <- abs(j1_j2[is_off_bdiag])
-    abs_j1_j2 <- abs(j1_j2[corR != 0])
 
-    # save for i
-    regression_data_list[[i]] <- data.frame(rijk_rijk,
-                                            abs_j1_j2)
+    if (cor_str == "AR1" | cor_str == "AR1-d") {
+      # For AR1, we need to get the absolute value of the j1 - j2
+      # This is the same for both AR1 and AR1-d
+      # Used for AR1 and AR1-d cor structure
+      j1_j2 <- j1_j2_list[[i]]
+      abs_j1_j2 <- abs(j1_j2[cor_blocks[[i]] != 0])
+
+      # save for i
+      regression_data_list[[i]] <- data.frame(normalized_rijk_rijk,
+                                              abs_j1_j2)
+    } else {
+      # save for i
+      regression_data_list[[i]] <- data.frame(normalized_rijk_rijk)
+    }
 
   }
-  # Combine all dataframes at the end for efficiency
+  # Combine all i data frames at the end
   regressiondata <- dplyr::bind_rows(regression_data_list)
 
 
-  if (cor_str == "CON") {
+  if (cor_str == "CON" | cor_str == "CON-d") {
     # This is how we calculate it for the CON structure.
-    rho_cor <- mean(regressiondata$rijk_rijk)
+    # The chosen rijk_rijk are different depending on if it is con or cond
+
+    rho_cor <- mean(regressiondata$normalized_rijk_rijk)
   }
-  if (cor_str == "AR1") {
-    objective_f <- purrr::map_dbl(seq(-1,1,0.1), ~sum((regressiondata$rijk_rijk -
+  if (cor_str == "AR1" | cor_str == "AR1-d") {
+    # Find the minimum
+    # Using seq() will speed up the process
+    # The chosen rijk_rijk are different depending on if it is ar1 or ar1d
+    objective_f <- purrr::map_dbl(seq(-1,1,0.1), ~sum((regressiondata$normalized_rijk_rijk -
                                                          .x^(regressiondata$abs_j1_j2))^2) )
     rho_cor <- seq(-1,1,0.1)[which.min(objective_f)]
+
   }
-  if (cor_str == "CON-d") {
-    rho_cor <- mean(regressiondata$rijk_rijk)
-  }
-  if (cor_str == "AR1-d") {
-    objective_f <- purrr::map_dbl(seq(-1,1,0.1), ~sum((regressiondata$rijk_rijk -
-                                                         .x^(regressiondata$abs_j1_j2))^2) )
-    rho_cor <- seq(-1,1,0.1)[which.min(objective_f)]
-  }
+
+
+
 
   # logic for edge cases, mean might not give a valid structure.
   if (rho_cor < (-1)) {

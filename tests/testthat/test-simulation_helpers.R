@@ -1,63 +1,4 @@
-test_that("timepoints work", {
-  time <- sim_timepoints(n = 5)
-  expect_type(time, "list")
-})
-
-test_that("Z works", {
-  time <- sim_timepoints(n = 5)
-  mi_vec <- time$mi_vec
-  Z_sim <- sim_Z(mi_vec)
-})
-
-test_that("Test sim Y works", {
-  set.seed(124)
-  time_list <- sim_timepoints(n = 5)
-  mi_vec <- time_list$mi_vec
-  i_index <- c(0, cumsum(mi_vec))
-  time <- time_list$X$time
-
-  K <- 4
-  Z <- sim_Z(mi_vec)
-
-  B <- get_B(time, order = 3, nknots = 3)
-
-  # 2 clusters
-  betaC1 <- matrix(c(rep(c(1, 1, 1, 1, 1, 1), 2),     #l = 0
-                     rep(c(-2, -2, -2, -2, -2, -2),2),  #l = 1
-                     rep(c(1, 2, 3, 4, 5, 6), 2)), ncol = 3)  #l = 2
-  betaC2 <- .5*betaC1
-
-  beta <- rbind(betaC1, betaC2)
-
-  Y_ij <- sim_Y_ij(i = 1,
-                   j = 1,
-                   beta,
-                   Z,
-                   B,
-                   Y_ij0 = 100,
-                   K = K,
-                   mi_vec = mi_vec,
-                   i_index = i_index)
-
-  Y_i <- sim_Yi(i = 1,
-                beta = beta,
-                Z = Z,
-                B = B,
-                K = K,
-                mi_vec = mi_vec,
-                i_index = i_index)
-
-  Y <- sim_Y(beta = beta,
-             Z = Z,
-             B = B,
-             K = K,
-             mi_vec = mi_vec,
-             i_index = i_index)
-})
-
-
-
-test_that("Simulation With Z", {
+test_that("Simulation Z 0,1", {
   skip("Skip")
   # Generate simulation data
   set.seed(127)
@@ -67,9 +8,9 @@ test_that("Simulation With Z", {
                             nknots = 3,
                             K = 12,
                             order = 3,
-                            user_var = 10000,
+                            user_var = 1000,
                             cor_str = "CON-d",
-                            rho = 0.6,
+                            rho = 0.9,
                             prob1 = .5,
                             slope_base = "cluster_base_alldiff_slope")
 
@@ -99,7 +40,6 @@ test_that("Simulation With Z", {
     "Z"))
   Z <- sim$Z
 
-  psi = 800
   #start <- Sys.time()
   #Rprof("test.out", interval = .02)
   #profvis::profvis({
@@ -108,14 +48,14 @@ test_that("Simulation With Z", {
                   subject_ids = individual,
                   time = time,
                   lp = 0,
-                  cor_str = "AR1-d",
+                  cor_str = "CON-d",
                   # Hyperparameters
                   gammas = c(1,1),
-                  npsi = 2,
+                  npsi = 1,
                   # Iterations max
-                  max_admm_iter = 10,
-                  max_outer_iter = 1,
-                  max_2_iter = 10,
+                  max_admm_iter = 100,
+                  max_outer_iter = 5,
+                  max_2_iter = 100,
   )
 
   res %>%
@@ -130,6 +70,9 @@ test_that("Simulation With Z", {
   # Diagnostic plots:
   plot_clusters(res = res,
                 response_names = LETTERS[1:12])
+
+res$phi
+res$rho
 
 
   plot_initial_fit(res, K = 12)
@@ -148,7 +91,7 @@ test_that("Simulation With Z", {
 
 
 
-test_that("Simulation no Z", {
+test_that("Simulation ALL", {
 
   skip("Skip")
   # Generate simulation data

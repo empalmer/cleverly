@@ -83,15 +83,22 @@ algorithm1 <- function(Y,
 
   # Calculate helpers for correlation matrices:
   j1_j2_list <- lapply(mi_vec, function(mi) {
-    # How many data points each i was collected on
     times <- 1:mi
     diag_values <- rep(times, each = K)
     outer(diag_values, diag_values, "-")
   })
-  off_bdiag_list <- lapply(j1_j2_list, function(block) {
-    # return T if off the block diagonal
-    !(block == 0 | lower.tri(block))
-  })
+  # off_bdiag_list <- lapply(j1_j2_list, function(block) {
+  #   # return T if off the block diagonal
+  #   !(block == 0 | lower.tri(block))
+  #   browser()
+  # })
+  # Define a list with blocks for each i what the correlation matrix structure is
+  # We set rho = 1 just to give the 0/1 matrix of zero/nonzero elements of the
+  # correlation matrix depending on the chosen strucutre.
+  cor_blocks <- purrr::map(mi_vec, ~get_corR(cor_str = cor_str,
+                                             mi = .x,
+                                             K = K,
+                                             rho = 1))
 
   # Initialize phi to be 1
   #Dirichlet Multinomial over dispersion parameter.
@@ -121,7 +128,7 @@ algorithm1 <- function(Y,
                           K = K,
                           M = M,
                           cor_str = cor_str,
-                          off_bdiag_list = off_bdiag_list,
+                          cor_blocks = cor_blocks,
                           j1_j2_list = j1_j2_list)
   beta <- beta_init$beta
 
@@ -173,7 +180,7 @@ algorithm1 <- function(Y,
                    K = K,
                    M = M,
                    cor_str = cor_str,
-                   off_bdiag_list = off_bdiag_list,
+                   cor_blocks = cor_blocks,
                    j1_j2_list = j1_j2_list)
       }, error = function(e) {
         print(paste0("ERROR alg2: ", e$message))
@@ -222,7 +229,7 @@ algorithm1 <- function(Y,
                  L = L,
                  M = M,
                  cor_str = cor_str,
-                 off_bdiag_list = off_bdiag_list,
+                 cor_blocks = cor_blocks,
                  j1_j2_list = j1_j2_list)
     }, error = function(e) {
       print(paste0("ERROR alg3: ", e$message))
@@ -239,12 +246,6 @@ algorithm1 <- function(Y,
     beta <- alg3$beta
     lambda <- alg3$lambda
     v <- alg3$v
-
-    # ts[[s]] <- alg3$t
-    # r_list[[s]] <- alg3$r_list
-    # d_list[[s]] <- alg3$d_list
-
-
 
     alpha <- get_alpha_list(beta = beta,
                             Z = Z,
@@ -269,13 +270,7 @@ algorithm1 <- function(Y,
                    K = K,
                    M = M)
 
-    rho_cor <- get_rho(pearson_residuals = pearson_residuals,
-                       K = K,
-                       mi_vec = mi_vec,
-                       M = M,
-                       cor_str = cor_str,
-                       off_bdiag_list = off_bdiag_list,
-                       j1_j2_list = j1_j2_list)
+
 
     # Difference in betas between this loop and the last
     diff <- sum(abs(beta - beta_old)) # matrix difference
@@ -338,25 +333,32 @@ algorithm1 <- function(Y,
                      nknots = nknots,
                      order = order)
 
+  pearson_residuals <- get_pearson_residuals(Y = Y,
+                                             Y0 = Y0,
+                                             beta = beta,
+                                             alpha = alpha,
+                                             Z = Z,
+                                             B = B,
+                                             K = K,
+                                             mi_vec = mi_vec,
+                                             i_index = i_index,
+                                             M = M)
+
+  rho <- get_rho(pearson_residuals = pearson_residuals,
+                 phi = phi,
+                 K = K,
+                 mi_vec = mi_vec,
+                 M = M,
+                 cor_str = cor_str,
+                 cor_blocks = cor_blocks,
+                 j1_j2_list = j1_j2_list)
+
+
   return(list(clusters = clusters,
               y_hat = y_hat,
               y_hat_init = y_hat_init,
-              # beta = beta,
-              # beta_init = beta_init$beta,
-              # v = v,
-              # B = B,
-              # rs = rs,
-              # ts = ts,
-              # u_list = alg3$u_list,
-              # admm_diffs = admm_diffs,
-              # admm_beta_list = admm_beta_list,
-              # alg1_beta = alg1_beta,
-              # alg1_diff = alg1_diff,
-              # alg_2_beta_diff = alg_2_beta_diff,
-              # cluster_list = cluster_list,
-              # phis_list = phis_list,
-              # r_list = r_list,
-              # d_list = d_list,
+              rho = rho,
+              phi = phi,
               BIC = BIC,
               error = error))
 }
