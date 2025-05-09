@@ -30,6 +30,8 @@ test_that("Simulation Z 0,1", {
   # Visualize simulated data
   plot_sim_data(sim)
 
+  true_cluster <- rep(1:3, each = 4)
+
   Y <- dplyr::select(sim, -c(
     "total_n",
     "Capture.Number",
@@ -43,15 +45,17 @@ test_that("Simulation Z 0,1", {
                   subject_ids = individual,
                   time = time,
                   lp = 0,
-                  cor_str = "CON-d",
+                  cor_str = "IND",
                   # Hyperparameters
                   gammas = c(1,1),
+                  psi_min = 400,
                   npsi = 1,
                   # Iterations max
                   max_admm_iter = 10,
                   max_outer_iter = 5,
                   max_2_iter = 10,
-  )
+  ) %>%
+    get_cluster_diagnostics(true_cluster)
 
 
   #})

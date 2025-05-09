@@ -214,7 +214,7 @@ get_Vi_inv <- function(i,
       R_i <- magic::adiag(R_i, R_ijj)
 
     }
-
+browser()
     corR <- get_corR(cor_str = cor_str,
                      mi = mi,
                      K = K,
@@ -240,8 +240,11 @@ get_Vi_inv <- function(i,
 # Correlation structures --------------------------------------------------
 
 get_corR <- function(cor_str, mi, K, rho) {
+  if (cor_str == "IND") {
+    return(list())
+  }
   # Calculate the longitudinal blocks of the correlation structure
-  if (cor_str == "CON") {
+  else if (cor_str == "CON") {
     # For CON, this is a matrix of 1s everywhere except on the block diagonal which has 0s
     # Then scaled by the calculated rho_cor
     # One block correlation matrix
