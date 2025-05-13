@@ -10,6 +10,7 @@ test_that("Simulation Z 0,1", {
                          order = 3,
                          user_var = 1000,
                          cor_str = "CON-d",
+                         Z_type = "binary",
                          rho = 0.9,
                          prob1 = .5,
                          baseline_fxns = list(
@@ -268,6 +269,85 @@ test_that("try fxns", {
 
 
 })
+
+
+test_that("Simulation cont", {
+  skip("Skip - used as test file for cleverly")
+  # Generate simulation data
+  set.seed(127)
+  sim <- simulation_data(n = 20,
+                         range_start = 5000,
+                         range_end = 20000,
+                         nknots = 3,
+                         K = 12,
+                         order = 3,
+                         user_var = 1000,
+                         cor_str = "CON-d",
+                         Z_type = "continuous",
+                         rho = 0.4,
+                         prob1 = .5,
+                         baseline_fxns = list(function(t) cos(2 * pi * t),
+                                               function(t) cos(2 * pi * t),
+                                               function(t) cos(2 * pi * t),
+                                               function(t) cos(2 * pi * t),
+                                               function(t) 1 - 2 * exp(-6 * t),
+                                               function(t) 1 - 2 * exp(-6 * t),
+                                               function(t) 1 - 2 * exp(-6 * t),
+                                               function(t) 1 - 2 * exp(-6 * t),
+                                               function(t) -t + 1,
+                                               function(t) -t + 1,
+                                               function(t) -t + 1,
+                                               function(t) -t + 1),
+                         # Slope functions
+                         slope_fxns = list(
+                           function(x) -2*(x - .5)^2 + 1,
+                           function(x) x,
+                           function(x) -5*(x - .5)^2 + 1,
+                           function(x) sin(pi * x),
+                           function(x) 4 * (x - .5)^2,
+                           function(x) 1 - x,
+                           function(x) -x + 1,
+                           function(x) abs(x - 0.5),
+                           function(x) x * (1 - x),
+                           function(x) .5,
+                           function(x) tanh(2 * (x - 0.5)),
+                           function(x) 0.5 * sin(2 * pi * x) + 0.5))
+
+  # Visualize simulated data
+  plot_sim_data(sim, Z_type = "continuous")
+
+  true_cluster <- rep(1:3, each = 4)
+  Y <- dplyr::select(sim, -c(
+    "total_n",
+    "Capture.Number",
+    "Z"))
+  Z <- sim$Z
+
+  res <- cleverly(Y = Y,
+                  Z = Z,
+                  subject_ids = individual,
+                  time = time,
+                  lp = 0,
+                  cor_str = "IND",
+                  # Hyperparameters
+                  gammas = c(1,1),
+                  psi_min = 800,
+                  npsi = 1,
+                  # Iterations max
+                  max_admm_iter = 10,
+                  max_outer_iter = 5,
+                  max_2_iter = 10,
+  ) %>%
+    get_cluster_diagnostics(true_cluster)
+
+  library(tidyverse)
+  res$y_hat_baseline %>%
+    ggplot(aes(x = time)) +
+    geom_point(aes(y = y), size = .6, alpha = .5) +
+    geom_line(aes(y = yhat), linewidth = 1, color = "blue") +
+    facet_wrap(~response)
+})
+
 
 test_that("Simulation ALL", {
 

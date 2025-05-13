@@ -24,7 +24,7 @@ test_that("Algorithm 1", {
     "Capture.Number",
     "Z"))
   Z <- sim$Z
-  mi_vec <- get_mi_vec(Y_user, subject_ids, time)$mi
+  mi_vec <- get_mi_vec(Y, subject_ids, time)$mi
 
   result1 <- algorithm1(Y,
                         Z,

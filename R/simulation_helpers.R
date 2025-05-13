@@ -90,6 +90,7 @@ simulation_data <- function(n = 20,
                             order = 3,
                             user_var = 1000,
                             cor_str,
+                            Z_type = "binary",
                             rho = 0.4,
                             miss_p = 0.6,
                             prob1 = 0.4,
@@ -146,10 +147,17 @@ simulation_data <- function(n = 20,
   for (i in 1:n) {
     sim_data <- NULL
 
-    Z <- stats::rbinom(n = length(time),
-                       size = 1,
-                       prob = prob1)
+    if (Z_type == "binary") {
+      Z <- stats::rbinom(n = length(time),
+                         size = 1,
+                         prob = prob1)
+    } else if (Z_type == "continuous") {
+      Z <- stats::runif(n = length(time), min = 0, max = 3)
+    } else {
+      stop("Z_type must be either binary or continuous")
+    }
 
+    # Generate alphas based on the baseline and slope functions specified
     alpha <- data.frame(matrix(ncol = K, nrow = length(time)))
     for (k in 1:K) {
       baseline_value <- baseline_fxns[[k]](time)
@@ -186,7 +194,7 @@ simulation_data <- function(n = 20,
       # Make sure no zeros.
       dm_witherror[dm_witherror < 0] <- 0
 
-      # Define the
+      # Define the total sum
       total_n <- rowSums(dm_witherror)
 
       # Return data with the total n and id.
@@ -252,7 +260,7 @@ get_cluster_diagnostics <- function(res, true_cluster){
 
 # Visualizations ----------------------------------------------------------
 
-#' Title
+#' Plot simulation data
 #'
 #' @param sim
 #' @param K
@@ -261,25 +269,48 @@ get_cluster_diagnostics <- function(res, true_cluster){
 #' @export
 #'
 #' @examples
-plot_sim_data <- function(sim, K = 12){
-  plot <- sim %>%
-    tidyr::pivot_longer(-c(individual,
-                           time,
-                           Capture.Number,
-                           total_n,
-                           Z)) %>%
-    dplyr::mutate(name = factor(name,
-                                levels = paste0("Taxa.", 1:K))) %>%
-    ggplot2::ggplot(ggplot2::aes(x = time,
-                                 y = value,
-                                 color = factor(Z),
-                                 shape = factor(Z))) +
-    ggplot2::geom_jitter(size = 1) +
-    ggplot2::facet_wrap(~name) +
-    ggplot2::labs(title = "Simulated Data",
-                  color = "EV",
-                  shape = "EV",
-                  y = "Count",
-                  x = "Time")
+plot_sim_data <- function(sim, K = 12, Z_type = "binary"){
+
+  if (Z_type == "binary") {
+    plot <- sim %>%
+      tidyr::pivot_longer(-c(individual,
+                             time,
+                             Capture.Number,
+                             total_n,
+                             Z)) %>%
+      dplyr::mutate(name = factor(name,
+                                  levels = paste0("Taxa.", 1:K))) %>%
+      ggplot2::ggplot(ggplot2::aes(x = time,
+                                   y = value,
+                                   color = factor(Z),
+                                   shape = factor(Z))) +
+      ggplot2::geom_jitter(size = 1) +
+      ggplot2::facet_wrap(~name) +
+      ggplot2::labs(title = "Simulated Data",
+                    color = "EV",
+                    shape = "EV",
+                    y = "Count",
+                    x = "Time")
+  } else {
+    plot <- sim %>%
+      tidyr::pivot_longer(-c(individual,
+                             time,
+                             Capture.Number,
+                             total_n,
+                             Z)) %>%
+      dplyr::mutate(name = factor(name,
+                                  levels = paste0("Taxa.", 1:K))) %>%
+      ggplot2::ggplot(ggplot2::aes(x = time,
+                                   y = value,
+                                   color = Z)) +
+      ggplot2::geom_jitter(size = 1) +
+      ggplot2::facet_wrap(~name) +
+      ggplot2::labs(title = "Simulated Data",
+                    color = "EV",
+                    shape = "EV",
+                    y = "Count",
+                    x = "Time")
+  }
+
   return(plot)
 }
