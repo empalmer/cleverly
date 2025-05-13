@@ -46,18 +46,20 @@ test_that("Simulation Z 0,1", {
                   subject_ids = individual,
                   time = time,
                   lp = 0,
-                  cor_str = "IND",
+                  cor_str = "CON-d",
                   # Hyperparameters
                   gammas = c(1,1),
                   psi_min = 400,
-                  npsi = 1,
+                  npsi = 2,
                   # Iterations max
                   max_admm_iter = 10,
-                  max_outer_iter = 5,
+                  max_outer_iter = 2,
                   max_2_iter = 10,
   ) %>%
     get_cluster_diagnostics(true_cluster)
 
+  res$possible_clusters
+  res$psi
 
   #})
   # end <- Sys.time()

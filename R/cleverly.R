@@ -249,6 +249,8 @@ cleverly <- function(Y,
               error = result$error,
               rho = result$rho,
               phi = result$phi,
+              psi = psis[best],
+              possible_clusters = clusters,
               s = result$s))
 
 
