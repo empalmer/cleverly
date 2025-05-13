@@ -30,23 +30,23 @@ algorithm1 <- function(Y,
                        time,
                        mi_vec,
                        lp,
+                       cor_str,
                        gammas,
                        psi,
                        tau,
                        theta,
                        C,
                        d,
-                       run_min,
                        nknots,
                        order,
                        epsilon_b,
                        epsilon_r,
                        epsilon_d,
+                       epsilon_2,
+                       run_min,
                        max_outer_iter,
                        max_admm_iter,
-                       max_2_iter,
-                       epsilon_2,
-                       cor_str) {
+                       max_2_iter) {
 
   # Get algorithm constants.
   P <- nknots + order
@@ -90,7 +90,6 @@ algorithm1 <- function(Y,
   # off_bdiag_list <- lapply(j1_j2_list, function(block) {
   #   # return T if off the block diagonal
   #   !(block == 0 | lower.tri(block))
-  #   browser()
   # })
   # Define a list with blocks for each i what the correlation matrix structure is
   # We set rho = 1 just to give the 0/1 matrix of zero/nonzero elements of the
@@ -270,8 +269,6 @@ algorithm1 <- function(Y,
                    K = K,
                    M = M)
 
-
-
     # Difference in betas between this loop and the last
     diff <- sum(abs(beta - beta_old)) # matrix difference
     # alg1_diff[[s]] <- diff
@@ -360,6 +357,7 @@ algorithm1 <- function(Y,
               rho = rho,
               phi = phi,
               BIC = BIC,
+              s = s,
               error = error))
 }
 

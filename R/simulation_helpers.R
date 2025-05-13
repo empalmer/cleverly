@@ -93,6 +93,7 @@ simulation_data <- function(n = 20,
                             rho = 0.4,
                             miss_p = 0.6,
                             prob1 = 0.4,
+                            maxt = 1,
                             baseline_fxns = list(
                               function(t) 2 * cos(2 * pi * t),
                               function(t) 2 * cos(2 * pi * t),
@@ -122,7 +123,7 @@ simulation_data <- function(n = 20,
                               function(t) 2 * t^2,
                               function(t) sin(pi * t))){
   # Time points are a sequence between 0 and 1
-  time <- seq(0, 1, 0.05)
+  time <- seq(0, maxt, 0.05)
 
   # Simulation parameters for setting Y0
   ranges <- range_start:range_end
@@ -160,7 +161,7 @@ simulation_data <- function(n = 20,
 
 
     # Get the error matrix representing the longitudinal correlation
-    longitudinal_cor_error <- t(MASS::mvrnorm(n = ncol(alpha),
+    longitudinal_cor_error <- t(MASS::mvrnorm(n = K,
                                               mu = rep(0, length(time)),
                                               Sigma = cor_matrix,
                                               tol = 1e-6,

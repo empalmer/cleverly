@@ -214,7 +214,6 @@ get_Vi_inv <- function(i,
       R_i <- magic::adiag(R_i, R_ijj)
 
     }
-browser()
     corR <- get_corR(cor_str = cor_str,
                      mi = mi,
                      K = K,

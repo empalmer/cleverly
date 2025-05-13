@@ -59,7 +59,7 @@ cleverly(
 
 \item{parralel}{Use parralelization? Default is FALSE. If TRUE, uses future::plan(future::multisession) to run the algorithm in parallel.}
 
-\item{nworkers}{If parralel, how many workers to use}
+\item{nworkers}{If parallel, how many workers to use}
 
 \item{tau}{MCP hyper parameter. Default is 8/100.}
 

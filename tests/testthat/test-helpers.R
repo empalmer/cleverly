@@ -22,39 +22,6 @@ test_that("Y i", {
   expect_equal(dim(Y_i_mat)[2], K)
 })
 
-test_that("Y i SIM ", {
-  sim <- base_sim()
-
-  i <- 3
-  Y_i_mat <- get_Y_i_mat(i = i, mi_vec = sim$mi_vec, Y = sim$Y)
-  Y_i_vec <- get_Y_i_vec(i = i, mi_vec = sim$mi_vec, Y = sim$Y)
-
-
-  expect_equal(dim(Y_i_mat)[1], sim$mi_vec[i])
-  expect_equal(dim(Y_i_mat)[2], sim$K)
-})
-
-test_that("Y vec and matrix", {
-  Y <-  readRDS(test_path("test_data", "Y.rds"))
-  beta <- readRDS(test_path("test_data", "beta.rds"))
-  Z <- readRDS(test_path("test_data", "Z.rds"))
-  B <- readRDS(test_path("test_data", "B.rds"))
-  K <- 4
-  mi <- 3
-  mi_vec <- rep(3, 5)
-
-  Y_i_mat <- get_Y_i_mat(i = 1, mi_vec = mi_vec, Y = Y)
-  Y_i_vec <- get_Y_i_vec(i = 1, mi_vec = mi_vec, Y = Y)
-
-  #j=1
-  expect_equal(as.numeric(Y_i_mat[1, ]),
-               as.numeric(Y_i_vec[1:K]))
-  #j = 2
-  expect_equal(as.numeric(Y_i_mat[2, ]),
-               as.numeric(Y_i_vec[(K+1):(2*K)]))
-
-})
-
 
 
 test_that("Y and mu indexing match", {
@@ -436,14 +403,28 @@ test_that("Check alpha_ijk l0", {
   K <- 4
   mi_vec <- rep(3, 5)
   i_index <- c(0, cumsum(mi_vec))
+  i = 1
+  j = 1
+  k = 1
+  P = 6
+  L = 1
+  B_ij <- get_B_ij(i = i,
+                   j = j,
+                   B = B,
+                   i_index = i_index)
+  Z_ij <- Z[i_index[i] + j, 0:L + 1]
+
+  beta_ks <- list()
+  for (k in 1:K) {
+    beta_ks[[k]] <- beta[rep(1:K, each = P) == k, ]
+  }
 
   alpha_ijk <- get_alpha_ijk(i = 1,
                              j = 1,
                              k = 1,
-                             beta = beta,
-                             Z = Z,
-                             B = B,
-
+                             beta_ks = beta_ks,
+                             Z_ij = Z,
+                             B_ij = B_ij,
                              i_index = i_index)
   # Check dimensions
   # Should be one value

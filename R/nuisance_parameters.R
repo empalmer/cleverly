@@ -105,8 +105,8 @@ get_pearson_residual_i <- function(Y,
 
 
     denom <- sqrt( Y_ij0 *
-                           (Y_ij0 + alpha_ij0) / (1 + alpha_ij0) *
-                           alpha_ij / alpha_ij0 * (1 - alpha_ij / alpha_ij0) )
+                     (Y_ij0 + alpha_ij0) / (1 + alpha_ij0) *
+                     alpha_ij / alpha_ij0 * (1 - alpha_ij / alpha_ij0) )
 
     too_small <- denom < 1e-10
     if (any(too_small, na.rm = TRUE)) {
@@ -116,14 +116,8 @@ get_pearson_residual_i <- function(Y,
 
     rij <- Yij_minus_muij / denom
 
-    # rij <- Yij_minus_muij /
-    #   sqrt( Y_ij0 *
-    #           (Y_ij0 + alpha_ij0) / (1 + alpha_ij0) *
-    #           alpha_ij/alpha_ij0 * (1 - alpha_ij/alpha_ij0))
     ri[((j - 1)*K + 1):(K*j)] <- rij
-    # if(any(is.infinite(rij))){
-    #   browser()
-    # }
+
   }
 
   return(ri)

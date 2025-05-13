@@ -16,6 +16,7 @@ simulation_data(
   rho = 0.4,
   miss_p = 0.6,
   prob1 = 0.4,
+  maxt = 1,
   baseline_fxns = list(function(t) 2 * cos(2 * pi * t), function(t) 2 * cos(2 * pi * t),
     function(t) 2 * cos(2 * pi * t), function(t) 2 * cos(2 * pi * t), function(t) 1 - 2 *
     exp(-6 * t), function(t) 1 - 2 * exp(-6 * t), function(t) 1 - 2 * exp(-6 * t),

@@ -84,12 +84,190 @@ test_that("Simulation Z 0,1", {
   knitr::kable(table(cluster_df$cluster, rep(1:3, each = 4)))
 
 
+  get_corR("CON", mi = 3, K = 2, rho = .4)
 
 
 })
 
+test_that("SMALL", {
+  skip("Skip - used as test file for cleverly")
+  # Generate simulation data
+  set.seed(127)
+  sim <- simulation_data(n = 2,
+                         range_start = 5000,
+                         range_end = 6000,
+                         nknots = 3,
+                         K = 2,
+                         order = 3,
+                         maxt = .15,
+                         user_var = 100,
+                         cor_str = "CON-d",
+                         rho = 0.5,
+                         prob1 = .5,
+                         baseline_fxns = list(
+                           function(t) t,
+                           function(t) -3 * t + 3
+                         ),
+                         slope_fxns = list(
+                           function(t) 2,
+                           function(t) t
+                         ))
+
+  # Visualize simulated data
+  plot_sim_data(sim)
+
+  Y <- dplyr::select(sim, -c(
+    "total_n",
+    "Capture.Number",
+    "Z"))
+  Z <- sim$Z
+
+  res <- cleverly(Y = Y,
+                  Z = Z,
+                  subject_ids = individual,
+                  time = time,
+                  lp = 0,
+                  cor_str = "CON-d",
+                  # Hyperparameters
+                  gammas = c(1,1),
+                  psi_min = 400,
+                  npsi = 1,
+                  # Iterations max
+                  max_admm_iter = 10,
+                  max_outer_iter = 5,
+                  max_2_iter = 10,
+  ) %>%
+    get_cluster_diagnostics(true_cluster)
 
 
+  res %>%
+    get_cluster_diagnostics(true_cluster = rep(1:3, each = 4))
+  res$clusters
+  # Diagnostic plots:
+  plot_clusters(res = res,
+                response_names = LETTERS[1:12])
+
+  res$phi
+  res$rho
+
+
+  plot_initial_fit(res, K = 12)
+
+  # Get cluster membership
+  cluster_df <- data.frame(
+    K = factor(1:12, levels = 1:12),
+    cluster = factor(res$clusters$membership))
+  knitr::kable(table(cluster_df$cluster, rep(1:3, each = 4)))
+
+
+  get_corR("CON", mi = 3, K = 2, rho = .4)
+
+
+})
+test_that("try fxns", {
+  skip("Skip - used as test file for cleverly")
+  # Generate simulation data
+  set.seed(127)
+  sim <- simulation_data(n = 20,
+                         range_start = 5000,
+                         range_end = 20000,
+                         nknots = 3,
+                         K = 12,
+                         order = 3,
+                         user_var = 1000,
+                         cor_str = "CON-d",
+                         rho = 0.9,
+                         prob1 = .5,
+                         slope_fxns = list(
+                           function(t) 2 * cos(2 * pi * t),
+                           function(t) 2 * cos(2 * pi * t),
+                           function(t) 2 * cos(2 * pi * t),
+                           function(t) 2 * cos(2 * pi * t),
+                           function(t) 1 - 2 * exp(-6 * t),
+                           function(t) 1 - 2 * exp(-6 * t),
+                           function(t) 1 - 2 * exp(-6 * t),
+                           function(t) 1 - 2 * exp(-6 * t),
+                           function(t) -2 * t + 2,
+                           function(t) -2 * t + 2,
+                           function(t) -2 * t + 2,
+                           function(t) -2 * t + 2
+                         ),
+                         # Slope functions
+                         baseline_fxns = list(
+                           function(t) sqrt(t),
+                           function(t)  t,
+                           function(t) -t + 1,
+                           function(t) 1.5 * t,
+                           function(t) -1 * t + 1,
+                           function(t) -t,
+                           function(t) 2 * t,
+                           function(t) log1p(t),
+                           function(t) -2 * t + 1,
+                           function(t) 1.5 * t,
+                           function(t) t^2,
+                           function(t) sin(pi * t)))
+
+  # Visualize simulated data
+  plot_sim_data(sim)
+
+  true_cluster <- rep(1:3, each = 4)
+
+  Y <- dplyr::select(sim, -c(
+    "total_n",
+    "Capture.Number",
+    "Z"))
+  Z <- sim$Z
+  #start <- Sys.time()
+  #Rprof("test.out", interval = .02)
+  #profvis::profvis({
+  res <- cleverly(Y = Y,
+                  Z = Z,
+                  subject_ids = individual,
+                  time = time,
+                  lp = 0,
+                  cor_str = "IND",
+                  # Hyperparameters
+                  gammas = c(1,1),
+                  psi_min = 400,
+                  npsi = 1,
+                  # Iterations max
+                  max_admm_iter = 10,
+                  max_outer_iter = 5,
+                  max_2_iter = 10,
+  ) %>%
+    get_cluster_diagnostics(true_cluster)
+
+
+  #})
+  # end <- Sys.time()
+  # Rprof(NULL)
+  # summaryRprof("test.out")$by.self[1:15,1:2]
+  #(duration <- end - start)
+
+  res %>%
+    get_cluster_diagnostics(true_cluster = rep(1:3, each = 4))
+  res$clusters
+  # Diagnostic plots:
+  plot_clusters(res = res,
+                response_names = LETTERS[1:12])
+
+  res$phi
+  res$rho
+
+
+  plot_initial_fit(res, K = 12)
+
+  # Get cluster membership
+  cluster_df <- data.frame(
+    K = factor(1:12, levels = 1:12),
+    cluster = factor(res$clusters$membership))
+  knitr::kable(table(cluster_df$cluster, rep(1:3, each = 4)))
+
+
+  get_corR("CON", mi = 3, K = 2, rho = .4)
+
+
+})
 
 test_that("Simulation ALL", {
 

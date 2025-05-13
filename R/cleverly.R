@@ -14,7 +14,7 @@
 #' @param psi_max Maximum psi
 #' @param npsi Number of psi values to test. Will create an equally spaced sequence from psi_min to psi_max and find the best (via BIC) choice.
 #' @param parralel Use parralelization? Default is FALSE. If TRUE, uses future::plan(future::multisession) to run the algorithm in parallel.
-#' @param nworkers If parralel, how many workers to use
+#' @param nworkers If parallel, how many workers to use
 #' @param tau MCP hyper parameter. Default is 8/100.
 #' @param theta ADMM hyper parameter. Default is 300.
 #' @param C Constant for determining the hessian change. Default is 100.
@@ -247,7 +247,8 @@ cleverly <- function(Y,
               BIC = result$BIC,
               error = result$error,
               rho = result$rho,
-              phi = result$phi))
+              phi = result$phi,
+              s = result$s))
 
 
 
