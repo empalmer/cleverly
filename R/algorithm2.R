@@ -1,4 +1,4 @@
-#' Algorithm 2: Updating the non clustering betas
+#' Algorithm 2: Updating Non-Clustering coefficients
 #'
 #' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
 #' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
@@ -14,14 +14,15 @@
 #' @param max_2_iter Maximum number of iterations for algorithm 2 to run each loop
 #' @param epsilon_2 Tolerance for convergence of algorithm 2
 #' @param time either a vector of length(Y) or a column reference if Y is a data frame. Must be numeric
-#' @param s
+#' @param s Current iteration of algorithm 1
 #' @param L Number of external variables
 #' @param P Number of B-spline coefficients (order + nknots)
 #' @param K Number of responses
 #' @param M Number of samples times timepoints for each sample
 #' @param i_index starting index of the ith subject in the data
+#' @param cor_blocks
+#' @param j1_j2_list
 #' @param cor_str
-#' @param off_bdiag_list
 #'
 #' @returns Vector of length PK x L
 #' @export

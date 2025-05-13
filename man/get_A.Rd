@@ -2,20 +2,20 @@
 % Please edit documentation in R/algorithm1.R
 \name{get_A}
 \alias{get_A}
-\title{Get A matrix}
+\title{Construct A Matrix for Pairwise Differences}
 \usage{
 get_A(Kappa, K, P)
 }
 \arguments{
-\item{Kappa}{keeps track of each possible response pair}
+\item{Kappa}{A matrix or index structure that encodes all unique response pairs to compute pairwise differences.}
 
-\item{K}{Number of responses}
+\item{K}{The number of response variables.}
 
-\item{P}{Number of B-spline coefficients (order + nknots)}
+\item{P}{The number of B-spline coefficients (typically \code{order + nknots}).}
 }
 \value{
-A matrix
+Matrix \code{A} that maps pairwise differences between responses in the model formulation.
 }
 \description{
-This is the matrix that keeps track of the pairwise differences,
+Constructs the \code{A} matrix used to track and apply pairwise differences across response curves. This matrix is used in the clustering penalty formulation.
 }

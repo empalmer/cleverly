@@ -2,22 +2,23 @@
 % Please edit documentation in R/algorithm1.R
 \name{get_D}
 \alias{get_D}
-\title{Return dth order differnece operator matrix}
+\title{Construct \eqn{d}th-Order Difference Operator Matrix}
 \usage{
 get_D(K, d, order, nknots)
 }
 \arguments{
-\item{K}{Number of responses}
+\item{K}{The number of response variables.}
 
-\item{d}{Order of the difference operator}
+\item{d}{The order of the difference operator (currently only \code{d = 2} is supported).}
 
-\item{order}{Order of the B-spline basis}
+\item{order}{The order of the B-spline basis functions.}
 
-\item{nknots}{Number of knots for the B-spline basis}
+\item{nknots}{The number of internal knots used in the B-spline basis.}
 }
 \value{
-D matrix
+A matrix \code{D} representing the second-order difference operator applied across response curves.
 }
 \description{
-Note that this only works for d = 2
+Returns the difference operator matrix \eqn{D} used to penalize differences in coefficient values across responses.
+\strong{Note:} Currently implemented only for \eqn{d = 2}.
 }

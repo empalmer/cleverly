@@ -1,30 +1,45 @@
-#' Algorithm 1
+#' Algorithm 1: Outer Loop for Parameter Estimation and Clustering
 #'
-#' @param Y Matrix of counts Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
-#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
-#' @param time vector of time values for each subject/time
-#' @param mi_vec vector of the number of timepoints for each sample. Of length n
-#' @param lp clustering index (integer between 0 and L)
-#' @param gammas Vector of dimension L + 1 for penalizing the D matrix
-#' @param psi Hyperparameter for clustering penalty (larger drives pairwise differences to zero)
-#' @param tau MCP hyper parameter.
-#' @param theta ADMM hyper parameter.
-#' @param d Order for the difference matrix
-#' @param nknots Number of knots for the B-spline basis
-#' @param order Order of the B-spline basis
-#' @param epsilon_b Tolerance for alg 1 convergence
-#' @param epsilon_r Tolerance for ADMM convergence
-#' @param epsilon_d Tolerance for ADMM convergence
-#' @param max_outer_iter Max number of iterations for the outer loop (Algorithm 1)
-#' @param max_admm_iter Max number of iterations for the ADMM loop
-#' @param C Constant for determining the hessian change.
-#' @param max_2_iter Maximum number of iterations for algorithm 2 to run each loop
-#' @param epsilon_2 Tolerance for convergence of algorithm 2
-#' @param cor_str Type of correlation structure (IND, CON, AR1)
-#' @param run_min
+#' Executes the main iterative algorithm for estimating parameters and identifying clusters based on a penalized objective function with ADMM and MCP.
 #'
-#' @returns List of beta, clusters, y_hat, v, admm_diffs, admm_beta_list, loop_list_beta, loop_list_diff, phis_list
+#' @param Y An \eqn{M \times K} matrix of response variables (e.g., counts). Each column corresponds to a different response, and each row to a subject-time observation.
+#' @param Z An \eqn{M \times (L + 1)} matrix of covariates. The first column must be a vector of 1s (intercept). If there are no external variables, \code{Z} should be a single column of 1s.
+#' @param time A numeric vector of length \eqn{M} representing the time points associated with each row of \code{Y}.
+#' @param mi_vec A vector of length \eqn{n} specifying the number of timepoints for each subject.
+#' @param lp Clustering index. An integer between 0 and \eqn{L}, indicating which covariate to use for clustering. Use 0 for baseline clustering.
+#' @param gammas A numeric vector of length \eqn{L + 1} for penalizing components of the difference matrix \code{D}.
+#' @param psi Clustering penalty hyperparameter. Larger values encourage more pairwise similarities (i.e., more shrinkage toward common clusters).
+#' @param tau MCP (minimax concave penalty) hyperparameter.
+#' @param theta ADMM (alternating direction method of multipliers) hyperparameter.
+#' @param d Integer specifying the order of the difference matrix.
+#' @param nknots Number of knots used in the B-spline basis.
+#' @param order Order of the B-spline basis functions.
+#' @param epsilon_b Convergence tolerance for Algorithm 1.
+#' @param epsilon_r ADMM convergence tolerance for the primal residual.
+#' @param epsilon_d ADMM convergence tolerance for the dual residual.
+#' @param max_outer_iter Maximum number of iterations for the outer loop (Algorithm 1).
+#' @param max_admm_iter Maximum number of iterations for the ADMM loop (Algorithm 3).
+#' @param C Constant for determining when the Hessian should be updated.
+#' @param max_2_iter Maximum number of iterations for the inner loop (Algorithm 2) per outer iteration.
+#' @param epsilon_2 Convergence tolerance for Algorithm 2.
+#' @param cor_str Correlation structure for the working covariance model. One of \code{"IND"}, \code{"CON"}, or \code{"AR1"}.
+#' @param run_min Minimum number of runs to ensure stability (used for internal control).
+#'
+#' @return A list containing:
+#' \describe{
+#'   \item{beta}{Estimated regression coefficients.}
+#'   \item{clusters}{Final cluster assignments.}
+#'   \item{y_hat}{Estimated fitted values.}
+#'   \item{v}{Latent variable estimates from ADMM.}
+#'   \item{admm_diffs}{History of ADMM convergence diagnostics.}
+#'   \item{admm_beta_list}{List of beta estimates from each ADMM iteration.}
+#'   \item{loop_list_beta}{List of beta estimates from each outer loop iteration.}
+#'   \item{loop_list_diff}{List of beta differences between iterations (for diagnostics).}
+#'   \item{phis_list}{List of phi estimates across iterations.}
+#' }
+#'
 #' @export
+
 algorithm1 <- function(Y,
                        Z,
                        time,
@@ -373,17 +388,21 @@ algorithm1 <- function(Y,
 
 
 # Helpers for Algorithm 1 -------------------------------------------------
-#' Estimate y-hat given beta
+#' Estimate \eqn{\hat{y}} Given \eqn{\beta}
 #'
-#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
-#' @param B B spline basis matrix of dimension (N x P)
-#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
-#' @param K Number of responses
-#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
-#' @param time either a vector of length(Y) or a column reference if Y is a data frame. Must be numeric
+#' Computes fitted values (\eqn{\hat{y}}) using estimated coefficients \eqn{\beta}, a B-spline basis matrix, and covariate information.
 #'
-#' @returns Vector of RA values for y
+#' @param beta A matrix of estimated coefficients (\eqn{\hat{\beta}}) with dimensions \eqn{(P \cdot K) \times L}, where \eqn{P} is the number of basis functions, \eqn{K} is the number of responses, and \eqn{L} is the number of covariates (excluding intercept).
+#' @param B A B-spline basis matrix of dimensions \eqn{N \times P}, where \eqn{N} is the total number of observations and \eqn{P} is the number of spline basis functions.
+#' @param Z A matrix of covariates of dimension \eqn{M \times (L + 1)}. The first column must be a vector of 1s (intercept). If no external variables are used, \code{Z} should contain only a single column of 1s.
+#' @param K The number of response variables (i.e., the number of columns in \code{Y}).
+#' @param Y A matrix of response values (e.g., counts), with \eqn{M} rows and \eqn{K} columns. Each row corresponds to a subject-time combination.
+#' @param time A numeric vector of time values (length \eqn{M}) or a column reference if \code{Y} is a data frame.
+#'
+#' @return A numeric vector of fitted values (\eqn{\hat{y}}) of length \eqn{M \cdot K}, representing the estimated responses.
+#'
 #' @export
+
 estimate_y <- function(beta, B, Z, K, Y, time){
   P <- ncol(B)
   L <- ncol(Z) - 1
@@ -408,7 +427,7 @@ estimate_y <- function(beta, B, Z, K, Y, time){
   y_ra <- Y/rowSums(Y)
 
   Ys <- data.frame(time = time,
-                   Z = Z[,L+1],
+                   Z = Z[, L + 1],
                    yhat_ra,
                    y_ra)
 
@@ -416,14 +435,6 @@ estimate_y <- function(beta, B, Z, K, Y, time){
                     "Z",
                     paste0("yhat_", 1:K),
                     paste0("y_", 1:K))
-
-
-  # Ys %>%
-  #   tidyr::pivot_longer(cols = -c(Z, time),
-  #                       names_to = c("type", "response"),
-  #                       names_sep = "_",
-  #                       values_to = "value")
-
 
   Ys <- Ys %>%
     tidyr::pivot_longer(
@@ -441,14 +452,23 @@ estimate_y <- function(beta, B, Z, K, Y, time){
 
 
 # Return clusters ---------------------------------------------------------
-#' Get cluster membership
+#' Get Cluster Membership from Pairwise Differences
 #'
-#' @param v final v (pairwise differences) from algorithm 1
-#' @param K Number of responses
-#' @param P Number of B-spline coefficients (order + nknots)
+#' Derives cluster assignments based on the final pairwise difference estimates (\code{v}) from Algorithm 1.
 #'
-#' @returns Cluster list information, indeces and number of clusters
+#' @param v A matrix of final pairwise differences from Algorithm 1, used to infer which subjects belong to the same cluster.
+#' @param K The number of response variables.
+#' @param P The number of B-spline coefficients (equal to \code{order + nknots}).
+#'
+#' @return A list containing:
+#' \describe{
+#'   \item{clusters}{A vector of cluster membership assignments.}
+#'   \item{indices}{A list of indices corresponding to each cluster.}
+#'   \item{n_clusters}{The total number of unique clusters identified.}
+#' }
+#'
 #' @export
+
 get_clusters <- function(v, K, P) {
 
   # Convert v into a matrix of P x length
@@ -477,87 +497,18 @@ get_clusters <- function(v, K, P) {
 # Initializing algorithm 1 ------------------------------------------------
 
 
-#' Initialize beta (for count data)
+#' Get Breaks for B-Spline Basis
 #'
-#' For each response independently, use the least squares estimate using the B-spline basis matrix and log Y
+#' Computes the breakpoints (knots) needed to construct a B-spline basis given a vector of timepoints, the spline order, and the desired number of internal knots.
 #'
-#' @param K Number of responses
-#' @param L Number of external variables
-#' @param P Number of B-spline coefficients (order + nknots)
+#' @param t A numeric vector of timepoints over which the B-spline basis will be constructed.
+#' @param k The order of the B-spline
+#' @param m The number of internal knots to include.
 #'
-#' @returns 0 matrix of dimension KP x (L + 1)
+#' @return A numeric vector of knot positions, including boundary and internal knots, suitable for use in B-spline basis construction.
+#'
 #' @export
-initialize_beta_count <- function(K, L, P, B, Y, Z) {
-  beta_init <- matrix(0, nrow = K * P, ncol = L + 1)
 
-  # B_0 <- matrix(nrow = ncol(B), ncol = ncol(Y))
-  # logy <- log(Y + 1)
-  #
-  # # Create design matrix that is c(B, diag(Z_l)B) etc
-  # X <- do.call(cbind, lapply(1:(L + 1), function(i) diag(Z[, i]) %*% B))
-  #
-  #
-  # # For each response, calculate linear model coefficients
-  # for (k in 1:K) {
-  #   coefs <- lm(logy[,k] ~ 0 + X)$coefficients
-  #   beta_init[((k - 1)*P + 1):(k*P),] <- matrix(coefs, ncol = L + 1)
-  # }
-  #
-  # # Try normalizing?
-  #
-  # beta_init <- beta_init/sd(beta_init)
-
-  return(beta_init)
-}
-
-
-
-
-#' Format Z
-#'
-#' Add a column of 1s to Z if it doesn't already exist
-#'
-#' @param Z A matrix or data frame with columns of external variables for each subject/time
-#'
-#' @returns A matrix with a column of 1s representing L = 0, and values for the other external variables
-#' @export
-format_Z <- function(Z) {
-  if (is.data.frame(Z) | is.matrix(Z)) {
-    M <- nrow(Z)
-    if (!identical(Z[, 1], rep(1, M))) {
-      Z <- cbind(1, Z)
-    }
-    Z <- as.matrix(Z)
-  } else if (is.vector(Z)) {
-    if (!all(Z == 1)) {
-      Z <- cbind(1, Z)
-    }
-  }
-  return(Z)
-}
-
-
-
-#' Title
-#'
-#' @param lp either a numeric index of which external variable to cluster on, or the name of the column of Z that contains the clustering variable. Specify numeric 0 to cluster via baseline.
-#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
-#'
-#' @returns lp index
-#' @export
-format_lp <- function(lp, Z) {
-  return(lp)
-}
-
-
-#' Get breaks for B-spline basis
-#'
-#' @param t timepoints
-#' @param k order of B-spline
-#' @param m number of knots
-#'
-#' @returns vector of knot values
-#' @export
 get_knots <- function(t, k, m) {
   # external knots are on boundary
   # return boundary with internal knots only
@@ -567,16 +518,18 @@ get_knots <- function(t, k, m) {
 
 
 
-#' Return dth order differnece operator matrix
+#' Construct \eqn{d}th-Order Difference Operator Matrix
 #'
-#' Note that this only works for d = 2
+#' Returns the difference operator matrix \eqn{D} used to penalize differences in coefficient values across responses.
+#' **Note:** Currently implemented only for \eqn{d = 2}.
 #'
-#' @param K Number of responses
-#' @param d Order of the difference operator
-#' @param order Order of the B-spline basis
-#' @param nknots Number of knots for the B-spline basis
+#' @param K The number of response variables.
+#' @param d The order of the difference operator (currently only \code{d = 2} is supported).
+#' @param order The order of the B-spline basis functions.
+#' @param nknots The number of internal knots used in the B-spline basis.
 #'
-#' @returns D matrix
+#' @return A matrix \code{D} representing the second-order difference operator applied across response curves.
+#'
 #' @export
 get_D <- function(K, d, order, nknots) {
   # P <- order + nknots
@@ -597,15 +550,16 @@ get_D <- function(K, d, order, nknots) {
 
 
 
-#' Get A matrix
+#' Construct A Matrix for Pairwise Differences
 #'
-#' This is the matrix that keeps track of the pairwise differences,
+#' Constructs the \code{A} matrix used to track and apply pairwise differences across response curves. This matrix is used in the clustering penalty formulation.
 #'
-#' @param Kappa keeps track of each possible response pair
-#' @param K Number of responses
-#' @param P Number of B-spline coefficients (order + nknots)
+#' @param Kappa A matrix or index structure that encodes all unique response pairs to compute pairwise differences.
+#' @param K The number of response variables.
+#' @param P The number of B-spline coefficients (typically \code{order + nknots}).
 #'
-#' @returns A matrix
+#' @return Matrix \code{A} that maps pairwise differences between responses in the model formulation.
+#'
 #' @export
 get_A <- function(Kappa, K, P) {
   I <- diag(P)
@@ -630,6 +584,20 @@ get_A <- function(Kappa, K, P) {
 
 # Calculate cluster BIC ---------------------------------------------------
 
+#' Compute BIC for Clustered Functional Data
+#'
+#' Calculates a modified Bayesian Information Criterion (BIC) for a fitted clustering model on functional data.
+#' The BIC is computed based on the log-transformed relative abundance data and includes a penalty term proportional to the number of clusters and B-spline coefficients.
+#'
+#' @param y_ra_df A data frame containing columns \code{yhat} (fitted values) and \code{y} (observed values), both assumed to be in relative abundance form.
+#' @param K Number of responses
+#' @param n_clusters Number identified clusters
+#' @param mi_vec Vector of number of timepoints for each subject
+#' @param nknots The number of internal knots used in the B-spline basis.
+#' @param order The order of the B-spline basis.
+#'
+#' @returns A single numeric value representing the modified BIC for the fitted model.
+#' @export
 BIC_cluster <- function(y_ra_df,
                         K, n_clusters,
                         mi_vec,

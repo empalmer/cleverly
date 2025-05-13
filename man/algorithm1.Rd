@@ -2,7 +2,7 @@
 % Please edit documentation in R/algorithm1.R
 \name{algorithm1}
 \alias{algorithm1}
-\title{Algorithm 1}
+\title{Algorithm 1: Outer Loop for Parameter Estimation and Clustering}
 \usage{
 algorithm1(
   Y,
@@ -10,73 +10,84 @@ algorithm1(
   time,
   mi_vec,
   lp,
+  cor_str,
   gammas,
   psi,
   tau,
   theta,
   C,
   d,
-  run_min,
   nknots,
   order,
   epsilon_b,
   epsilon_r,
   epsilon_d,
+  epsilon_2,
+  run_min,
   max_outer_iter,
   max_admm_iter,
-  max_2_iter,
-  epsilon_2,
-  cor_str
+  max_2_iter
 )
 }
 \arguments{
-\item{Y}{Matrix of counts Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
+\item{Y}{An \eqn{M \times K} matrix of response variables (e.g., counts). Each column corresponds to a different response, and each row to a subject-time observation.}
 
-\item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
+\item{Z}{An \eqn{M \times (L + 1)} matrix of covariates. The first column must be a vector of 1s (intercept). If there are no external variables, \code{Z} should be a single column of 1s.}
 
-\item{time}{vector of time values for each subject/time}
+\item{time}{A numeric vector of length \eqn{M} representing the time points associated with each row of \code{Y}.}
 
-\item{mi_vec}{vector of the number of timepoints for each sample. Of length n}
+\item{mi_vec}{A vector of length \eqn{n} specifying the number of timepoints for each subject.}
 
-\item{lp}{clustering index (integer between 0 and L)}
+\item{lp}{Clustering index. An integer between 0 and \eqn{L}, indicating which covariate to use for clustering. Use 0 for baseline clustering.}
 
-\item{gammas}{Vector of dimension L + 1 for penalizing the D matrix}
+\item{cor_str}{Correlation structure for the working covariance model. One of \code{"IND"}, \code{"CON"}, or \code{"AR1"}.}
 
-\item{psi}{Hyperparameter for clustering penalty (larger drives pairwise differences to zero)}
+\item{gammas}{A numeric vector of length \eqn{L + 1} for penalizing components of the difference matrix \code{D}.}
 
-\item{tau}{MCP hyper parameter.}
+\item{psi}{Clustering penalty hyperparameter. Larger values encourage more pairwise similarities (i.e., more shrinkage toward common clusters).}
 
-\item{theta}{ADMM hyper parameter.}
+\item{tau}{MCP (minimax concave penalty) hyperparameter.}
 
-\item{C}{Constant for determining the hessian change.}
+\item{theta}{ADMM (alternating direction method of multipliers) hyperparameter.}
 
-\item{d}{Order for the difference matrix}
+\item{C}{Constant for determining when the Hessian should be updated.}
 
-\item{run_min}{}
+\item{d}{Integer specifying the order of the difference matrix.}
 
-\item{nknots}{Number of knots for the B-spline basis}
+\item{nknots}{Number of knots used in the B-spline basis.}
 
-\item{order}{Order of the B-spline basis}
+\item{order}{Order of the B-spline basis functions.}
 
-\item{epsilon_b}{Tolerance for alg 1 convergence}
+\item{epsilon_b}{Convergence tolerance for Algorithm 1.}
 
-\item{epsilon_r}{Tolerance for ADMM convergence}
+\item{epsilon_r}{ADMM convergence tolerance for the primal residual.}
 
-\item{epsilon_d}{Tolerance for ADMM convergence}
+\item{epsilon_d}{ADMM convergence tolerance for the dual residual.}
 
-\item{max_outer_iter}{Max number of iterations for the outer loop (Algorithm 1)}
+\item{epsilon_2}{Convergence tolerance for Algorithm 2.}
 
-\item{max_admm_iter}{Max number of iterations for the ADMM loop}
+\item{run_min}{Minimum number of runs to ensure stability (used for internal control).}
 
-\item{max_2_iter}{Maximum number of iterations for algorithm 2 to run each loop}
+\item{max_outer_iter}{Maximum number of iterations for the outer loop (Algorithm 1).}
 
-\item{epsilon_2}{Tolerance for convergence of algorithm 2}
+\item{max_admm_iter}{Maximum number of iterations for the ADMM loop (Algorithm 3).}
 
-\item{cor_str}{Type of correlation structure (IND, CON, AR1)}
+\item{max_2_iter}{Maximum number of iterations for the inner loop (Algorithm 2) per outer iteration.}
 }
 \value{
-List of beta, clusters, y_hat, v, admm_diffs, admm_beta_list, loop_list_beta, loop_list_diff, phis_list
+A list containing:
+\describe{
+\item{beta}{Estimated regression coefficients.}
+\item{clusters}{Final cluster assignments.}
+\item{y_hat}{Estimated fitted values.}
+\item{v}{Latent variable estimates from ADMM.}
+\item{admm_diffs}{History of ADMM convergence diagnostics.}
+\item{admm_beta_list}{List of beta estimates from each ADMM iteration.}
+\item{loop_list_beta}{List of beta estimates from each outer loop iteration.}
+\item{loop_list_diff}{List of beta differences between iterations (for diagnostics).}
+\item{phis_list}{List of phi estimates across iterations.}
+}
 }
 \description{
-Algorithm 1
+Executes the main iterative algorithm for estimating parameters and identifying clusters based on a penalized objective function with ADMM and MCP.
 }

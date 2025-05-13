@@ -13,6 +13,7 @@ simulation_data(
   order = 3,
   user_var = 1000,
   cor_str,
+  Z_type = "binary",
   rho = 0.4,
   miss_p = 0.6,
   prob1 = 0.4,

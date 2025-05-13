@@ -2,7 +2,7 @@
 % Please edit documentation in R/cleverly-package.R, R/cleverly.R
 \name{cleverly}
 \alias{cleverly}
-\title{Cleverly: main function of the package}
+\title{Cleverly: Main Function of the Package}
 \usage{
 cleverly(
   Y,
@@ -35,67 +35,89 @@ cleverly(
 )
 }
 \arguments{
-\item{Y}{either a data frame or matrix of numeric response variables. Each response should be a separate column. Each row should be a separate subject/time combination. There should be M total rows. Must be ordered in time.}
+\item{Y}{A data frame or matrix of numeric response variables. Each column should represent a response variable, and each row a subject-time observation. Must be ordered by time. Total number of rows is \eqn{M}.}
 
-\item{Z}{Matrix or data frame containing a column for each external variable. There should be M rows and L columns.}
+\item{Z}{A data frame or matrix containing external variables. Must have \eqn{M} rows and \eqn{L} columns.}
 
-\item{subject_ids}{either a vector of length(Y) or a column reference if Y is a data frame}
+\item{subject_ids}{A vector of subject identifiers (length \eqn{M}) or a column name/index if \code{Y} is a data frame.}
 
-\item{time}{either a vector of length(Y) or a column reference if Y is a data frame. Must be numeric}
+\item{time}{A numeric vector of time points (length \eqn{M}) or a column name/index if \code{Y} is a data frame.}
 
-\item{lp}{either a numeric index of which external variable to cluster on, or the name of the column of Z that contains the clustering variable. Specify numeric 0 to cluster via baseline.}
+\item{lp}{Either a numeric index or name of the column in \code{Z} used for clustering. Use 0 to indicate baseline clustering.}
 
-\item{response_type}{Counts or continuous response}
+\item{response_type}{Type of response variable. Should be either \code{"Counts"} or \code{"Continuous"}.}
 
-\item{cor_str}{Type of correlation structure (IND, CON, AR1, CON-d, AR1-d)}
+\item{cor_str}{Correlation structure to use. One of \code{"IND"}, \code{"CON"}, \code{"AR1"}, \code{"CON-d"}, or \code{"AR1-d"}.}
 
-\item{gammas}{Vector of dimension L + 1 for penalizing the D matrix}
+\item{gammas}{A numeric vector of length \eqn{L + 1} specifying penalties applied to the D matrix.}
 
-\item{psi_min}{Psi, or minimum psi if npsi >1}
+\item{psi_min}{Minimum \eqn{\psi} value (or the only value, if \code{npsi = 1}).}
 
-\item{psi_max}{Maximum psi}
+\item{psi_max}{Maximum \eqn{\psi} value (ignored if \code{npsi = 1}).}
 
-\item{npsi}{Number of psi values to test. Will create an equally spaced sequence from psi_min to psi_max and find the best (via BIC) choice.}
+\item{npsi}{Number of \eqn{\psi} values to evaluate. If greater than 1, an equally spaced sequence from \code{psi_min} to \code{psi_max} is generated and the optimal value is selected via BIC.}
 
-\item{parralel}{Use parralelization? Default is FALSE. If TRUE, uses future::plan(future::multisession) to run the algorithm in parallel.}
+\item{parralel}{Logical; whether to use parallelization. Defaults to \code{FALSE}. If \code{TRUE}, uses \code{future::plan(future::multisession)}.}
 
-\item{nworkers}{If parallel, how many workers to use}
+\item{nworkers}{Number of workers to use if \code{parralel = TRUE}.}
 
-\item{tau}{MCP hyper parameter. Default is 8/100.}
+\item{tau}{MCP hyperparameter. Default is \code{8/100}.}
 
-\item{theta}{ADMM hyper parameter. Default is 300.}
+\item{theta}{ADMM hyperparameter. Default is \code{300}.}
 
-\item{C}{Constant for determining the hessian change. Default is 100.}
+\item{C}{Constant controlling the Hessian update threshold. Default is \code{100}.}
 
-\item{d}{Order for the difference matrix}
+\item{d}{Order of the finite difference matrix.}
 
-\item{nknots}{Number of knots for the B-spline basis}
+\item{nknots}{Number of knots in the B-spline basis.}
 
-\item{order}{Order of the B-spline basis}
+\item{order}{Order of the B-spline basis.}
 
-\item{epsilon_b}{Tolerance for alg 1 convergence}
+\item{epsilon_b}{Tolerance for convergence of Algorithm 1.}
 
-\item{epsilon_r}{Tolerance for ADMM convergence}
+\item{epsilon_r}{Tolerance for ADMM convergence (residual).}
 
-\item{epsilon_d}{Tolerance for ADMM convergence}
+\item{epsilon_d}{Tolerance for ADMM convergence (dual).}
 
-\item{epsilon_2}{Tolerance for convergence of algorithm 2}
+\item{epsilon_2}{Tolerance for convergence of Algorithm 2.}
 
-\item{run_min}{minimum number of runs}
+\item{run_min}{Minimum number of runs for stability.}
 
-\item{max_outer_iter}{Number of iterations for the outer loop (Algorithm 1)}
+\item{max_outer_iter}{Maximum number of iterations for the outer loop (Algorithm 1).}
 
-\item{max_admm_iter}{Number of iterations for the clustering step (Algorithm 3)}
+\item{max_admm_iter}{Maximum number of iterations for the ADMM clustering step (Algorithm 3).}
 
-\item{max_2_iter}{Maximum number of iterations for algorithm 2 to run each loop (Algorithm 2)}
+\item{max_2_iter}{Maximum number of iterations for Algorithm 2 (per outer iteration).}
 }
 \value{
-cluster" = res$clusters,
-
-"possible_clusters" = res$all_clusters_psi,
-"chosen_psi" = psis\link{best},
-"y_hat_init" = res$y_hat_init,"y_hat" = res$y_hat)
+A list with the following components:
+\describe{
+\item{clusters}{Final cluster assignments.}
+\item{possible_clusters}{Cluster assignments for all tested \eqn{\psi} values.}
+\item{chosen_psi}{Optimal \eqn{\psi} value selected via BIC.}
+\item{y_hat_init}{Initial fitted values.}
+\item{y_hat}{Final fitted values.}
+}
 }
 \description{
-Runs cleverly one psi for a range of psi values
+Runs the Cleverly algorithm over a range of \eqn{\psi} values and selects the optimal one based on BIC.
+}
+\examples{
+\dontrun{
+result <- cleverly(
+  Y = my_data[, c("response1", "response2")],
+  Z = my_covariates,
+  subject_ids = my_data$subject_id,
+  time = my_data$time,
+  lp = 1,
+  response_type = "Counts",
+  cor_str = "AR1",
+  gammas = rep(1, ncol(my_covariates) + 1),
+  psi_min = 0.1,
+  psi_max = 1,
+  npsi = 5,
+  parralel = TRUE,
+  nworkers = 4
+)
+}
 }

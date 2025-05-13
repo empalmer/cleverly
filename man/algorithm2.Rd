@@ -2,7 +2,7 @@
 % Please edit documentation in R/algorithm2.R
 \name{algorithm2}
 \alias{algorithm2}
-\title{Algorithm 2: Updating the non clustering betas}
+\title{Algorithm 2: Updating Non-Clustering coefficients}
 \usage{
 algorithm2(
   Y,
@@ -69,11 +69,11 @@ algorithm2(
 
 \item{M}{Number of samples times timepoints for each sample}
 
-\item{off_bdiag_list}{}
+\item{cor_str}{}
 }
 \value{
 Vector of length PK x L
 }
 \description{
-Algorithm 2: Updating the non clustering betas
+Algorithm 2: Updating Non-Clustering coefficients
 }

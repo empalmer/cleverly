@@ -262,10 +262,11 @@ get_cluster_diagnostics <- function(res, true_cluster){
 
 #' Plot simulation data
 #'
-#' @param sim
-#' @param K
+#' @param sim simulated data
+#' @param K number of responses
+#' @param Z_type One of binary and continuous
 #'
-#' @returns
+#' @returns ggplot object with the simulated data for each response
 #' @export
 #'
 #' @examples

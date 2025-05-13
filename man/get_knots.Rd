@@ -2,20 +2,20 @@
 % Please edit documentation in R/algorithm1.R
 \name{get_knots}
 \alias{get_knots}
-\title{Get breaks for B-spline basis}
+\title{Get Breaks for B-Spline Basis}
 \usage{
 get_knots(t, k, m)
 }
 \arguments{
-\item{t}{timepoints}
+\item{t}{A numeric vector of timepoints over which the B-spline basis will be constructed.}
 
-\item{k}{order of B-spline}
+\item{k}{The order of the B-spline}
 
-\item{m}{number of knots}
+\item{m}{The number of internal knots to include.}
 }
 \value{
-vector of knot values
+A numeric vector of knot positions, including boundary and internal knots, suitable for use in B-spline basis construction.
 }
 \description{
-Get breaks for B-spline basis
+Computes the breakpoints (knots) needed to construct a B-spline basis given a vector of timepoints, the spline order, and the desired number of internal knots.
 }

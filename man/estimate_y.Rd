@@ -2,26 +2,26 @@
 % Please edit documentation in R/algorithm1.R
 \name{estimate_y}
 \alias{estimate_y}
-\title{Estimate y-hat given beta}
+\title{Estimate \eqn{\hat{y}} Given \eqn{\beta}}
 \usage{
 estimate_y(beta, B, Z, K, Y, time)
 }
 \arguments{
-\item{beta}{matrix of beta (or beta hat) of dimension (P*K) x L}
+\item{beta}{A matrix of estimated coefficients (\eqn{\hat{\beta}}) with dimensions \eqn{(P \cdot K) \times L}, where \eqn{P} is the number of basis functions, \eqn{K} is the number of responses, and \eqn{L} is the number of covariates (excluding intercept).}
 
-\item{B}{B spline basis matrix of dimension (N x P)}
+\item{B}{A B-spline basis matrix of dimensions \eqn{N \times P}, where \eqn{N} is the total number of observations and \eqn{P} is the number of spline basis functions.}
 
-\item{Z}{Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.}
+\item{Z}{A matrix of covariates of dimension \eqn{M \times (L + 1)}. The first column must be a vector of 1s (intercept). If no external variables are used, \code{Z} should contain only a single column of 1s.}
 
-\item{K}{Number of responses}
+\item{K}{The number of response variables (i.e., the number of columns in \code{Y}).}
 
-\item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
+\item{Y}{A matrix of response values (e.g., counts), with \eqn{M} rows and \eqn{K} columns. Each row corresponds to a subject-time combination.}
 
-\item{time}{either a vector of length(Y) or a column reference if Y is a data frame. Must be numeric}
+\item{time}{A numeric vector of time values (length \eqn{M}) or a column reference if \code{Y} is a data frame.}
 }
 \value{
-Vector of RA values for y
+A numeric vector of fitted values (\eqn{\hat{y}}) of length \eqn{M \cdot K}, representing the estimated responses.
 }
 \description{
-Estimate y-hat given beta
+Computes fitted values (\eqn{\hat{y}}) using estimated coefficients \eqn{\beta}, a B-spline basis matrix, and covariate information.
 }

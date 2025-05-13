@@ -2,13 +2,20 @@
 % Please edit documentation in R/simulation_helpers.R
 \name{plot_sim_data}
 \alias{plot_sim_data}
-\title{Title}
+\title{Plot simulation data}
 \usage{
-plot_sim_data(sim, K = 12)
+plot_sim_data(sim, K = 12, Z_type = "binary")
 }
 \arguments{
-\item{K}{}
+\item{sim}{simulated data}
+
+\item{K}{number of responses}
+
+\item{Z_type}{One of binary and continuous}
+}
+\value{
+ggplot object with the simulated data for each response
 }
 \description{
-Title
+Plot simulation data
 }

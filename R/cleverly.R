@@ -1,42 +1,65 @@
-#' Cleverly: main function of the package
+#' Cleverly: Main Function of the Package
 #'
-#' Runs cleverly one psi for a range of psi values
+#' Runs the Cleverly algorithm over a range of \eqn{\psi} values and selects the optimal one based on BIC.
 #'
-#' @param Y either a data frame or matrix of numeric response variables. Each response should be a separate column. Each row should be a separate subject/time combination. There should be M total rows. Must be ordered in time.
-#' @param Z Matrix or data frame containing a column for each external variable. There should be M rows and L columns.
-#' @param subject_ids either a vector of length(Y) or a column reference if Y is a data frame
-#' @param time either a vector of length(Y) or a column reference if Y is a data frame. Must be numeric
-#' @param lp either a numeric index of which external variable to cluster on, or the name of the column of Z that contains the clustering variable. Specify numeric 0 to cluster via baseline.
-#' @param response_type Counts or continuous response
-#' @param cor_str Type of correlation structure (IND, CON, AR1, CON-d, AR1-d)
-#' @param gammas Vector of dimension L + 1 for penalizing the D matrix
-#' @param psi_min Psi, or minimum psi if npsi >1
-#' @param psi_max Maximum psi
-#' @param npsi Number of psi values to test. Will create an equally spaced sequence from psi_min to psi_max and find the best (via BIC) choice.
-#' @param parralel Use parralelization? Default is FALSE. If TRUE, uses future::plan(future::multisession) to run the algorithm in parallel.
-#' @param nworkers If parallel, how many workers to use
-#' @param tau MCP hyper parameter. Default is 8/100.
-#' @param theta ADMM hyper parameter. Default is 300.
-#' @param C Constant for determining the hessian change. Default is 100.
-#' @param d Order for the difference matrix
-#' @param nknots Number of knots for the B-spline basis
-#' @param order Order of the B-spline basis
-#' @param epsilon_b Tolerance for alg 1 convergence
-#' @param epsilon_r Tolerance for ADMM convergence
-#' @param epsilon_d Tolerance for ADMM convergence
-#' @param epsilon_2 Tolerance for convergence of algorithm 2
-#' @param run_min minimum number of runs
-#' @param max_outer_iter Number of iterations for the outer loop (Algorithm 1)
-#' @param max_2_iter Maximum number of iterations for algorithm 2 to run each loop (Algorithm 2)
-#' @param max_admm_iter Number of iterations for the clustering step (Algorithm 3)
+#' @param Y A data frame or matrix of numeric response variables. Each column should represent a response variable, and each row a subject-time observation. Must be ordered by time. Total number of rows is \eqn{M}.
+#' @param Z A data frame or matrix containing external variables. Must have \eqn{M} rows and \eqn{L} columns.
+#' @param subject_ids A vector of subject identifiers (length \eqn{M}) or a column name/index if \code{Y} is a data frame.
+#' @param time A numeric vector of time points (length \eqn{M}) or a column name/index if \code{Y} is a data frame.
+#' @param lp Either a numeric index or name of the column in \code{Z} used for clustering. Use 0 to indicate baseline clustering.
+#' @param response_type Type of response variable. Should be either \code{"Counts"} or \code{"Continuous"}.
+#' @param cor_str Correlation structure to use. One of \code{"IND"}, \code{"CON"}, \code{"AR1"}, \code{"CON-d"}, or \code{"AR1-d"}.
+#' @param gammas A numeric vector of length \eqn{L + 1} specifying penalties applied to the D matrix.
+#' @param psi_min Minimum \eqn{\psi} value (or the only value, if \code{npsi = 1}).
+#' @param psi_max Maximum \eqn{\psi} value (ignored if \code{npsi = 1}).
+#' @param npsi Number of \eqn{\psi} values to evaluate. If greater than 1, an equally spaced sequence from \code{psi_min} to \code{psi_max} is generated and the optimal value is selected via BIC.
+#' @param parralel Logical; whether to use parallelization. Defaults to \code{FALSE}. If \code{TRUE}, uses \code{future::plan(future::multisession)}.
+#' @param nworkers Number of workers to use if \code{parralel = TRUE}.
+#' @param tau MCP hyperparameter. Default is \code{8/100}.
+#' @param theta ADMM hyperparameter. Default is \code{300}.
+#' @param C Constant controlling the Hessian update threshold. Default is \code{100}.
+#' @param d Order of the finite difference matrix.
+#' @param nknots Number of knots in the B-spline basis.
+#' @param order Order of the B-spline basis.
+#' @param epsilon_b Tolerance for convergence of Algorithm 1.
+#' @param epsilon_r Tolerance for ADMM convergence (residual).
+#' @param epsilon_d Tolerance for ADMM convergence (dual).
+#' @param epsilon_2 Tolerance for convergence of Algorithm 2.
+#' @param run_min Minimum number of runs for stability.
+#' @param max_outer_iter Maximum number of iterations for the outer loop (Algorithm 1).
+#' @param max_2_iter Maximum number of iterations for Algorithm 2 (per outer iteration).
+#' @param max_admm_iter Maximum number of iterations for the ADMM clustering step (Algorithm 3).
 #'
-#' @returns cluster" = res$clusters,
-#' @returns "possible_clusters" = res$all_clusters_psi,
-#' "chosen_psi" = psis[best],
-#' "y_hat_init" = res$y_hat_init,"y_hat" = res$y_hat)
+#' @return A list with the following components:
+#' \describe{
+#'   \item{clusters}{Final cluster assignments.}
+#'   \item{possible_clusters}{Cluster assignments for all tested \eqn{\psi} values.}
+#'   \item{chosen_psi}{Optimal \eqn{\psi} value selected via BIC.}
+#'   \item{y_hat_init}{Initial fitted values.}
+#'   \item{y_hat}{Final fitted values.}
+#' }
+#'
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' result <- cleverly(
+#'   Y = my_data[, c("response1", "response2")],
+#'   Z = my_covariates,
+#'   subject_ids = my_data$subject_id,
+#'   time = my_data$time,
+#'   lp = 1,
+#'   response_type = "Counts",
+#'   cor_str = "AR1",
+#'   gammas = rep(1, ncol(my_covariates) + 1),
+#'   psi_min = 0.1,
+#'   psi_max = 1,
+#'   npsi = 5,
+#'   parralel = TRUE,
+#'   nworkers = 4
+#' )
+#' }
+
 cleverly <- function(Y,
                      Z,
                      subject_ids,
@@ -129,8 +152,6 @@ cleverly <- function(Y,
 
 
 # Format Z, mi ------------------------------------------------------------
-
-
   # Y_list <- get_Y_wrapper(Y = Y_user,
   #                         subject_ids = subject_ids,
   #                         time = time)
@@ -159,6 +180,7 @@ cleverly <- function(Y,
   if (lp != 0) {
     lp <- format_lp(lp = lp, Z = Z)
   }
+  # Check gamma vector is of correct dimension
   if (length(gammas) != ncol(Z)) {
     stop("Length of gammas must be equal to the number of columns in Z + 1")
   }
@@ -259,4 +281,44 @@ cleverly <- function(Y,
 
 
 
+
+
+# Helpers: ----------------------------------------------------------------
+
+
+#' Format Z
+#'
+#' Add a column of 1s to Z if it doesn't already exist
+#'
+#' @param Z A matrix or data frame with columns of external variables for each subject/time
+#'
+#' @returns A matrix with a column of 1s representing L = 0, and values for the other external variables
+#' @export
+format_Z <- function(Z) {
+  if (is.data.frame(Z) | is.matrix(Z)) {
+    M <- nrow(Z)
+    if (!identical(Z[, 1], rep(1, M))) {
+      Z <- cbind(1, Z)
+    }
+    Z <- as.matrix(Z)
+  } else if (is.vector(Z)) {
+    if (!all(Z == 1)) {
+      Z <- cbind(1, Z)
+    }
+  }
+  return(Z)
+}
+
+
+
+#' Title
+#'
+#' @param lp either a numeric index of which external variable to cluster on, or the name of the column of Z that contains the clustering variable. Specify numeric 0 to cluster via baseline.
+#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
+#'
+#' @returns lp index
+#' @export
+format_lp <- function(lp, Z) {
+  return(lp)
+}
 
