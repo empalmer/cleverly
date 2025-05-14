@@ -24,7 +24,7 @@ plot_clusters <- function(res,
   cluster_key <- data.frame(
     response_names = factor(1:length(response_names),
                             levels = 1:length(response_names)),
-    cluster = factor(res$cluster$membership))
+    cluster = factor(res$clusters$membership))
 
   if (order == "response") {
     values <- c(viridis::viridis(length(unique(cluster_key$cluster))), EV_color)

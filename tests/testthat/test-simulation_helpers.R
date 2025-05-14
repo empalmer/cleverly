@@ -8,25 +8,11 @@ test_that("Simulation Z 0,1", {
                          nknots = 3,
                          K = 12,
                          order = 3,
-                         user_var = 1000,
+                         user_var = 500000,
                          cor_str = "CON-d",
                          Z_type = "binary",
                          rho = 0.9,
-                         prob1 = .5,
-                         baseline_fxns = list(
-                           function(t) t,
-                           function(t) t,
-                           function(t) t,
-                           function(t) t,
-                           function(t) t,
-                           function(t) t,
-                           function(t) t,
-                           function(t) t,
-                           function(t) t,
-                           function(t) -3 * t + 3,
-                           function(t) -3 * t + 3,
-                           function(t) -3 * t + 3
-                         ),)
+                         prob1 = .5)
 
   # Visualize simulated data
   plot_sim_data(sim)
@@ -60,6 +46,10 @@ test_that("Simulation Z 0,1", {
 
   res$possible_clusters
   res$psi
+  res$phi
+  res$rho
+
+  res$BIC
 
   #})
   # end <- Sys.time()
@@ -284,7 +274,7 @@ test_that("Simulation cont", {
                          K = 12,
                          order = 3,
                          user_var = 1000,
-                         cor_str = "CON-d",
+                         cor_str = "IND",
                          Z_type = "continuous",
                          rho = 0.4,
                          prob1 = .5,
@@ -332,13 +322,13 @@ test_that("Simulation cont", {
                   lp = 0,
                   cor_str = "IND",
                   # Hyperparameters
-                  gammas = c(1,1),
+                  gammas = c(100,100),
                   psi_min = 800,
                   npsi = 1,
                   # Iterations max
-                  max_admm_iter = 10,
-                  max_outer_iter = 5,
-                  max_2_iter = 10,
+                  max_admm_iter = 100,
+                  max_outer_iter = 10,
+                  max_2_iter = 100,
   ) %>%
     get_cluster_diagnostics(true_cluster)
 

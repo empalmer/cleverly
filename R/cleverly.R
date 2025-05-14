@@ -247,7 +247,9 @@ cleverly <- function(Y,
       }
     }
 
-    best <- which.min(purrr::map_dbl(res_list, ~.x$BIC))
+
+    BICs <- purrr::map_dbl(res_list, ~.x$BIC$BIC)
+    best <- which.min(BICs)
     result <- res_list[[best]]
     result$all_clusters_psi <- purrr::map(res_list, ~.x$clusters)
 
@@ -255,7 +257,7 @@ cleverly <- function(Y,
     print(paste0("psi:", psis,", cluster:", clusters))
     print(paste0("chosen psi: ", psis[best], ", cluster", clusters[[best]]))
 
-
+    BIC_list <- purrr::map(res_list, ~.x$BIC)
 
   } else {
     stop("Invalid response type or type not yet implemented.")
@@ -267,7 +269,7 @@ cleverly <- function(Y,
               y_hat = result$y_hat,
               y_hat_init = result$y_hat_init,
               y_hat_baseline = result$y_hat_baseline,
-              BIC = result$BIC,
+              BIC = BIC_list,
               error = result$error,
               rho = result$rho,
               phi = result$phi,

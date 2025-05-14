@@ -8,9 +8,9 @@
 #'
 #' @returns scalar phi
 #' @export
-get_phi <- function(pearson_residuals, K, M){
+get_phi <- function(pearson_residuals, K, M, L = 1){
 
-  phi <- sum(unlist(pearson_residuals)^2) / (K * M - 1)
+  phi <- sum(unlist(pearson_residuals)^2) / (K * M - (L + 1))
 
   #phi <- sum(r^2) / (K*M - 1)
   return(phi)

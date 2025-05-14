@@ -256,7 +256,7 @@ get_corR <- function(cor_str, mi, K, rho) {
     # For AR1, this is rho^{|j1 - j2|}
     j1s <- matrix(rep(1:mi, each = mi), nrow = mi)
     j2s <- matrix(rep(1:mi, each = mi), ncol = mi, byrow = TRUE)
-    cor_str_matrix <- rho^abs(j1s - j2s)
+    cor_str_matrix <- rho^abs(j1s - j2s) - diag(mi)
     all_blocks <- matrix(1, nrow = K, ncol = K)
     corR <- kronecker(cor_str_matrix, all_blocks)
   } else if (cor_str == "CON-d") {
@@ -269,7 +269,7 @@ get_corR <- function(cor_str, mi, K, rho) {
     j1s <- matrix(rep(1:mi, each = mi), nrow = mi)
     j2s <- matrix(rep(1:mi, each = mi), ncol = mi, byrow = TRUE)
 
-    cor_str_matrix <- rho^abs(j1s - j2s)
+    cor_str_matrix <- rho^abs(j1s - j2s) - diag(mi)
     diag_blocks <- diag(K)
     corR <- kronecker(cor_str_matrix, diag_blocks)
   }
@@ -351,8 +351,10 @@ get_rho <- function(pearson_residuals,
   if (cor_str == "CON" | cor_str == "CON-d") {
     # This is how we calculate it for the CON structure.
     # The chosen rijk_rijk are different depending on if it is con or cond
-
     rho_cor <- mean(regressiondata$normalized_rijk_rijk)
+    if (rho_cor < .1) {
+      browser()
+    }
   }
   if (cor_str == "AR1" | cor_str == "AR1-d") {
     # Find the minimum

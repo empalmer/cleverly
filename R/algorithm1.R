@@ -346,6 +346,7 @@ algorithm1 <- function(Y,
                       time = time)
   BIC <- BIC_cluster(y_ra_df = y_hat,
                      K = K,
+                     L = L,
                      n_clusters = clusters$no,
                      mi_vec = mi_vec,
                      nknots = nknots,
@@ -595,19 +596,24 @@ get_A <- function(Kappa, K, P) {
 #' @param mi_vec Vector of number of timepoints for each subject
 #' @param nknots The number of internal knots used in the B-spline basis.
 #' @param order The order of the B-spline basis.
+#' @param L
 #'
 #' @returns A single numeric value representing the modified BIC for the fitted model.
 #' @export
 BIC_cluster <- function(y_ra_df,
-                        K, n_clusters,
+                        K,
+                        L,
+                        n_clusters,
                         mi_vec,
                         nknots, order){
 
   N <- sum(mi_vec)
-  yhat_y <- log(y_ra_df$yhat + .1) - log(y_ra_df$y + .1)
+  yhat_y <- log(y_ra_df$yhat + .01) - log(y_ra_df$y + .01)
   first_term <- sum(yhat_y^2)/(N*K)
-  second_term <- log(N * K) * n_clusters * (order + nknots)/(N*K)
+  second_term <- log(N * K) * n_clusters * L * (order + nknots)/(N*K)
 
   BIC <- log(first_term) + second_term
-  return(BIC)
+  return(list(BIC = BIC,
+              first_term = first_term,
+              second_term = second_term))
 }
