@@ -14,6 +14,8 @@ test_that("Simulation Z 0,1", {
                          rho = 0.9,
                          prob1 = .5)
 
+  # This is the one where it did not work in simulation
+  sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_large_rho_var/sim_data_1.rds")
   # Visualize simulated data
   plot_sim_data(sim)
 
@@ -27,6 +29,20 @@ test_that("Simulation Z 0,1", {
   #start <- Sys.time()
   #Rprof("test.out", interval = .02)
   #profvis::profvis({
+  npsi <- 6
+  psi_min <- 400
+  psi_max <- 1400
+
+  tau <- 0.005
+  parralel <- T
+  gammas <- c(.1,.1)
+
+  max_admm_iter <- 500
+  max_2_iter <- 500
+  max_outer_iter <- 30
+
+  run_min = 15
+
   res <- cleverly(Y = Y,
                   Z = Z,
                   subject_ids = individual,
@@ -36,11 +52,13 @@ test_that("Simulation Z 0,1", {
                   # Hyperparameters
                   gammas = c(1,1),
                   psi_min = 400,
-                  npsi = 2,
+                  psi_max = 1400,
+                  npsi = 3,
                   # Iterations max
-                  max_admm_iter = 10,
-                  max_outer_iter = 2,
-                  max_2_iter = 10,
+                  run_min = 15,
+                  max_admm_iter = 300,
+                  max_outer_iter = 30,
+                  max_2_iter = 500,
   ) %>%
     get_cluster_diagnostics(true_cluster)
 
@@ -120,7 +138,7 @@ test_that("SMALL", {
                   subject_ids = individual,
                   time = time,
                   lp = 0,
-                  cor_str = "CON-d",
+                  cor_str = "AR1",
                   # Hyperparameters
                   gammas = c(1,1),
                   psi_min = 400,
@@ -153,7 +171,7 @@ test_that("SMALL", {
   knitr::kable(table(cluster_df$cluster, rep(1:3, each = 4)))
 
 
-  get_corR("CON", mi = 3, K = 2, rho = .4)
+  get_corR("AR1-d", mi = 3, K = 2, rho = .4)
 
 
 })
@@ -331,6 +349,12 @@ test_that("Simulation cont", {
                   max_2_iter = 100,
   ) %>%
     get_cluster_diagnostics(true_cluster)
+
+
+  plot_clusters(res,
+                Z = rep(Z, 12),
+                response_names = LETTERS[1:12],
+                Z_type = "continuous")
 
   library(tidyverse)
   res$y_hat_baseline %>%

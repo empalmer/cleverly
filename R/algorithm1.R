@@ -282,7 +282,9 @@ algorithm1 <- function(Y,
     # Update dispersion parameter
     phi <- get_phi(pearson_residuals = pearson_residuals,
                    K = K,
-                   M = M)
+                   M = M,
+                   L = L,
+                   P = P)
 
     # Difference in betas between this loop and the last
     diff <- sum(abs(beta - beta_old)) # matrix difference
@@ -338,6 +340,8 @@ algorithm1 <- function(Y,
                                K = K,
                                Y = Y,
                                time = time)
+
+
   y_hat_init <- estimate_y(beta = beta_init$beta,
                       B = B,
                       Z = Z,
@@ -409,6 +413,7 @@ estimate_y <- function(beta, B, Z, K, Y, time){
   L <- ncol(Z) - 1
   M <- nrow(Z)
   yhat <- matrix(nrow = M, ncol = K)
+  browser()
   for (k in 1:K) {
     y_k <- numeric(M)
     for (l in 0:L) {
@@ -614,6 +619,6 @@ BIC_cluster <- function(y_ra_df,
 
   BIC <- log(first_term) + second_term
   return(list(BIC = BIC,
-              first_term = first_term,
+              first_term = log(first_term),
               second_term = second_term))
 }

@@ -348,13 +348,11 @@ get_rho <- function(pearson_residuals,
   regressiondata <- dplyr::bind_rows(regression_data_list)
 
 
-  if (cor_str == "CON" | cor_str == "CON-d") {
+  if (cor_str == "CON") {
     # This is how we calculate it for the CON structure.
     # The chosen rijk_rijk are different depending on if it is con or cond
     rho_cor <- mean(regressiondata$normalized_rijk_rijk)
-    if (rho_cor < .1) {
-      browser()
-    }
+
   }
   if (cor_str == "AR1" | cor_str == "AR1-d") {
     # Find the minimum
@@ -364,6 +362,11 @@ get_rho <- function(pearson_residuals,
                                                          .x^(regressiondata$abs_j1_j2))^2) )
     rho_cor <- seq(-1,1,0.1)[which.min(objective_f)]
 
+  }
+  if (cor_str == "CON-d") {
+    objective_f <- purrr::map_dbl(seq(-1,1,0.1),
+                                  ~sum((regressiondata$normalized_rijk_rijk - .x)^2) )
+    rho_cor <- seq(-1,1,0.1)[which.min(objective_f)]
   }
 
 
@@ -376,6 +379,7 @@ get_rho <- function(pearson_residuals,
   if (rho_cor > 1) {
     rho_cor <- 1
   }
+  print(rho_cor)
   return(rho_cor)
 
 }

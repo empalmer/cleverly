@@ -8,9 +8,9 @@
 #'
 #' @returns scalar phi
 #' @export
-get_phi <- function(pearson_residuals, K, M, L = 1){
+get_phi <- function(pearson_residuals, K, M, L = 1, P){
 
-  phi <- sum(unlist(pearson_residuals)^2) / (K * M - (L + 1))
+  phi <- sum(unlist(pearson_residuals)^2) / (K * M - ((L + 1) * P))
 
   #phi <- sum(r^2) / (K*M - 1)
   return(phi)
@@ -102,16 +102,14 @@ get_pearson_residual_i <- function(Y,
                        i_index = i_index)
     alpha_ij0 <- sum(alpha_ij)
     # Should be of length K.
-
-
     denom <- sqrt( Y_ij0 *
                      (Y_ij0 + alpha_ij0) / (1 + alpha_ij0) *
                      alpha_ij / alpha_ij0 * (1 - alpha_ij / alpha_ij0) )
 
-    too_small <- denom < 1e-10
+    too_small <- denom < 1e-6
     if (any(too_small, na.rm = TRUE)) {
-      warning("Some denominator values are too small; applying epsilon correction.")
-      denom[too_small] <- 1e-10
+      warning("Some denominator values in the pearson residuals are too small; replacing with 1e-6.")
+      denom[too_small] <- 1e-6
     }
 
     rij <- Yij_minus_muij / denom

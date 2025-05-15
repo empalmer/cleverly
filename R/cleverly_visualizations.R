@@ -15,59 +15,126 @@
 #' @returns ggplot object
 #' @export
 plot_clusters <- function(res,
+                          Z,
                           response_names,
                           scales = "free_y",
                           EV_color = "grey50",
                           order = "response",
-                          nrow = 3){
+                          nrow = 3,
+                          Z_type = "binary",
+                          baseline = T){
 
   cluster_key <- data.frame(
     response_names = factor(1:length(response_names),
                             levels = 1:length(response_names)),
     cluster = factor(res$clusters$membership))
 
-  if (order == "response") {
-    values <- c(viridis::viridis(length(unique(cluster_key$cluster))), EV_color)
-  } else if (order == "cluster") {
-    values <-  c(sample(viridis::viridis(length(unique(cluster_key$cluster)))), EV_color)
-  } else {
-    stop("order must be either 'response' or 'cluster'")
-    # values = c(RColorBrewer::brewer.pal(n = length(unique(cluster_df$cluster)),
-    #                       name = "Set1"),
-    #            "grey30"),
-    #values = c(rcartocolor::carto_pal(length(unique(cluster_df$cluster)),
-    #                                  "Safe"),
-    #           "grey50"),
+  if (baseline) {
+    if (order == "response") {
+      values <- viridis::viridis(length(unique(cluster_key$cluster)))
+    } else if (order == "cluster") {
+      values <- sample(viridis::viridis(length(unique(cluster_key$cluster))))
+    } else {
+      stop("order must be either 'response' or 'cluster'")
+    }
+
+    if (Z_type == "continuous") {
+      browser()
+      Z_new <- Z
+      plot <- res$y_hat_baseline %>%
+        dplyr::mutate(response = factor(response),
+                      Z = Z_new) %>%
+        dplyr::left_join(cluster_key, by = c("response" = "response_names")) %>%
+        dplyr::mutate(response = factor(response, labels = response_names)) %>%
+        ggplot2::ggplot(ggplot2::aes(x = time)) +
+        ggplot2::geom_point(ggplot2::aes(y = y,
+                                         color = Z),
+                            size = 1, alpha = .5) +
+        ggplot2::guides(color = ggplot2::guide_legend("EV")) +
+        ggnewscale::new_scale_color() +
+        ggplot2::geom_line(ggplot2::aes(y = yhat,
+                                        color = cluster),
+                           linewidth = 1.5) +
+        ggplot2::facet_wrap(~response,
+                            scales = scales,
+                            nrow = nrow) +
+        ggplot2::scale_color_manual(
+          values = values,
+          name = "Cluster"
+        )
+    } else if (Z_type == "binary") {
+      plot <- res$y_hat_baseline %>%
+        dplyr::mutate(response = factor(response)) %>%
+        dplyr::left_join(cluster_key, by = c("response" = "response_names")) %>%
+        dplyr::mutate(response = factor(response, labels = response_names)) %>%
+        ggplot2::ggplot(ggplot2::aes(x = time)) +
+        ggplot2::geom_point(ggplot2::aes(y = y,
+                                         color = factor(Z),
+                                         shape = factor(Z)),
+                            size = 1, alpha = .8) +
+        ggplot2::guides(color = ggplot2::guide_legend("EV"),
+                        shape = ggplot2::guide_legend("EV")) +
+        # ggplot2::labs(color = "EV",
+        #               shape = "EV") +
+        ggnewscale::new_scale_color() +
+        ggplot2::geom_line(ggplot2::aes(y = yhat,
+                                        color = cluster),
+                           linewidth = 1) +
+        ggplot2::facet_wrap(~response,
+                            scales = scales,
+                            nrow = nrow) +
+        ggplot2::scale_color_manual(
+          values = values,
+          name = "Cluster"
+        )
+    }
+
+
   }
 
+  else if (!baseline) {
+    if (order == "response") {
+      values <- c(viridis::viridis(length(unique(cluster_key$cluster))), EV_color)
+    } else if (order == "cluster") {
+      values <-  c(sample(viridis::viridis(length(unique(cluster_key$cluster)))), EV_color)
+    } else {
+      stop("order must be either 'response' or 'cluster'")
+      # values = c(RColorBrewer::brewer.pal(n = length(unique(cluster_df$cluster)),
+      #                       name = "Set1"),
+      #            "grey30"),
+      #values = c(rcartocolor::carto_pal(length(unique(cluster_df$cluster)),
+      #                                  "Safe"),
+      #           "grey50"),
+    }
+    # plot clusters
+    plot <- res$y_hat %>%
+      dplyr::mutate(response = factor(response)) %>%
+      dplyr::left_join(cluster_key, by = c("response" = "response_names")) %>%
+      dplyr::mutate(clusterZ = ifelse(Z == 1, "EV", cluster),
+                    response = factor(response, labels = response_names)) %>%
+      ggplot2::ggplot(ggplot2::aes(x = time)) +
+      ggplot2::geom_point(ggplot2::aes(y = y,
+                                       color = factor(Z),
+                                       shape = factor(Z)),
+                          size = 1, alpha = .8) +
+      ggplot2::guides(color = ggplot2::guide_legend("EV"),
+                      shape = ggplot2::guide_legend("EV")) +
+      # ggplot2::labs(color = "EV",
+      #               shape = "EV") +
+      ggnewscale::new_scale_color() +
+      ggplot2::geom_line(ggplot2::aes(y = yhat,
+                                      color = clusterZ,
+                                      group = factor(Z)),
+                         linewidth = 1) +
+      ggplot2::facet_wrap(~response,
+                          scales = scales,
+                          nrow = nrow) +
+      ggplot2::scale_color_manual(
+        values = values,
+        name = "Cluster"
+      )
+  }
 
-  # plot clusters
-  plot <- res$y_hat %>%
-    dplyr::mutate(response = factor(response)) %>%
-    dplyr::left_join(cluster_key, by = c("response" = "response_names")) %>%
-    dplyr::mutate(clusterZ = ifelse(Z == 1, "EV", cluster),
-                  response = factor(response, labels = response_names)) %>%
-    ggplot2::ggplot(ggplot2::aes(x = time)) +
-    ggplot2::geom_point(ggplot2::aes(y = y,
-                                     color = factor(Z),
-                                     shape = factor(Z)),
-                        size = 1, alpha = .8) +
-    ggplot2::guides(color = ggplot2::guide_legend("EV"),
-                    shape = ggplot2::guide_legend("EV")) +
-    # ggplot2::labs(color = "EV",
-    #               shape = "EV") +
-    ggnewscale::new_scale_color() +
-    ggplot2::geom_line(ggplot2::aes(y = yhat,
-                                    color = clusterZ,
-                                    group = factor(Z)),
-                       linewidth = 1) +
-    ggplot2::facet_wrap(~response,
-                        scales = scales,
-                        nrow = nrow) +
-    ggplot2::scale_color_manual(
-      values = values,
-      name = "Cluster"
-    )
 
   return(plot)
 

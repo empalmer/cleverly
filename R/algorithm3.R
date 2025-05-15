@@ -113,7 +113,9 @@ algorithm3 <- function(Y,
     # Update dispersion parameter
     phi <- get_phi(pearson_residuals = pearson_residuals,
                    K = K,
-                   M = M)
+                   M = M,
+                   L = L,
+                   P = P)
 
     # Update correlation parameter
     rho_cor <- get_rho(pearson_residuals = pearson_residuals,
@@ -124,7 +126,6 @@ algorithm3 <- function(Y,
                        cor_str = cor_str,
                        cor_blocks = cor_blocks,
                        j1_j2_list = j1_j2_list)
-
 
     v_new <- update_v(beta = beta,
                       lp = lp,
