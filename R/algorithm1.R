@@ -413,7 +413,6 @@ estimate_y <- function(beta, B, Z, K, Y, time){
   L <- ncol(Z) - 1
   M <- nrow(Z)
   yhat <- matrix(nrow = M, ncol = K)
-  browser()
   for (k in 1:K) {
     y_k <- numeric(M)
     for (l in 0:L) {

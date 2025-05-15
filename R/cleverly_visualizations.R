@@ -39,7 +39,7 @@ plot_clusters <- function(res,
     }
 
     if (Z_type == "continuous") {
-      browser()
+
       Z_new <- Z
       plot <- res$y_hat_baseline %>%
         dplyr::mutate(response = factor(response),
