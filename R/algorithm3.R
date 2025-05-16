@@ -284,7 +284,7 @@ update_v <- function(beta,
     }
   }
 
-  #if (any(is.nan(v))) {
+
   if (anyNA(v)) {
     stop("v is NaN")
   }

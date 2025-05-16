@@ -2,6 +2,7 @@ test_that("Simulation Z 0,1", {
   skip("Skip - used as test file for cleverly")
   # Generate simulation data
   set.seed(127)
+  library(readr)
   sim <- simulation_data(n = 20,
                          range_start = 5000,
                          range_end = 20000,
@@ -14,54 +15,44 @@ test_that("Simulation Z 0,1", {
                          rho = 0.9,
                          prob1 = .5)
 
-
-
-  debug_random_seed = local({
-    function (ignore) {
-      seed_scope = parent.env(environment())
-
-      if (is.function(ignore)) ignore = list(ignore)
-
-      if (exists('.Random.seed', globalenv())) {
-        if (bindingIsActive('.Random.seed', globalenv())) {
-          warning('.Random.seed is already being debugged')
-          return(invisible())
-        }
-      } else {
-        set.seed(NULL)
-      }
-
-      # Save existing seed before deleting
-      assign('random_seed', .Random.seed, seed_scope)
-      rm(.Random.seed, envir = globalenv())
-
-      debug_seed = function (new_value) {
-        if (sys.nframe() > 1 &&
-            ! any(vapply(ignore, identical, logical(1), sys.function(1)))
-        ) {
-          if (missing(new_value)) {
-            message('Getting .Random.seed')
-          } else {
-            message('Setting .Random.seed')
-          }
-          message('Called from ', deparse(sys.call(1)))
-        }
-
-        if (! missing(new_value)) {
-          assign('random_seed', new_value, seed_scope)
-        }
-
-        random_seed
-      }
-
-      makeActiveBinding('.Random.seed', debug_seed, globalenv())
-    }
-  })
-
-  und
-
-
-
+  sim <- simulation_data(n = 20,
+                          range_start = 5000,
+                          range_end = 10000,
+                          nknots = 3,
+                          K = 12,
+                          order = 3,
+                          user_var = 1000,
+                          cor_str = "CON-d",
+                          rho = 0.9,
+                          prob1 = .5,
+                          slope_fxns = list(
+                            function(t) cos(2 * pi * t),
+                            function(t) cos(2 * pi * t),
+                            function(t) cos(2 * pi * t),
+                            function(t) cos(2 * pi * t),
+                            function(t) 1 - exp(-2 * t),
+                            function(t) 1 - exp(-2 * t),
+                            function(t) 1 - exp(-2 * t),
+                            function(t) 1 - exp(-2 * t),
+                            function(t) -t + 1,
+                            function(t) -t + 1,
+                            function(t) -t + 1,
+                            function(t) -t + 1
+                          ),
+                          # Slope functions
+                          baseline_fxns = list(
+                            function(t) sqrt(t),
+                            function(t)  t,
+                            function(t) -t + 1,
+                            function(t) .75 * t,
+                            function(t) -.25 * t + .5,
+                            function(t) -t,
+                            function(t) .5 * t,
+                            function(t) t^2,
+                            function(t) log(t) + t,
+                            function(t) -2 * t + 1,
+                            function(t) 1.5 * t - 1,
+                            function(t) sin(pi * t)))
 
 
   # This is the one where it did not work in simulation
@@ -109,9 +100,9 @@ test_that("Simulation Z 0,1", {
            npsi = 6,
            # Iterations max
            run_min = 15,
-           max_admm_iter = 500,
-           max_outer_iter = 30,
-           max_2_iter = 500,
+           max_admm_iter = 5,
+           max_outer_iter = 3,
+           max_2_iter = 5,
   )
 
 
@@ -377,27 +368,29 @@ test_that("Simulation cont", {
                                                function(t) 1 - 2 * exp(-6 * t),
                                                function(t) 1 - 2 * exp(-6 * t),
                                                function(t) 1 - 2 * exp(-6 * t),
-                                               function(t) -t + 1,
-                                               function(t) -t + 1,
-                                               function(t) -t + 1,
-                                               function(t) -t + 1),
+                                               function(t) -.5* t + 1,
+                                               function(t) -.5 * t + 1,
+                                               function(t) -.5 * t + 1,
+                                               function(t) -.5 * t + 1),
                          # Slope functions
                          slope_fxns = list(
                            function(x) -2*(x - .5)^2 + 1,
-                           function(x) x,
-                           function(x) -5*(x - .5)^2 + 1,
+                           function(x) .5 * x,
+                           function(x) .25,
                            function(x) sin(pi * x),
-                           function(x) 4 * (x - .5)^2,
+                           function(x) (x - .5)^2,
                            function(x) 1 - x,
                            function(x) -x + 1,
-                           function(x) abs(x - 0.5),
+                           function(x) -.1,
                            function(x) x * (1 - x),
                            function(x) .5,
-                           function(x) tanh(2 * (x - 0.5)),
+                           function(x) .75,
                            function(x) 0.5 * sin(2 * pi * x) + 0.5))
-
-  # Visualize simulated data
   plot_sim_data(sim, Z_type = "continuous")
+
+  sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/continuous_Z/sim_data_1.rds")
+  # Visualize simulated data
+
 
   true_cluster <- rep(1:3, each = 4)
   Y <- dplyr::select(sim, -c(
@@ -405,6 +398,10 @@ test_that("Simulation cont", {
     "Capture.Number",
     "Z"))
   Z <- sim$Z
+
+
+  plot_sim_data(sim, Z_type = "continuous")
+
 
   res <- cleverly(Y = Y,
                   Z = Z,
@@ -414,15 +411,16 @@ test_that("Simulation cont", {
                   cor_str = "IND",
                   # Hyperparameters
                   gammas = c(100,100),
-                  psi_min = 800,
+                  psi_min = 1000,
                   npsi = 1,
                   # Iterations max
-                  max_admm_iter = 100,
-                  max_outer_iter = 10,
-                  max_2_iter = 100,
+                  max_admm_iter = 300,
+                  max_outer_iter = 30,
+                  max_2_iter = 300,
   ) %>%
     get_cluster_diagnostics(true_cluster)
 
+  res$BIC
 
   plot_clusters(res,
                 Z = rep(Z, 12),
@@ -435,6 +433,55 @@ test_that("Simulation cont", {
     geom_point(aes(y = y), size = .6, alpha = .5) +
     geom_line(aes(y = yhat), linewidth = 1, color = "blue") +
     facet_wrap(~response)
+
+
+  res_incorrect <- cleverly(Y = Y,
+                            Z = Z,
+                            subject_ids = individual,
+                            time = time,
+                            lp = 0,
+                            cor_str = "IND",
+                            # Hyperparameters
+                            gammas = c(100,100),
+                            psi_min = 1400,
+                            npsi = 1,
+                            # Iterations max
+                            max_admm_iter = 300,
+                            max_outer_iter = 30,
+                            max_2_iter = 300,
+  ) %>%
+    get_cluster_diagnostics(true_cluster)
+
+  res_incorrect$BIC
+  plot_clusters(res_incorrect,
+                Z = rep(Z, 12),
+                response_names = LETTERS[1:12],
+                Z_type = "continuous")
+
+  v <- res_incorrect$v
+  v_mat <- matrix(v, nrow = 6)
+
+  get_clusters(v, K = 12, P = 6)
+
+  v_mat <- matrix(v, nrow = P)
+  differences <- apply(v_mat, 2, FUN = function(x) {
+    norm(as.matrix(x), "f")
+  })
+  connected_ix <- which(differences == 0)
+  index <- t(utils::combn(K, 2))
+  i <- index[connected_ix, 1]
+  j <- index[connected_ix, 2]
+  A <- matrix(0, nrow = K, ncol = K)
+  A[(j - 1) * K + i] <- 1
+
+  # Make graph from adjacency matrix
+  graph <- igraph::graph_from_adjacency_matrix(
+    A,
+    mode = 'upper')
+  #clustering membership
+  clusters <- igraph::components(graph)
+  return(clusters)
+
 })
 
 
