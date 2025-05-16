@@ -7,7 +7,7 @@
 plot_differneces(diffs)
 }
 \arguments{
-\item{diffs}{}
+\item{diffs}{differences}
 }
 \value{
 ggplot object

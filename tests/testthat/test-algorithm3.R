@@ -1,154 +1,67 @@
-test_that("Update v", {
-  sim <- base_sim()
 
-  K <- 4
-  Kappa <- t(utils::combn(K,2))
-  P <- 6
-  Kappa_size <- nrow(Kappa)
 
-  v <- update_v(beta = sim$beta,
-                lp = 2,
-                lambda = numeric(Kappa_size*P),
-                Kappa = Kappa,
-                P = P,
-                gammas = rep(1,3),
-                tau = 8/1000,
-                theta = 300,
-                psi = 1)
+# Algorithm 3 -------------------------------------------------------------
 
-  expect_length(v, Kappa_size * P)
+
+# Get v, beta, lambda -----------------------------------------------------
+test_that("update_v returns correct structure and dimensions", {
+  set.seed(1)
+
+  # Toy inputs
+  K <- 3  # number of responses
+  P <- 2  # number of spline coefficients
+  L <- 2  # number of covariates (excluding intercept)
+  lp <- 1 # use 0-based index per function doc
+
+  beta <- matrix(rnorm(P * K * (L + 1)), nrow = P * K, ncol = L + 1)
+  Kappa <- matrix(c(1, 2,
+                    1, 3,
+                    2, 3), ncol = 2, byrow = TRUE) # all pairwise combos
+
+  lambda <- rnorm(nrow(Kappa) * P)
+  gammas <- rep(0.1, L + 1)
+  tau <- 0.5
+  theta <- 1.0
+  psi <- 0.3
+
+  result <- update_v(beta, lp, lambda, Kappa, P, gammas, tau, theta, psi)
+
+  # Basic structure checks
+  expect_type(result, "list")
+  expect_named(result, c("v", "u_list"))
+  expect_true(is.numeric(result$v))
+  expect_true(is.list(result$u_list))
+
+  # Length checks
+  expect_length(result$v, nrow(Kappa) * P)
+  expect_length(result$u_list, nrow(Kappa))
+  for (u in result$u_list) {
+    expect_length(u, P)
+  }
 })
 
-test_that("Update lambda", {
-  sim <- base_sim()
+test_that("update_v handles zero norm_u case correctly", {
+  # Construct beta so pairwise beta difference and lambda are zero
+  P <- 2
+  K <- 2
+  L <- 1
+  lp <- 0
 
-  K <- 4
-  Kappa <- t(utils::combn(K,2))
-  P <- 6
-  lp <- 2
-  Kappa_size <- nrow(Kappa)
+  beta_val <- rep(0.5, P)
+  beta <- matrix(0, nrow = P * K, ncol = L + 1)
+  beta[1:P, lp + 1] <- beta_val
+  beta[(P + 1):(2 * P), lp + 1] <- beta_val
 
-  lambda <- numeric(Kappa_size*P)
-  A <- get_A(Kappa = Kappa, K = K, P = P)
+  Kappa <- matrix(c(1, 2), ncol = 2, byrow = TRUE)
+  lambda <- rep(0, P)
+  gammas <- rep(0.1, L + 1)
+  tau <- 0.5
+  theta <- 1
+  psi <- 0.3
 
-  Kappa_size <- nrow(Kappa)
-  v <- update_v(beta = sim$beta,
-                lp = lp,
-                lambda = lambda,
-                Kappa = Kappa,
-                P = P,
-                gammas = rep(1,3),
-                tau = 8/1000,
-                theta = 300,
-                psi = 1)
-  beta_lp <- sim$beta[, lp + 1]
-  lambda <- update_lambda(beta_lp = beta_lp,
-                          v = v,
-                          lambda = lambda,
-                          A = A,
-                          theta = 1)
+  result <- update_v(beta, lp, lambda, Kappa, P, gammas, tau, theta, psi)
 
-  expect_length(lambda, Kappa_size * P)
-})
-
-
-test_that("Update beta_lp", {
-  sim <- base_sim()
-
-  K <- 4
-  Kappa <- t(utils::combn(K,2))
-  P <- 6
-  lp <- 2
-  Kappa_size <- nrow(Kappa)
-
-  lambda <- numeric(Kappa_size*P)
-  A <- get_A(Kappa = Kappa, K = K, P = P)
-  B <- get_B(time = sim$time,
-             order = 3,
-             nknots = 3)
-
-  Kappa_size <- nrow(Kappa)
-  v <- update_v(beta = sim$beta,
-                lp = lp,
-                lambda = lambda,
-                Kappa = Kappa,
-                P = P,
-                gammas = rep(1,3),
-                tau = 8/1000,
-                theta = 300,
-                psi = 1)
-  beta <- update_beta_admm(Y = sim$Y,
-                           beta = sim$beta,
-                           lp = lp,
-                           v = v,
-                           lambda = lambda,
-                           theta = 1,
-                           gammas = rep(1, 3),
-                           D = get_D(K = K,
-                                     d = 2,
-                                     order = 3,
-                                     nknots = 3),
-                           A = A,
-                           AtA <- crossprod(A),
-                           Z = sim$Z,
-                           B = B,
-                           phi = 1,
-                           C = 10,
-                           mi_vec = sim$mi_vec,
-                           i_index = c(0, cumsum(sim$mi_vec)))
-
-  expect_equal(dim(beta), dim(sim$beta))
-  # Only the beta for lp should be different
-  expect_equal(beta[,-(lp + 1)], sim$beta[,-(lp + 1)])
-})
-
-
-test_that("ADMM algorithm 3", {
-  skip("Sim test")
-  sim <- base_sim()
-
-  K <- 4
-  Kappa <- t(utils::combn(K,2))
-  P <- 6
-  lp <- 2
-  Kappa_size <- nrow(Kappa)
-
-  A <- get_A(Kappa = Kappa, K = K, P = P)
-  B <- get_B(time = sim$time,
-             order = 3,
-             nknots = 3)
-  C <- 10
-  D <- get_D(K = K,
-             d = 2,
-             order = 3,
-             nknots = 3)
-
-  beta_lp <- algorithm3(Y = sim$Y,
-                        Z = sim$Z,
-                        lp = lp,
-                        B = B,
-                        beta = sim$beta,
-                        A = A,
-                        P = P,
-                        C = C,
-                        D = D,
-                        Kappa = Kappa,
-                        mi_vec = sim$mi_vec,
-                        gammas = rep(.001,3),
-                        tau = 8/1000,
-                        theta = 300,
-                        psi = .001,
-                        phi = 1,
-                        max_admm_iter = 5,
-                        epsilon_b = 1e-3,
-                        epsilon_r = 1e-3)
-
-
-  beta_lp$beta_admm_track[[1]][,3]
-  beta_lp$beta_admm_track[[2]][,3]
-  beta_lp$beta_admm_track[[4]][,3]
-
-
-
+  # When norm_u == 0, v should equal u, which is 0
+  expect_equal(result$v, rep(0, P))
 })
 

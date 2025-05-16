@@ -6,15 +6,20 @@
 \usage{
 plot_clusters(
   res,
+  Z,
   response_names,
   scales = "free_y",
   EV_color = "grey50",
   order = "response",
-  nrow = 3
+  nrow = 3,
+  Z_type = "binary",
+  baseline = T
 )
 }
 \arguments{
 \item{res}{cleverly model object}
+
+\item{Z}{value of Z}
 
 \item{response_names}{vector of names for each response}
 
@@ -25,6 +30,10 @@ plot_clusters(
 \item{order}{"response" or "cluster" to have original ordering or cluster ordering of responses on the facet plots}
 
 \item{nrow}{number of rows for the facet plot}
+
+\item{Z_type}{binary or continuous}
+
+\item{baseline}{plot only baseline? Has to be true for continuous, but for binary slope can be plotted}
 }
 \value{
 ggplot object

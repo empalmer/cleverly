@@ -45,7 +45,7 @@ get_Vi_inv(
 
 \item{cor_str}{Type of correlation structure (IND, CON, AR1)}
 
-\item{rho_cor}{}
+\item{rho_cor}{Current value of rho}
 }
 \value{
 Matrix of dimension Kmi x Kmi

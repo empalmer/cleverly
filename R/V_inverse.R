@@ -20,66 +20,6 @@ get_V_ijj <- function(Y_ij0,
 
 
 
-#' Get Vi diagonal matrix of all js.
-#'
-#' @param i subject index
-#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
-#' @param phi Current value of overdispersion parameter
-#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
-#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
-#' @param B B spline basis matrix of dimension (N x P)
-#' @param mi_vec vector of the number of timepoints for each sample. Of length n
-#' @param K Number of responses
-#' @param i_index starting index of the ith subject in the data
-#' @param Y0 Vector of total count for each sample
-#' @param L Number of external variables
-#' @param P Number of B-spline coefficients (order + nknots)
-#'
-#' @returns Diagonal matrix of Kmi x Kmi Each block is for a single j of block size K x K
-#' @export
-get_V_i <- function(i,
-                    Y,
-                    Y0,
-                    phi,
-                    beta,
-                    Z,
-                    B,
-                    K,
-                    mi_vec,
-                    i_index,
-                    L,
-                    P) {
-
-  V_ij_list <- list()
-  mi <- mi_vec[i]
-  for (j in 1:mi) {
-    Y_ij0 <- get_Y_ij0(i = i,
-                       j = j,
-                       Y0 = Y0,
-                       i_index)
-    alpha_ij <- get_alpha_ij(i = i,
-                             j = j,
-                             beta_ks = beta,
-                             Z = Z,
-                             B = B,
-                             K = K,
-                             i_index = i_index,
-                             L = L,
-                             P = P)
-    V_ijj <- get_V_ijj(Y_ij0 = Y_ij0,
-                       phi = phi,
-                       alpha_ij = alpha_ij)
-    V_ij_list[[j]] <- V_ijj
-  }
-  V_i_bdiag <- Matrix::bdiag(V_ij_list)
-  V_i <- as.matrix(V_i_bdiag)
-  # if (any(is.nan(V_i))) {
-  #   stop()
-  # }
-  return(V_i)
-}
-
-
 # Inverse Variance-----------------------------------------------------------------
 
 #' Get overall V inverse
@@ -96,6 +36,8 @@ get_V_i <- function(i,
 #' @param K Number of responses
 #' @param alpha list of alpha that can be subsetted by i and j
 #' @param Y0 Vector of total count for each sample
+#' @param cor_str correlation structures used ie. IND, CON, etc
+#' @param rho_cor value of rho (correlation parameter)
 #'
 #' @returns V inverse list
 #' @export
@@ -146,7 +88,7 @@ get_V_inv <- function(Y,
 #' @param K Number of responses
 #' @param Y0 Vector of total count for each sample
 #' @param cor_str Type of correlation structure (IND, CON, AR1)
-#' @param rho_cor
+#' @param rho_cor Current value of rho
 #'
 #' @returns Matrix of dimension Kmi x Kmi
 #' @export
@@ -282,8 +224,10 @@ get_corR <- function(cor_str, mi, K, rho) {
 #' @param mi_vec vector of the number of time points for each sample. Of length n
 #' @param M Number of subjects times time points for each subject
 #' @param cor_str Type of correlation structure (IND, CON, AR1)
-#' @param pearson_residuals
-#' @param phi
+#' @param pearson_residuals list of pearson residuals
+#' @param phi value of phi
+#' @param cor_blocks Pre-calculated to determine which pearson resids to use to estimate rho
+#' @param j1_j2_list Used for Ar1 calculations j1-j2
 #'
 #' @returns Numeric estimate of rho
 #' @export
@@ -379,7 +323,7 @@ get_rho <- function(pearson_residuals,
   if (rho_cor > 1) {
     rho_cor <- 1
   }
-  print(rho_cor)
+
   return(rho_cor)
 
 }

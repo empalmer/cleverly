@@ -7,7 +7,9 @@
 get_rho(pearson_residuals, phi, K, mi_vec, M, cor_str, cor_blocks, j1_j2_list)
 }
 \arguments{
-\item{phi}{}
+\item{pearson_residuals}{list of pearson residuals}
+
+\item{phi}{value of phi}
 
 \item{K}{Number of responses}
 
@@ -16,6 +18,10 @@ get_rho(pearson_residuals, phi, K, mi_vec, M, cor_str, cor_blocks, j1_j2_list)
 \item{M}{Number of subjects times time points for each subject}
 
 \item{cor_str}{Type of correlation structure (IND, CON, AR1)}
+
+\item{cor_blocks}{Pre-calculated to determine which pearson resids to use to estimate rho}
+
+\item{j1_j2_list}{Used for Ar1 calculations j1-j2}
 }
 \value{
 Numeric estimate of rho

@@ -10,8 +10,6 @@ plot_initial_fit(res, K)
 \item{res}{Cleverly model object}
 
 \item{K}{Number of responses}
-
-\item{gammas}{Vector of dimension L + 1 for penalizing the D matrix}
 }
 \value{
 ggplot object

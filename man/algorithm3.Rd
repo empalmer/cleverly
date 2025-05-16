@@ -84,11 +84,19 @@ algorithm3(
 
 \item{epsilon_d}{Tolerance for ADMM convergence}
 
+\item{s}{Outer iteration number}
+
 \item{L}{Number of external variables}
 
 \item{K}{Number of responses}
 
 \item{M}{Number of samples times timepoints for each sample}
+
+\item{cor_str}{specified correlation structure}
+
+\item{cor_blocks}{pre-calculated correlation structure}
+
+\item{j1_j2_list}{used for AR1 and AR1 d correlations}
 }
 \value{
 List with the updated betas, updated vs, and lists tracking the betas, vs, and lambdas for each iteration

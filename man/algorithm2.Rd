@@ -61,6 +61,8 @@ algorithm2(
 
 \item{time}{either a vector of length(Y) or a column reference if Y is a data frame. Must be numeric}
 
+\item{s}{Current iteration of algorithm 1}
+
 \item{L}{Number of external variables}
 
 \item{P}{Number of B-spline coefficients (order + nknots)}
@@ -69,7 +71,11 @@ algorithm2(
 
 \item{M}{Number of samples times timepoints for each sample}
 
-\item{cor_str}{}
+\item{cor_str}{correlation structure}
+
+\item{cor_blocks}{correlation structure blocks precalculated}
+
+\item{j1_j2_list}{pre-calculated j1_j2 list if AR1.}
 }
 \value{
 Vector of length PK x L

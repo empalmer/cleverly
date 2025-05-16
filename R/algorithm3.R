@@ -27,10 +27,13 @@
 #' @param lambda ADMM vector of dimension (P*|Kappa|) x1
 #' @param AtA Pre-calculated A transpose times A for speed
 #' @param i_index starting index of the ith subject in the data
-#' @param s
+#' @param s Outer iteration number
 #' @param L Number of external variables
 #' @param K Number of responses
 #' @param M Number of samples times timepoints for each sample
+#' @param cor_str specified correlation structure
+#' @param cor_blocks pre-calculated correlation structure
+#' @param j1_j2_list used for AR1 and AR1 d correlations
 #'
 #' @returns List with the updated betas, updated vs, and lists tracking the betas, vs, and lambdas for each iteration
 #' @export
@@ -314,6 +317,8 @@ update_v <- function(beta,
 #' @param K Number of responses
 #' @param L Number of external variables
 #' @param P Number of B-spline coefficients (order + nknots)
+#' @param cor_str correlation structure
+#' @param rho_cor value of rho
 #'
 #' @returns matrix of updated betas
 #' @export

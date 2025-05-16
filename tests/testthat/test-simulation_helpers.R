@@ -14,8 +14,58 @@ test_that("Simulation Z 0,1", {
                          rho = 0.9,
                          prob1 = .5)
 
+
+
+  debug_random_seed = local({
+    function (ignore) {
+      seed_scope = parent.env(environment())
+
+      if (is.function(ignore)) ignore = list(ignore)
+
+      if (exists('.Random.seed', globalenv())) {
+        if (bindingIsActive('.Random.seed', globalenv())) {
+          warning('.Random.seed is already being debugged')
+          return(invisible())
+        }
+      } else {
+        set.seed(NULL)
+      }
+
+      # Save existing seed before deleting
+      assign('random_seed', .Random.seed, seed_scope)
+      rm(.Random.seed, envir = globalenv())
+
+      debug_seed = function (new_value) {
+        if (sys.nframe() > 1 &&
+            ! any(vapply(ignore, identical, logical(1), sys.function(1)))
+        ) {
+          if (missing(new_value)) {
+            message('Getting .Random.seed')
+          } else {
+            message('Setting .Random.seed')
+          }
+          message('Called from ', deparse(sys.call(1)))
+        }
+
+        if (! missing(new_value)) {
+          assign('random_seed', new_value, seed_scope)
+        }
+
+        random_seed
+      }
+
+      makeActiveBinding('.Random.seed', debug_seed, globalenv())
+    }
+  })
+
+  und
+
+
+
+
+
   # This is the one where it did not work in simulation
-  sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_large_rho_var/sim_data_1.rds")
+  sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_large_rho_var/sim_data_2.rds")
   # Visualize simulated data
   plot_sim_data(sim)
 
@@ -29,6 +79,7 @@ test_that("Simulation Z 0,1", {
   #start <- Sys.time()
   #Rprof("test.out", interval = .02)
   #profvis::profvis({
+
   npsi <- 6
   psi_min <- 400
   psi_max <- 1400
@@ -43,6 +94,28 @@ test_that("Simulation Z 0,1", {
 
   run_min = 15
 
+
+  cleverly(Y = Y,
+           Z = Z,
+           subject_ids = individual,
+           time = time,
+           lp = 0,
+           cor_str = "CON-d",
+           # Hyperparameters
+           gammas = c(.1,.1),
+           parralel = F,
+           psi_min = 400,
+           psi_max = 1400,
+           npsi = 6,
+           # Iterations max
+           run_min = 15,
+           max_admm_iter = 500,
+           max_outer_iter = 30,
+           max_2_iter = 500,
+  )
+
+
+
   res <- cleverly(Y = Y,
                   Z = Z,
                   subject_ids = individual,
@@ -50,13 +123,14 @@ test_that("Simulation Z 0,1", {
                   lp = 0,
                   cor_str = "CON-d",
                   # Hyperparameters
-                  gammas = c(1,1),
+                  gammas = c(.1,.1),
+                  parralel = T,
                   psi_min = 400,
                   psi_max = 1400,
-                  npsi = 3,
+                  npsi = 6,
                   # Iterations max
                   run_min = 15,
-                  max_admm_iter = 300,
+                  max_admm_iter = 500,
                   max_outer_iter = 30,
                   max_2_iter = 500,
   ) %>%
@@ -138,7 +212,7 @@ test_that("SMALL", {
                   subject_ids = individual,
                   time = time,
                   lp = 0,
-                  cor_str = "AR1",
+                  cor_str = "IND",
                   # Hyperparameters
                   gammas = c(1,1),
                   psi_min = 400,
@@ -147,8 +221,7 @@ test_that("SMALL", {
                   max_admm_iter = 10,
                   max_outer_iter = 5,
                   max_2_iter = 10,
-  ) %>%
-    get_cluster_diagnostics(true_cluster)
+  )
 
 
   res %>%
@@ -185,37 +258,37 @@ test_that("try fxns", {
                          nknots = 3,
                          K = 12,
                          order = 3,
-                         user_var = 1000,
+                         user_var = 1000000,
                          cor_str = "CON-d",
                          rho = 0.9,
                          prob1 = .5,
                          slope_fxns = list(
-                           function(t) 2 * cos(2 * pi * t),
-                           function(t) 2 * cos(2 * pi * t),
-                           function(t) 2 * cos(2 * pi * t),
-                           function(t) 2 * cos(2 * pi * t),
-                           function(t) 1 - 2 * exp(-6 * t),
-                           function(t) 1 - 2 * exp(-6 * t),
-                           function(t) 1 - 2 * exp(-6 * t),
-                           function(t) 1 - 2 * exp(-6 * t),
-                           function(t) -2 * t + 2,
-                           function(t) -2 * t + 2,
-                           function(t) -2 * t + 2,
-                           function(t) -2 * t + 2
+                           function(t) cos(2 * pi * t),
+                           function(t) cos(2 * pi * t),
+                           function(t) cos(2 * pi * t),
+                           function(t) cos(2 * pi * t),
+                           function(t) 1 - exp(-2 * t),
+                           function(t) 1 - exp(-2 * t),
+                           function(t) 1 - exp(-2 * t),
+                           function(t) 1 - exp(-2 * t),
+                           function(t) -t + 1,
+                           function(t) -t + 1,
+                           function(t) -t + 1,
+                           function(t) -t + 1
                          ),
                          # Slope functions
                          baseline_fxns = list(
                            function(t) sqrt(t),
                            function(t)  t,
                            function(t) -t + 1,
-                           function(t) 1.5 * t,
-                           function(t) -1 * t + 1,
+                           function(t) .75 * t,
+                           function(t) -.25 * t + .5,
                            function(t) -t,
-                           function(t) 2 * t,
-                           function(t) log1p(t),
-                           function(t) -2 * t + 1,
-                           function(t) 1.5 * t,
+                           function(t) .5 * t,
                            function(t) t^2,
+                           function(t) log(t) + t,
+                           function(t) -2 * t + 1,
+                           function(t) 1.5 * t - 1,
                            function(t) sin(pi * t)))
 
   # Visualize simulated data
@@ -356,7 +429,7 @@ test_that("Simulation cont", {
                 response_names = LETTERS[1:12],
                 Z_type = "continuous")
 
-  library(tidyverse)
+  library(dplyr)
   res$y_hat_baseline %>%
     ggplot(aes(x = time)) +
     geom_point(aes(y = y), size = .6, alpha = .5) +
@@ -546,9 +619,9 @@ test_that("real data", {
 
   skip("Skip")
 
-
-  library(phyloseq)
-  library(tidyverse)
+#
+#   library(phyloseq)
+#   library(tidyverse)
 
   ps <- readRDS("~/Desktop/Research/buffalo-sciris/buffalo/Buffalo_Data/phyloseq_to_publish.rds")
 
@@ -663,4 +736,4 @@ for (p in 1:length(psis)) {
 best <- which.min(purrr::map_dbl(res_list, ~.x$BIC))
 res <- res_list[[best]]
 
-}
+})

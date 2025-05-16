@@ -97,22 +97,29 @@ algorithm1 <- function(Y,
 
 
   # Calculate helpers for correlation matrices:
-  j1_j2_list <- lapply(mi_vec, function(mi) {
-    times <- 1:mi
-    diag_values <- rep(times, each = K)
-    outer(diag_values, diag_values, "-")
-  })
-  # off_bdiag_list <- lapply(j1_j2_list, function(block) {
-  #   # return T if off the block diagonal
-  #   !(block == 0 | lower.tri(block))
-  # })
+  if (cor_str == "AR1" | cor_str == "AR1-d") {
+    j1_j2_list <- lapply(mi_vec, function(mi) {
+      times <- 1:mi
+      diag_values <- rep(times, each = K)
+      outer(diag_values, diag_values, "-")
+    })
+  } else {
+    j1_j2_list <- NULL
+  }
+
+
   # Define a list with blocks for each i what the correlation matrix structure is
   # We set rho = 1 just to give the 0/1 matrix of zero/nonzero elements of the
   # correlation matrix depending on the chosen strucutre.
-  cor_blocks <- purrr::map(mi_vec, ~get_corR(cor_str = cor_str,
-                                             mi = .x,
-                                             K = K,
-                                             rho = 1))
+  if (cor_str == "IND") {
+    cor_blocks <- NULL
+  } else {
+    cor_blocks <- purrr::map(mi_vec, ~get_corR(cor_str = cor_str,
+                                               mi = .x,
+                                               K = K,
+                                               rho = 1))
+
+  }
 
   # Initialize phi to be 1
   #Dirichlet Multinomial over dispersion parameter.
@@ -600,7 +607,7 @@ get_A <- function(Kappa, K, P) {
 #' @param mi_vec Vector of number of timepoints for each subject
 #' @param nknots The number of internal knots used in the B-spline basis.
 #' @param order The order of the B-spline basis.
-#' @param L
+#' @param L Number of external variables
 #'
 #' @returns A single numeric value representing the modified BIC for the fitted model.
 #' @export
@@ -609,12 +616,13 @@ BIC_cluster <- function(y_ra_df,
                         L,
                         n_clusters,
                         mi_vec,
-                        nknots, order){
+                        nknots,
+                        order){
 
   N <- sum(mi_vec)
   yhat_y <- log(y_ra_df$yhat + .01) - log(y_ra_df$y + .01)
   first_term <- sum(yhat_y^2)/(N*K)
-  second_term <- log(N * K) * n_clusters * L * (order + nknots)/(N*K)
+  second_term <- log(N * K) * n_clusters * (L + 1) * (order + nknots)/(N*K)
 
   BIC <- log(first_term) + second_term
   return(list(BIC = BIC,

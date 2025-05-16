@@ -20,9 +20,9 @@
 #' @param K Number of responses
 #' @param M Number of samples times timepoints for each sample
 #' @param i_index starting index of the ith subject in the data
-#' @param cor_blocks
-#' @param j1_j2_list
-#' @param cor_str
+#' @param cor_blocks correlation structure blocks precalculated
+#' @param j1_j2_list pre-calculated j1_j2 list if AR1.
+#' @param cor_str correlation structure
 #'
 #' @returns Vector of length PK x L
 #' @export

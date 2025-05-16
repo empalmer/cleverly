@@ -72,6 +72,10 @@ update_beta_admm(
 \item{L}{Number of external variables}
 
 \item{P}{Number of B-spline coefficients (order + nknots)}
+
+\item{cor_str}{correlation structure}
+
+\item{rho_cor}{value of rho}
 }
 \value{
 matrix of updated betas

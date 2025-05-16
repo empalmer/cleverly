@@ -30,7 +30,7 @@ plot_cluster_path(
 
 \item{max_outer_iter}{Max number of iterations for the outer loop (Algorithm 1)}
 
-\item{duration}{}
+\item{duration}{duration}
 }
 \value{
 ggplot object

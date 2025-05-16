@@ -26,6 +26,10 @@ get_V_inv(Y, Y0, alpha, mi_vec, i_index, phi, beta, Z, B, K, cor_str, rho_cor)
 \item{B}{B spline basis matrix of dimension (N x P)}
 
 \item{K}{Number of responses}
+
+\item{cor_str}{correlation structures used ie. IND, CON, etc}
+
+\item{rho_cor}{value of rho (correlation parameter)}
 }
 \value{
 V inverse list

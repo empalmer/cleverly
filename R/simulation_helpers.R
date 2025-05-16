@@ -31,8 +31,8 @@ generate_DM_counts <- function(Y0, alpha) {
 #'
 #' @param mi number of time points for ith sample
 #' @param user_var User supplied variance
-#' @param structure Type of correlation structure to simulate, of IND, CON-d, and AR1-d
 #' @param rho rho correlation parameter
+#' @param cor_str specified correaltion structure (of IND, CON-d, or AR1d)
 #'
 #' @returns User defined correlation matrix (for a single sample i)
 #' @export
@@ -77,8 +77,11 @@ cor_user <- function(mi, user_var, cor_str, rho) {
 #' @param cor_str Type of correlation structure (IND, CON, AR1)
 #' @param rho Correlation parameter
 #' @param miss_p proportion of missing samples
-#' @param slope_base type of slope/intercept clustering curves to generate
 #' @param prob1 Probability of the binary external variable being 1
+#' @param Z_type Type of external variable (binary or continuous)
+#' @param maxt maximum number of times
+#' @param baseline_fxns list of functions to use for the baseline
+#' @param slope_fxns list of functions to use for the slope
 #'
 #' @returns data Matrix with columns time, individual, capture number, totaln, counts
 #' @export

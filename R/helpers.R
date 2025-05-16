@@ -384,13 +384,13 @@ get_alpha_ijk <- function(i, j, k, beta_ks, Z_ij, B_ij, i_index, P, L) {
 #'
 #' @param i subject index
 #' @param j time index
-#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
 #' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
 #' @param B B spline basis matrix of dimension (N x P)
 #' @param K Number of responses
 #' @param i_index starting index of the ith subject in the data
 #' @param L Number of external variables
 #' @param P Number of B-spline coefficients (order + nknots)
+#' @param beta_ks list of beta for each k
 #'
 #' @returns Vector of length K
 #' @export
@@ -425,7 +425,6 @@ get_alpha_ij <- function(i, j, beta_ks, Z, B, K, i_index, L, P) {
 #' get_alpha_i
 #'
 #' @param i subject index
-#' @param beta matrix of beta (or beta hat) of dimension (P*K) x L
 #' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
 #' @param B B spline basis matrix of dimension (N x P)
 #' @param K Number of responses
@@ -433,6 +432,7 @@ get_alpha_ij <- function(i, j, beta_ks, Z, B, K, i_index, L, P) {
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #' @param L Number of external variables
 #' @param P Number of B-spline coefficients (order + nknots)
+#' @param beta_ks list of beta for each k
 #'
 #' @returns list of alphas for each j in 1:mi
 #' @export
@@ -498,6 +498,10 @@ get_alpha_list <- function(beta, Z, B, K, i_index, mi_vec, L, P){
 #' @export
 get_U_ij <- function(alpha_ij) {
   alpha_ij0 <- sum(alpha_ij)
+  if (any(alpha_ij == alpha_ij0)) {
+    alpha_ij0 <- alpha_ij0 + 1e-12
+    warning("alpha_ij = alphaij0, adding 1e-12")
+  }
   U_ij <- diag(alpha_ij / alpha_ij0) - tcrossprod(alpha_ij) / alpha_ij0^2
   return(U_ij)
 }

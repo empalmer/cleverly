@@ -46,13 +46,19 @@ simulation_data(
 
 \item{cor_str}{Type of correlation structure (IND, CON, AR1)}
 
+\item{Z_type}{Type of external variable (binary or continuous)}
+
 \item{rho}{Correlation parameter}
 
 \item{miss_p}{proportion of missing samples}
 
 \item{prob1}{Probability of the binary external variable being 1}
 
-\item{slope_base}{type of slope/intercept clustering curves to generate}
+\item{maxt}{maximum number of times}
+
+\item{baseline_fxns}{list of functions to use for the baseline}
+
+\item{slope_fxns}{list of functions to use for the slope}
 }
 \value{
 data Matrix with columns time, individual, capture number, totaln, counts

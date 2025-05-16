@@ -4,12 +4,14 @@
 \alias{BIC_cluster}
 \title{Compute BIC for Clustered Functional Data}
 \usage{
-BIC_cluster(y_ra_df, K, n_clusters, mi_vec, nknots, order)
+BIC_cluster(y_ra_df, K, L, n_clusters, mi_vec, nknots, order)
 }
 \arguments{
 \item{y_ra_df}{A data frame containing columns \code{yhat} (fitted values) and \code{y} (observed values), both assumed to be in relative abundance form.}
 
 \item{K}{Number of responses}
+
+\item{L}{Number of external variables}
 
 \item{n_clusters}{Number identified clusters}
 

@@ -4,7 +4,7 @@
 \alias{get_phi}
 \title{Phi}
 \usage{
-get_phi(pearson_residuals, K, M)
+get_phi(pearson_residuals, K, M, L, P)
 }
 \arguments{
 \item{pearson_residuals}{list of pearson residuals for each i}
@@ -12,6 +12,10 @@ get_phi(pearson_residuals, K, M)
 \item{K}{Number of responses}
 
 \item{M}{Number of samples times timepoints for each sample}
+
+\item{L}{Number of external variables}
+
+\item{P}{Number of bspline basis parameters (order + nknots)}
 }
 \value{
 scalar phi

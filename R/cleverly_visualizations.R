@@ -11,6 +11,9 @@
 #' @param order "response" or "cluster" to have original ordering or cluster ordering of responses on the facet plots
 #' @param nrow number of rows for the facet plot
 #' @param EV_color color for the EV line
+#' @param Z value of Z
+#' @param Z_type binary or continuous
+#' @param baseline plot only baseline? Has to be true for continuous, but for binary slope can be plotted
 #'
 #' @returns ggplot object
 #' @export
@@ -145,7 +148,6 @@ plot_clusters <- function(res,
 #'
 #' @param res Cleverly model object
 #' @param K Number of responses
-#' @param gammas Vector of dimension L + 1 for penalizing the D matrix
 #'
 #' @returns ggplot object
 #' @export
@@ -182,7 +184,6 @@ plot_initial_fit <- function(res, K){
 #' @param res cleverly model output object
 #'
 #' @returns ggplot object
-#' @export
 visualize_final_fit <- function(Y, res){
   K <- ncol(Y)
   beta <- res$result$beta
@@ -239,11 +240,10 @@ visualize_final_fit <- function(Y, res){
 
 #' Plot differences in beta by iteration
 #'
-#' @param diffs
+#' @param diffs differences
 #'
 #' @returns ggplot object
-#' @export
-#'
+
 plot_differneces <- function(diffs){
   data.frame(diffs, id = 1:length(diffs)) %>%
     ggplot2::ggplot() +
@@ -258,10 +258,12 @@ plot_differneces <- function(diffs){
 #' Plot the change in betas through the loop
 #'
 #' @param betas list of betas
+#' @param K number of responses
+#' @param B bspline
+#' @param Z EV
+#' @param time time
 #'
 #' @returns ggplot object
-#' @export
-#'
 beta_path <- function(betas, K, B, Z, time){
   if (missing(B)) {
     B <- get_B(time = time,
@@ -313,7 +315,6 @@ beta_path <- function(betas, K, B, Z, time){
 #' @param K Number of responses
 #'
 #' @returns ggplot object
-#' @export
 plot_clusters_yhat <- function(yhat, chosen_cluster, K = 12){
 
   cluster_df <- data.frame(
@@ -357,10 +358,9 @@ plot_clusters_yhat <- function(yhat, chosen_cluster, K = 12){
 #' @param gammas Vector of dimension L + 1 for penalizing the D matrix
 #' @param max_admm_iter Max number of iterations for the ADMM loop
 #' @param max_outer_iter Max number of iterations for the outer loop (Algorithm 1)
-#' @param duration
+#' @param duration duration
 #'
 #' @returns ggplot object
-#' @export
 plot_cluster_path <- function(res, psi, tau, theta, gammas, max_admm_iter, max_outer_iter, duration){
   # Cluster progress:
   cluster_track <- res$cluster_list
@@ -392,7 +392,6 @@ plot_cluster_path <- function(res, psi, tau, theta, gammas, max_admm_iter, max_o
 #' @param res Cleverly model object
 #'
 #' @returns ggplot object
-#' @export
 plot_alg2_convergence <- function(res){
   # alg2 convergence
   plot <- purrr::imap_dfr(res$alg_2_beta_diff,
@@ -415,7 +414,6 @@ plot_alg2_convergence <- function(res){
 #' @param res Cleverly model object
 #'
 #' @returns ggplot object
-#' @export
 plot_d_convergence <- function(res){
   plot <- purrr::imap_dfr(res$d_list,
                   ~data.frame(cluster = unlist(.x),
@@ -435,7 +433,6 @@ plot_d_convergence <- function(res){
 #' @param res Cleverly model object
 #'
 #' @returns ggplot
-#' @export
 plot_r_convergence <- function(res){
   plot <- purrr::imap_dfr(res$r_list,
                   ~data.frame(cluster = unlist(.x),

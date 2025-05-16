@@ -11,9 +11,9 @@ cor_user(mi, user_var, cor_str, rho)
 
 \item{user_var}{User supplied variance}
 
-\item{rho}{rho correlation parameter}
+\item{cor_str}{specified correaltion structure (of IND, CON-d, or AR1d)}
 
-\item{structure}{Type of correlation structure to simulate, of IND, CON-d, and AR1-d}
+\item{rho}{rho correlation parameter}
 }
 \value{
 User defined correlation matrix (for a single sample i)

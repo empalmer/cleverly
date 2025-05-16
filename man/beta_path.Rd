@@ -8,6 +8,14 @@ beta_path(betas, K, B, Z, time)
 }
 \arguments{
 \item{betas}{list of betas}
+
+\item{K}{number of responses}
+
+\item{B}{bspline}
+
+\item{Z}{EV}
+
+\item{time}{time}
 }
 \value{
 ggplot object
