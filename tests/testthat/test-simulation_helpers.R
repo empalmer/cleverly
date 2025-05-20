@@ -10,7 +10,7 @@ test_that("Simulation Z 0,1", {
                          K = 12,
                          order = 3,
                          user_var = 500000,
-                         cor_str = "CON-d",
+                         cor_str = "IND",
                          Z_type = "binary",
                          rho = 0.9,
                          prob1 = .5)
@@ -22,7 +22,7 @@ test_that("Simulation Z 0,1", {
                           K = 12,
                           order = 3,
                           user_var = 1000,
-                          cor_str = "CON-d",
+                          cor_str = "IND",
                           rho = 0.9,
                           prob1 = .5,
                           slope_fxns = list(
@@ -57,6 +57,7 @@ test_that("Simulation Z 0,1", {
 
   # This is the one where it did not work in simulation
   sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_large_rho_var/sim_data_2.rds")
+  sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_small_var_Y0/sim_data_2.rds")
   # Visualize simulated data
   plot_sim_data(sim)
 
@@ -71,41 +72,6 @@ test_that("Simulation Z 0,1", {
   #Rprof("test.out", interval = .02)
   #profvis::profvis({
 
-  npsi <- 6
-  psi_min <- 400
-  psi_max <- 1400
-
-  tau <- 0.005
-  parralel <- T
-  gammas <- c(.1,.1)
-
-  max_admm_iter <- 500
-  max_2_iter <- 500
-  max_outer_iter <- 30
-
-  run_min = 15
-
-
-  cleverly(Y = Y,
-           Z = Z,
-           subject_ids = individual,
-           time = time,
-           lp = 0,
-           cor_str = "CON-d",
-           # Hyperparameters
-           gammas = c(.1,.1),
-           parralel = F,
-           psi_min = 400,
-           psi_max = 1400,
-           npsi = 6,
-           # Iterations max
-           run_min = 15,
-           max_admm_iter = 5,
-           max_outer_iter = 3,
-           max_2_iter = 5,
-  )
-
-
 
   res <- cleverly(Y = Y,
                   Z = Z,
@@ -115,17 +81,88 @@ test_that("Simulation Z 0,1", {
                   cor_str = "CON-d",
                   # Hyperparameters
                   gammas = c(.1,.1),
-                  parralel = T,
-                  psi_min = 400,
+                  theta = 400,
+                  parralel = F,
+                  psi_min = 800,
                   psi_max = 1400,
-                  npsi = 6,
+                  npsi = 1,
                   # Iterations max
-                  run_min = 15,
-                  max_admm_iter = 500,
-                  max_outer_iter = 30,
-                  max_2_iter = 500,
+                  run_min = 5,
+                  max_admm_iter = 100,
+                  max_outer_iter = 5,
+                  max_2_iter = 100,
   ) %>%
     get_cluster_diagnostics(true_cluster)
+
+  cluster_key <- data.frame(
+    response_names = factor(1:K,
+                            levels = 1:K),
+    cluster = factor(res$clusters$membership))
+
+  Z_true <- Z
+  res$y_hat_lp_group %>%
+    dplyr::mutate(response = factor(response)) %>%
+    dplyr::left_join(cluster_key, by = c("response" = "response_names")) %>%
+    dplyr::mutate(response = factor(response, labels = 1:K)) %>%
+    ggplot2::ggplot(ggplot2::aes(x = time)) +
+    ggplot2::geom_jitter(ggplot2::aes(y = y,
+                                     color = factor(Z),
+                                     shape = factor(Z),
+                                     alpha = factor(Z))) +
+    ggplot2::guides(color = ggplot2::guide_legend("EV"),
+                    shape = ggplot2::guide_legend("EV")) +
+    ggplot2::scale_alpha_manual(values = c(`1` = 0.5, `0` = 1)) +
+    ggnewscale::new_scale_color() +
+    ggplot2::geom_line(ggplot2::aes(y = yhat,
+                                    color = cluster),
+                       linewidth = 1) +
+    ggplot2::facet_wrap(~response,
+                        nrow = 3) +
+    ggplot2::scale_color_manual(
+      values = viridis::viridis(length(unique(cluster_key$cluster))),
+      name = "Cluster"
+    )
+
+
+  res$BIC_group
+
+
+  possible_clusters <- res$possible_clusters %>%
+    map_dbl("no")
+  bics <- res$BIC %>%
+    map_dbl("BIC")
+  first_term <- res$BIC %>%
+    map_dbl("first_term")
+  second_term <- res$BIC %>%
+    map_dbl("second_term")
+
+  chosen <- which(seq(400,1400, length.out = 6) == res$psi)
+
+  df <- data.frame(possible_clusters,
+                   bics,
+                   first_term = first_term,
+                   second_term)
+
+  df$row_id <- seq_len(nrow(df))
+
+  row_id <- seq_len(nrow(df))
+  possible_clusters <- df$possible_clusters
+
+  df %>%
+    pivot_longer(-c(possible_clusters, row_id), names_to = "term", values_to = "value") %>%
+    ggplot(aes(x = row_id)) +
+    geom_line(aes(y = value, color = term)) +
+    scale_x_continuous(
+      breaks = row_id,
+      labels = possible_clusters
+    ) +
+    facet_wrap(~term, nrow = 3, scales = "free") +
+    geom_vline(xintercept = chosen, linetype = "dashed", color = "red") +
+    labs(x = "Possible Clusters (per row)", y = "BIC")
+
+
+
+
 
   res$possible_clusters
   res$psi
@@ -244,16 +281,16 @@ test_that("try fxns", {
   # Generate simulation data
   set.seed(127)
   sim <- simulation_data(n = 20,
-                         range_start = 5000,
-                         range_end = 20000,
+                         range_start = 2000,
+                         range_end = 2000,
                          nknots = 3,
                          K = 12,
                          order = 3,
-                         user_var = 1000000,
+                         user_var = 10,
                          cor_str = "CON-d",
-                         rho = 0.9,
+                         rho = 0,
                          prob1 = .5,
-                         slope_fxns = list(
+                         baseline_fxns = list(
                            function(t) cos(2 * pi * t),
                            function(t) cos(2 * pi * t),
                            function(t) cos(2 * pi * t),
@@ -268,7 +305,7 @@ test_that("try fxns", {
                            function(t) -t + 1
                          ),
                          # Slope functions
-                         baseline_fxns = list(
+                         slope_fxns = list(
                            function(t) sqrt(t),
                            function(t)  t,
                            function(t) -t + 1,
@@ -277,10 +314,10 @@ test_that("try fxns", {
                            function(t) -t,
                            function(t) .5 * t,
                            function(t) t^2,
-                           function(t) log(t) + t,
+                           function(t) log(t + 1) + t,
                            function(t) -2 * t + 1,
                            function(t) 1.5 * t - 1,
-                           function(t) sin(pi * t)))
+                           function(t) sin(2 * pi * t)))
 
   # Visualize simulated data
   plot_sim_data(sim)

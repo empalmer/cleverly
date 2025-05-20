@@ -163,7 +163,27 @@ get_Vi_inv <- function(i,
 
     # Calculate the inverse after calculating the all terms:
     A_inv <- diag(1/sqrt(diag(V_i)))
-    R_inv <- MASS::ginv(R_i + corR)
+
+
+
+    # R_inv <- MASS::ginv(Ri)
+
+
+    R_sum <- R_i + corR
+    # cond_num <- kappa(R_sum, exact = F)
+    # print(cond_num)
+    #
+    # epsilon <- 1e-2
+    # R_sum_e <- R_i + corR + diag(epsilon, nrow(R_i))
+    # cond_num <- kappa(R_sum, exact = F)
+    # print(paste0("with epsilon: ", cond_num))
+    #
+    R_inv <- MASS::ginv(R_sum)
+
+
+
+
+
     # V_i_inv <- (1/phi) * A_inv %*% MASS::ginv(R_i + corR) %*% A_inv
     V_i_inv <- (1/phi) * fast_mat_mult3(A_inv, R_inv , A_inv)
   }

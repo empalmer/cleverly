@@ -96,6 +96,7 @@ algorithm1 <- function(Y,
   Y0 <- rowSums(Y)
 
 
+
   # Calculate helpers for correlation matrices:
   if (cor_str == "AR1" | cor_str == "AR1-d") {
     j1_j2_list <- lapply(mi_vec, function(mi) {
@@ -343,10 +344,12 @@ algorithm1 <- function(Y,
                       time = time)
   y_hat_baseline <- estimate_y(beta = beta,
                                B = B,
-                               Z = matrix(1, nrow = nrow(Z), ncol = 1),
+                               Z = Z,
                                K = K,
                                Y = Y,
-                               time = time)
+                               time = time,
+                               baseline = T)
+
 
 
   y_hat_init <- estimate_y(beta = beta_init$beta,
@@ -362,6 +365,43 @@ algorithm1 <- function(Y,
                      mi_vec = mi_vec,
                      nknots = nknots,
                      order = order)
+
+
+# New fxns ----------------------------------------------------------------
+
+
+  beta_group <- beta_cluster_group(y = Y,
+                                   Z = Z,
+                                   beta = beta,
+                                   lp = lp,
+                                   lp_minus = lp_minus,
+                                   B = B,
+                                   clusters = clusters,
+                                   K = K, P = P, M = M)
+
+  y_hat_lp_group <- estimate_y(beta = beta_group,
+                               B = B,
+                               Z = Z,
+                               K = K,
+                               Y = Y,
+                               time = time,
+                               baseline = T)
+
+  y_hat_counts_group <- estimate_y_counts(beta = beta_group,
+                                          B = B,
+                                          Z = Z,
+                                          K = K,
+                                          Y = Y,
+                                          time = time)
+
+  BIC_group <- BIC_cluster_group(y_hat_counts = y_hat_counts_group,
+                                 y_counts = Y,
+                                 beta_group = beta_group,
+                                 clusters = clusters,
+                                 M = M,
+                                 K = K,
+                                 nknots = nknots,
+                                 order = order)
 
   pearson_residuals <- get_pearson_residuals(Y = Y,
                                              Y0 = Y0,
@@ -387,12 +427,14 @@ algorithm1 <- function(Y,
   return(list(clusters = clusters,
               y_hat = y_hat,
               y_hat_init = y_hat_init,
+              y_hat_lp_group = y_hat_lp_group,
               y_hat_baseline = y_hat_baseline,
               beta = beta,
               v = v,
               rho = rho,
               phi = phi,
               BIC = BIC,
+              BIC_group = BIC_group,
               s = s,
               error = error))
 }
@@ -417,11 +459,18 @@ algorithm1 <- function(Y,
 #'
 #' @export
 
-estimate_y <- function(beta, B, Z, K, Y, time){
+estimate_y <- function(beta, B, Z, K, Y, time, baseline = F){
+
+  Z_true <- Z
+  if (baseline) {
+    Z <- matrix(1, nrow = nrow(Z_true), ncol = 1)
+  }
+
   P <- ncol(B)
   L <- ncol(Z) - 1
   M <- nrow(Z)
   yhat <- matrix(nrow = M, ncol = K)
+
   for (k in 1:K) {
     y_k <- numeric(M)
     for (l in 0:L) {
@@ -441,9 +490,10 @@ estimate_y <- function(beta, B, Z, K, Y, time){
   y_ra <- Y/rowSums(Y)
 
   Ys <- data.frame(time = time,
-                   Z = Z[, L + 1],
+                   Z = Z_true[, -1],
                    yhat_ra,
                    y_ra)
+
 
   colnames(Ys) <- c("time",
                     "Z",
@@ -458,11 +508,47 @@ estimate_y <- function(beta, B, Z, K, Y, time){
     ) %>%
     dplyr::mutate(response = factor(response, levels = 1:K))
 
-
   return(Ys)
 }
 
+#' Estimate \eqn{\hat{y}} Given \eqn{\beta}
+#'
+#' Computes fitted values (\eqn{\hat{y}}) using estimated coefficients \eqn{\beta}, a B-spline basis matrix, and covariate information.
+#'
+#' @param beta A matrix of estimated coefficients (\eqn{\hat{\beta}}) with dimensions \eqn{(P \cdot K) \times L}, where \eqn{P} is the number of basis functions, \eqn{K} is the number of responses, and \eqn{L} is the number of covariates (excluding intercept).
+#' @param B A B-spline basis matrix of dimensions \eqn{N \times P}, where \eqn{N} is the total number of observations and \eqn{P} is the number of spline basis functions.
+#' @param Z A matrix of covariates of dimension \eqn{M \times (L + 1)}. The first column must be a vector of 1s (intercept). If no external variables are used, \code{Z} should contain only a single column of 1s.
+#' @param K The number of response variables (i.e., the number of columns in \code{Y}).
+#' @param Y A matrix of response values (e.g., counts), with \eqn{M} rows and \eqn{K} columns. Each row corresponds to a subject-time combination.
+#' @param time A numeric vector of time values (length \eqn{M}) or a column reference if \code{Y} is a data frame.
+#'
+#' @return A numeric vector of fitted values (\eqn{\hat{y}}) of length \eqn{M \cdot K}, representing the estimated responses.
+#'
+#' @export
 
+estimate_y_counts <- function(beta, B, Z, K, Y, time){
+  P <- ncol(B)
+  L <- ncol(Z) - 1
+  M <- nrow(Z)
+  yhat <- matrix(nrow = M, ncol = K)
+  for (k in 1:K) {
+    y_k <- numeric(M)
+    for (l in 0:L) {
+
+      beta_k <- beta[((k - 1)*P + 1):(k*P), l + 1, drop = F]
+      Z_l <- diag(Z[,l + 1])
+      #y_k <- y_k + Z_l %*% B %*% beta_k
+      y_k <- y_k + fast_mat_mult3(Z_l, B, beta_k)
+    }
+    yhat[,k] <- y_k
+
+  }
+
+  # In case any negatives:
+  yhat[yhat < 0] <- 0
+
+  return(yhat)
+}
 
 
 # Return clusters ---------------------------------------------------------
@@ -629,5 +715,125 @@ BIC_cluster <- function(y_ra_df,
   BIC <- log(first_term) + second_term
   return(list(BIC = BIC,
               first_term = log(first_term),
+              second_term = second_term))
+}
+
+
+beta_cluster_group <- function(y, Z, beta, lp,  lp_minus, B, clusters, K, P, M) {
+
+
+  L <- ncol(Z) - 1
+  # Initialize matrix to hold coefficient estimates
+  num_features <- ncol(B)
+  num_samples <- ncol(y)
+  beta_group <- matrix(nrow = num_features, ncol = num_samples)
+
+
+
+  y_minus_Z_B_beta <- matrix(nrow = M, ncol = K)
+  for (k in 1:K) {
+    Z_B_beta <- numeric(M)
+    for (l in lp_minus) {
+      beta_k <- beta[((k - 1)*P + 1):(k*P), l + 1, drop = F]
+      Z_l <- diag(Z[,l + 1])
+      #y_k <- y_k + Z_l %*% B %*% beta_k
+      Z_B_beta <- Z_B_beta + fast_mat_mult3(Z_l, B, beta_k)
+    }
+    y_minus_Z_B_beta[,k] <- y[,k] - Z_B_beta
+    #y_minus_Z_B_beta[,k] <- y[,k]
+  }
+
+  y_minus_Z_B_beta[y_minus_Z_B_beta < 0] <- 0
+
+  # Log-transform the response
+  log_y_ZB <- log(y_minus_Z_B_beta + 1)
+
+
+
+  # Loop over each unique cluster
+  unique_clusters <- unique(clusters$membership)
+
+  # transform beta for easier indexing.
+  # Reshape beta_in: (P*K) x L --> (P, K, L)
+  beta_array <- array(beta, dim = c(P, K, L + 1))
+  # Permute to (P, L, K)
+  beta_array_perm <- aperm(beta_array, c(1, 3, 2))
+  # Reshape to matrix: (P*L) x K
+  beta_group <- matrix(beta_array_perm, nrow = P * (L + 1), ncol = K)
+
+
+  for (i in seq_along(clusters$csize)) {
+    current_cluster <- unique_clusters[i]
+
+    # Get indices of samples that belong to the current cluster
+    class_indices <- which(clusters$membership == current_cluster)
+
+    # Prepare design matrix and response vector for current cluster
+    B_class <- do.call(rbind, replicate(length(class_indices), B, simplify = FALSE))
+    log_y_class <- as.vector(log_y_ZB[, class_indices])
+
+    # Estimate coefficients using least squares (for log(y + 1))
+    beta_hat <- MASS::ginv(t(B_class) %*% B_class) %*% t(B_class) %*% log_y_class
+
+    # Update beta with the estimated group beta values
+    beta_group[(lp * P + 1):((lp + 1) * P), class_indices] <- beta_hat
+  }
+
+
+  # Step 1: Reshape to array of dimensions (P, L, K)
+  beta_array_back <- array(beta_group, dim = c(P, (L + 1), K))
+
+  # Step 2: Permute dimensions back to (P, K, L)
+  beta_array_orig <- aperm(beta_array_back, c(1, 3, 2))
+
+  # Step 3: Flatten to matrix of shape (P*K) x L
+  beta_in <- matrix(beta_array_orig, nrow = P * K, ncol = (L + 1))
+
+
+
+
+  return(beta_in)
+}
+
+
+#' BIC_cluster_group
+#'
+#' @param y_hat_counts
+#' @param y_counts
+#' @param beta_group
+#' @param clusters
+#' @param M
+#' @param K
+#' @param nknots
+#' @param order
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+BIC_cluster_group <- function(y_hat_counts,
+                              y_counts,
+                              beta_group,
+                              clusters,
+                              M,
+                              K,
+                              nknots,
+                              order) {
+
+  n_clusters <- clusters$no
+
+  y_log <- log(y_counts + 1)
+  y_hat_log <- log(y_hat_counts + 1)
+
+  N <- M * K
+
+  first_term <- log((1/N) * sum((y_log - y_hat_log)^2)) * N
+  second_term <- log(N) * (order + nknots) * n_clusters
+
+
+  BIC_group <- first_term + second_term
+
+  return(list(BIC = BIC_group,
+              first_term = first_term,
               second_term = second_term))
 }
