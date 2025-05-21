@@ -4,7 +4,7 @@
 \alias{get_phi}
 \title{Phi}
 \usage{
-get_phi(pearson_residuals, K, M, L, P)
+get_phi(pearson_residuals, K, M, L, P, phi_old)
 }
 \arguments{
 \item{pearson_residuals}{list of pearson residuals for each i}

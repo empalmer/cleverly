@@ -96,7 +96,8 @@ algorithm2 <- function(Y,
                      K = K,
                      M = M,
                      L = L,
-                     P = P)
+                     P = P,
+                     phi_old = phi)
 
       # Update correlation parameter
       rho_cor <- get_rho(pearson_residuals = pearson_residuals,

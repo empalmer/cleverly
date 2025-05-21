@@ -292,7 +292,8 @@ algorithm1 <- function(Y,
                    K = K,
                    M = M,
                    L = L,
-                   P = P)
+                   P = P,
+                   phi_old = phi)
 
     # Difference in betas between this loop and the last
     diff <- sum(abs(beta - beta_old)) # matrix difference
@@ -721,14 +722,11 @@ BIC_cluster <- function(y_ra_df,
 
 beta_cluster_group <- function(y, Z, beta, lp,  lp_minus, B, clusters, K, P, M) {
 
-
   L <- ncol(Z) - 1
   # Initialize matrix to hold coefficient estimates
   num_features <- ncol(B)
   num_samples <- ncol(y)
   beta_group <- matrix(nrow = num_features, ncol = num_samples)
-
-
 
   y_minus_Z_B_beta <- matrix(nrow = M, ncol = K)
   for (k in 1:K) {
@@ -829,7 +827,6 @@ BIC_cluster_group <- function(y_hat_counts,
 
   first_term <- log((1/N) * sum((y_log - y_hat_log)^2)) * N
   second_term <- log(N) * (order + nknots) * n_clusters
-
 
   BIC_group <- first_term + second_term
 

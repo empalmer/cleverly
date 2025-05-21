@@ -167,9 +167,13 @@ get_Vi_inv <- function(i,
 
 
     # R_inv <- MASS::ginv(Ri)
-
-
     R_sum <- R_i + corR
+
+
+
+    R_sum_pd <- as.matrix(Matrix::nearPD(R_sum)$mat)
+    R_inv <- MASS::ginv(R_sum_pd)
+
     # cond_num <- kappa(R_sum, exact = F)
     # print(cond_num)
     #
@@ -178,7 +182,7 @@ get_Vi_inv <- function(i,
     # cond_num <- kappa(R_sum, exact = F)
     # print(paste0("with epsilon: ", cond_num))
     #
-    R_inv <- MASS::ginv(R_sum)
+    #R_inv <- MASS::ginv(R_sum)
 
 
 
@@ -328,9 +332,11 @@ get_rho <- function(pearson_residuals,
 
   }
   if (cor_str == "CON-d") {
-    objective_f <- purrr::map_dbl(seq(-1,1,0.1),
-                                  ~sum((regressiondata$normalized_rijk_rijk - .x)^2) )
-    rho_cor <- seq(-1,1,0.1)[which.min(objective_f)]
+    # objective_f <- purrr::map_dbl(seq(-1,1,0.1),
+    #                               ~sum((regressiondata$normalized_rijk_rijk - .x)^2) )
+    # rho_cor <- seq(-1,1,0.1)[which.min(objective_f)]
+    rho_cor <- mean(regressiondata$normalized_rijk_rijk)
+
   }
 
 

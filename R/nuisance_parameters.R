@@ -10,16 +10,21 @@
 #'
 #' @returns scalar phi
 #' @export
-get_phi <- function(pearson_residuals, K, M, L, P){
+get_phi <- function(pearson_residuals, K, M, L, P, phi_old){
 
-  phi <- sum(unlist(pearson_residuals)^2) / (K * M - ((L + 1) * P))
+  phi_new <- sum(unlist(pearson_residuals)^2) / (K * M - ((L + 1) * P))
 
 
-  if (phi > 1e8) {
-    warning("Phi is too large; setting to 1e8.")
-    phi <- 1e8
+  if (phi_new > 1e8) {
+    warning("Phi is too large; setting to 1e6.")
+    print("Phi is too large; setting to 1e6.")
+    phi_new <- 1e8
   }
   #phi <- sum(r^2) / (K*M - 1)
+
+  #phi <- 0.9 * phi_old + 0.1 * phi_new
+  phi <- phi_new
+
   return(phi)
 }
 
@@ -115,7 +120,8 @@ get_pearson_residual_i <- function(Y,
 
     too_small <- denom < 1e-5
     if (any(too_small, na.rm = TRUE)) {
-      warning("Some denominator values in the pearson residuals are too small; replacing with 1e-6.")
+      warning("Some denominator values in the pearson residuals are too small; replacing with 1e-3.")
+      print("Some denominator values in the pearson residuals are too small; replacing with 1e-6.")
       denom[too_small] <- 1e-5
     }
 
