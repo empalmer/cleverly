@@ -304,12 +304,13 @@ algorithm1 <- function(Y,
       break
     }
 
-    cluster_list[[s]] <- alg3$cluster_list
+    print(alg3$cluster_list[[length(alg3$cluster_list)]]$membership)
+    cluster_list[[s]] <- alg3$cluster_list[[length(alg3$cluster_list)]]
     # Exit if constant cluster results for the past 3 iterations
     if (s >= run_min) {
-      current <-  alg3$cluster_list[[length(alg3$cluster_list)]]$membership
-      past1 <- cluster_list[[s - 1]][[length(cluster_list[[s - 1]])]]$membership
-      past2 <- cluster_list[[s - 2]][[length(cluster_list[[s - 2]])]]$membership
+      current <-  cluster_list[[s]]$membership
+      past1 <- cluster_list[[s - 1]]$membership
+      past2 <- cluster_list[[s - 2]]$membership
 
       if (identical(current, past1) && identical(current, past2)) {
         # If the clusters are the same as the last two iterations, break
@@ -737,7 +738,7 @@ beta_cluster_group <- function(y, Z, beta, lp,  lp_minus, B, clusters, K, P, M) 
       #y_k <- y_k + Z_l %*% B %*% beta_k
       Z_B_beta <- Z_B_beta + fast_mat_mult3(Z_l, B, beta_k)
     }
-    y_minus_Z_B_beta[,k] <- y[,k] - Z_B_beta
+    y_minus_Z_B_beta[,k] <- y[,k] - exp(Z_B_beta)
     #y_minus_Z_B_beta[,k] <- y[,k]
   }
 

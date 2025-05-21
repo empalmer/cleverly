@@ -1,5 +1,22 @@
 # Variance -----------------------------------------------------
 
+#' Get term U_ij
+#'
+#' @param alpha_ij Vector of DM parameters for i, j
+#'
+#' @returns U ij part of partials/variance matrix
+#' @export
+get_U_ij <- function(alpha_ij) {
+  alpha_ij0 <- sum(alpha_ij)
+  if (any(alpha_ij == alpha_ij0)) {
+    alpha_ij0 <- alpha_ij0 + 1e-12
+    warning("alpha_ij = alphaij0, adding 1e-12")
+  }
+  U_ij <- diag(alpha_ij / alpha_ij0) - tcrossprod(alpha_ij) / alpha_ij0^2
+  return(U_ij)
+}
+
+
 #' Get DM variance for ith subject jth timepoint
 #'
 #' @param Y_ij0 Total sum of counts across all K
@@ -14,7 +31,10 @@ get_V_ijj <- function(Y_ij0,
 
   U_ij <- get_U_ij(alpha_ij = alpha_ij)
 
-  V_ijj <- phi * Y_ij0 * U_ij
+  alpha_ij0 <- sum(alpha_ij)
+  DM_overdispersion_ij <- (Y_ij0 + alpha_ij0)/(1 + alpha_ij0)
+  #V_ijj <- phi * Y_ij0 * U_ij
+  V_ijj <- Y_ij0 * U_ij * DM_overdispersion_ij
   return(V_ijj)
 }
 
@@ -121,6 +141,11 @@ get_Vi_inv <- function(i,
       V_ijj <- get_V_ijj(Y_ij0 = Y_ij0,
                          phi = phi,
                          alpha_ij = alpha_ij)
+
+
+      # cond_num <- kappa(V_ijj, exact = F)
+      # print(cond_num)
+
       # If independent, can invert each block individually
       # And each block is just the variance components, so we can
       V_i_inv_mat[((j - 1)*K + 1):(j*K), ((j - 1)*K + 1):(j*K)] <- MASS::ginv(V_ijj)
@@ -168,11 +193,11 @@ get_Vi_inv <- function(i,
 
     # R_inv <- MASS::ginv(Ri)
     R_sum <- R_i + corR
+    R_inv <- MASS::ginv(R_sum)
 
 
-
-    R_sum_pd <- as.matrix(Matrix::nearPD(R_sum)$mat)
-    R_inv <- MASS::ginv(R_sum_pd)
+    # R_sum_pd <- as.matrix(Matrix::nearPD(R_sum)$mat)
+    # R_inv <- MASS::ginv(R_sum_pd)
 
     # cond_num <- kappa(R_sum, exact = F)
     # print(cond_num)
@@ -183,10 +208,6 @@ get_Vi_inv <- function(i,
     # print(paste0("with epsilon: ", cond_num))
     #
     #R_inv <- MASS::ginv(R_sum)
-
-
-
-
 
     # V_i_inv <- (1/phi) * A_inv %*% MASS::ginv(R_i + corR) %*% A_inv
     V_i_inv <- (1/phi) * fast_mat_mult3(A_inv, R_inv , A_inv)

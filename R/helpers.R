@@ -488,21 +488,4 @@ get_alpha_list <- function(beta, Z, B, K, i_index, mi_vec, L, P){
 
 
 
-# Variance -----------------------------------------------------
-
-#' Get term U_ij
-#'
-#' @param alpha_ij Vector of DM parameters for i, j
-#'
-#' @returns U ij part of partials/variance matrix
-#' @export
-get_U_ij <- function(alpha_ij) {
-  alpha_ij0 <- sum(alpha_ij)
-  if (any(alpha_ij == alpha_ij0)) {
-    alpha_ij0 <- alpha_ij0 + 1e-12
-    warning("alpha_ij = alphaij0, adding 1e-12")
-  }
-  U_ij <- diag(alpha_ij / alpha_ij0) - tcrossprod(alpha_ij) / alpha_ij0^2
-  return(U_ij)
-}
 

@@ -17,47 +17,50 @@ test_that("Simulation Z 0,1", {
 
   sim <- simulation_data(n = 20,
                           range_start = 5000,
-                          range_end = 10000,
+                          range_end = 20000,
                           nknots = 3,
                           K = 12,
                           order = 3,
-                          user_var = 1000,
-                          cor_str = "IND",
+                          user_var = 1000000,
+                          cor_str = "CON-d",
                           rho = 0.9,
                           prob1 = .5,
-                          slope_fxns = list(
-                            function(t) cos(2 * pi * t),
-                            function(t) cos(2 * pi * t),
-                            function(t) cos(2 * pi * t),
-                            function(t) cos(2 * pi * t),
-                            function(t) 1 - exp(-2 * t),
-                            function(t) 1 - exp(-2 * t),
-                            function(t) 1 - exp(-2 * t),
-                            function(t) 1 - exp(-2 * t),
-                            function(t) -t + 1,
-                            function(t) -t + 1,
-                            function(t) -t + 1,
-                            function(t) -t + 1
-                          ),
+                         baseline_fxns = list(
+                           function(t) 2 * cos(2 * pi * t),
+                           function(t) 2 * cos(2 * pi * t),
+                           function(t) 2 * cos(2 * pi * t),
+                           function(t) 2 * cos(2 * pi * t),
+                           function(t) sin(pi * t),
+                           function(t) sin(pi * t),
+                           function(t) sin(pi * t),
+                           function(t) sin(pi * t),
+                           function(t) -3 * t + 3,
+                           function(t) -3 * t + 3,
+                           function(t) -3 * t + 3,
+                           function(t) -3 * t + 3
+                         ),
                           # Slope functions
-                          baseline_fxns = list(
-                            function(t) sqrt(t),
-                            function(t)  t,
-                            function(t) -t + 1,
-                            function(t) .75 * t,
-                            function(t) -.25 * t + .5,
-                            function(t) -t,
-                            function(t) .5 * t,
+                          slope_fxns = list(
+                            function(t) 1,
+                            function(t) -1,
+                            function(t) .5,
                             function(t) t^2,
-                            function(t) log(t) + t,
-                            function(t) -2 * t + 1,
-                            function(t) 1.5 * t - 1,
-                            function(t) sin(pi * t)))
+                            function(t) 2,
+                            function(t) t - 2,
+                            function(t) -t,
+                            function(t) 3 - 2*t,
+                            function(t) 1.5,
+                            function(t) -2,
+                            function(t) .75,
+                            function(t) t))
 
+  plot_sim_data(sim)
 
   # This is the one where it did not work in simulation
   sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_large_rho_var/sim_data_2.rds")
   sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_small_var_Y0/sim_data_2.rds")
+  sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_1mil_similar_ranges/sim_data_2.rds")
+
   # Visualize simulated data
   plot_sim_data(sim)
 
@@ -81,13 +84,13 @@ test_that("Simulation Z 0,1", {
                   cor_str = "CON-d",
                   # Hyperparameters
                   gammas = c(.1,.1),
-                  theta = 400,
+                  theta = 300,
                   parralel = F,
-                  psi_min = 800,
+                  psi_min = 1600,
                   psi_max = 1400,
                   npsi = 1,
                   # Iterations max
-                  run_min = 5,
+                  run_min = 3,
                   max_admm_iter = 100,
                   max_outer_iter = 5,
                   max_2_iter = 100,
