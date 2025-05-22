@@ -293,8 +293,7 @@ algorithm1 <- function(Y,
                    K = K,
                    M = M,
                    L = L,
-                   P = P,
-                   phi_old = phi)
+                   P = P)
 
     # Difference in betas between this loop and the last
     diff <- sum(abs(beta - beta_old)) # matrix difference
@@ -562,6 +561,7 @@ get_A <- function(Kappa, K, P) {
 #' @param K The number of response variables (i.e., the number of columns in \code{Y}).
 #' @param Y A matrix of response values (e.g., counts), with \eqn{M} rows and \eqn{K} columns. Each row corresponds to a subject-time combination.
 #' @param time A numeric vector of time values (length \eqn{M}) or a column reference if \code{Y} is a data frame.
+#' @param baseline A T/F if we want to estimate only the baseline y hats, or the y hats overall
 #'
 #' @return A numeric vector of fitted values (\eqn{\hat{y}}) of length \eqn{M \cdot K}, representing the estimated responses.
 #'

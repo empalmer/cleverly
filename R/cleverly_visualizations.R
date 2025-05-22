@@ -144,6 +144,58 @@ plot_clusters <- function(res,
 }
 
 
+
+#' Plot BIC values for a result.
+#'
+#' @param res cleverly object
+#' @param BIC_type which version of BIC to plot
+#' @param psis sequence of psis used
+#'
+#' @returns ggplot object
+#' @export
+plot_BIC <- function(res, BIC_type = "BIC", psis){
+
+  if (BIC_type == "BIC") {
+    data <- res$BIC
+  }
+
+  possible_clusters <- res$possible_clusters %>% purrr::map_dbl("no")
+  bics <- purrr::map_dbl(data, "BIC")
+  first_term <- purrr::map_dbl(data, "first_term")
+  second_term <- purrr::map_dbl(data, "second_term")
+
+  chosen <- which(psis == res$psi)
+
+  df <- data.frame(possible_clusters,
+                   bics,
+                   first_term = first_term,
+                   second_term)
+
+  df$row_id <- seq_len(nrow(df))
+
+  row_id <- seq_len(nrow(df))
+  possible_clusters <- df$possible_clusters
+
+  plot <- df %>%
+    dplyr::pivot_longer(-c(possible_clusters, row_id), names_to = "term", values_to = "value") %>%
+    ggplot2::ggplot(ggplot2::aes(x = row_id)) +
+    ggplot2::geom_line(ggplot2::aes(y = value, color = term)) +
+    ggplot2::scale_x_continuous(
+      breaks = row_id,
+      labels = paste0("C: ", possible_clusters, ", psi: ", round(psis, 2))
+    ) +
+    ggplot2::facet_wrap(~term, nrow = 3, scales = "free") +
+    ggplot2::geom_vline(xintercept = chosen, linetype = "dashed", color = "red") +
+    ggplot2::labs(x = "Possible Clusters (per row)", y = "BIC",
+         title = paste0("BIC using: ", BIC_type))
+
+  return(plot)
+}
+
+
+
+
+
 #' plot_initial_fit
 #'
 #' @param res Cleverly model object

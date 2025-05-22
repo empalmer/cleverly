@@ -2,7 +2,7 @@ test_that("Simulation Z 0,1", {
   skip("Skip - used as test file for cleverly")
   # Generate simulation data
   set.seed(127)
-  library(readr)
+  #library(readr)
   sim <- simulation_data(n = 20,
                          range_start = 5000,
                          range_end = 20000,

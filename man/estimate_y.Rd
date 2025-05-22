@@ -18,6 +18,8 @@ estimate_y(beta, B, Z, K, Y, time, baseline = F)
 \item{Y}{A matrix of response values (e.g., counts), with \eqn{M} rows and \eqn{K} columns. Each row corresponds to a subject-time combination.}
 
 \item{time}{A numeric vector of time values (length \eqn{M}) or a column reference if \code{Y} is a data frame.}
+
+\item{baseline}{A T/F if we want to estimate only the baseline y hats, or the y hats overall}
 }
 \value{
 A numeric vector of fitted values (\eqn{\hat{y}}) of length \eqn{M \cdot K}, representing the estimated responses.

@@ -10,20 +10,14 @@
 #'
 #' @returns scalar phi
 #' @export
-get_phi <- function(pearson_residuals, K, M, L, P, phi_old){
+get_phi <- function(pearson_residuals, K, M, L, P){
 
-  phi_new <- sum(unlist(pearson_residuals)^2) / (K * M - ((L + 1) * P))
-
-
-  if (phi_new > 1e8) {
+  phi <- sum(unlist(pearson_residuals)^2) / (K * M - ((L + 1) * P))
+  if (phi > 1e8) {
     warning("Phi is too large; setting to 1e6.")
     print("Phi is too large; setting to 1e6.")
-    phi_new <- 1e8
+    phi <- 1e8
   }
-  #phi <- sum(r^2) / (K*M - 1)
-
-  #phi <- 0.9 * phi_old + 0.1 * phi_new
-  phi <- phi_new
 
   return(phi)
 }
