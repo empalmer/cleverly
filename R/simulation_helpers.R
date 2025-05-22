@@ -1,64 +1,3 @@
-#  Simulation helpers: ---------
-#' Simulate Dirichlet multinomial counts.
-#'
-#' @param Y0 Total sum of counts in DM
-#' @param alpha Vector of Dirichlet parameters
-#'
-#' @returns DM counts
-#' @export
-generate_DM_counts <- function(Y0, alpha) {
-  if (missing(Y0) || missing(alpha)) {
-    stop("Total sum Y0 and/or alpha missing.")
-  }
-
-  # Create the data from the rmultinom
-  dmData <- matrix(0, length(Y0), length(alpha))
-  for (i in 1:length(Y0)) {
-    # This is what I don't get... Why is it rmultinom + dirichlet?
-    dmData[i, ] <- stats::rmultinom(1,
-                                    Y0[i],
-                                    dirmult::rdirichlet(1, alpha))
-  }
-  # Label the created data
-  colnames(dmData) <- paste("Taxa", 1:ncol(dmData))
-
-  return(dmData)
-}
-
-
-
-#' User defined correlation structure
-#'
-#' @param mi number of time points for ith sample
-#' @param user_var User supplied variance
-#' @param rho rho correlation parameter
-#' @param cor_str specified correaltion structure (of IND, CON-d, or AR1d)
-#'
-#' @returns User defined correlation matrix (for a single sample i)
-#' @export
-cor_user <- function(mi, user_var, cor_str, rho) {
-  if (cor_str == "CON-d") {
-    identity_matrix <- diag(mi)
-    ones_matrix <- matrix(1, nrow = mi, ncol = mi)
-    cor_structure <- (ones_matrix - identity_matrix) * rho + identity_matrix
-  } else if (cor_str == "AR1-d") {
-    row_indices <- matrix(rep(1:mi, each = mi), nrow = mi)
-    col_indices <- matrix(rep(1:mi, each = mi), ncol = mi, byrow = TRUE)
-    # Compute the absolute difference between indeces: |j1-j2|
-    distance_matrix <- abs(row_indices - col_indices)
-    # returns (rho^|j1-j2|)
-    cor_structure <- rho^distance_matrix
-  }
-  else if (cor_str == "IND") {
-    identity_matrix <- diag(mi)
-    cor_structure <- identity_matrix
-  } else
-    stop("Invalid cor_str")
-
-  # Scale by user_var
-  cor <- user_var * cor_structure
-  return(cor)
-}
 
 # Simulate the data (DM) --------------------------------------------------
 
@@ -228,6 +167,73 @@ simulation_data <- function(n = 20,
   return(data)
 }
 
+
+
+
+
+
+
+#  Simulation helpers: ---------
+#' Simulate Dirichlet multinomial counts.
+#'
+#' @param Y0 Total sum of counts in DM
+#' @param alpha Vector of Dirichlet parameters
+#'
+#' @returns DM counts
+#' @export
+generate_DM_counts <- function(Y0, alpha) {
+  if (missing(Y0) || missing(alpha)) {
+    stop("Total sum Y0 and/or alpha missing.")
+  }
+
+  # Create the data from the rmultinom
+  dmData <- matrix(0, length(Y0), length(alpha))
+  for (i in 1:length(Y0)) {
+    # This is what I don't get... Why is it rmultinom + dirichlet?
+    dmData[i, ] <- stats::rmultinom(1,
+                                    Y0[i],
+                                    dirmult::rdirichlet(1, alpha))
+  }
+  # Label the created data
+  colnames(dmData) <- paste("Taxa", 1:ncol(dmData))
+
+  return(dmData)
+}
+
+
+
+#' User defined correlation structure
+#'
+#' @param mi number of time points for ith sample
+#' @param user_var User supplied variance
+#' @param rho rho correlation parameter
+#' @param cor_str specified correaltion structure (of IND, CON-d, or AR1d)
+#'
+#' @returns User defined correlation matrix (for a single sample i)
+#' @export
+cor_user <- function(mi, user_var, cor_str, rho) {
+  if (cor_str == "CON-d") {
+    identity_matrix <- diag(mi)
+    ones_matrix <- matrix(1, nrow = mi, ncol = mi)
+    cor_structure <- (ones_matrix - identity_matrix) * rho + identity_matrix
+  } else if (cor_str == "AR1-d") {
+    row_indices <- matrix(rep(1:mi, each = mi), nrow = mi)
+    col_indices <- matrix(rep(1:mi, each = mi), ncol = mi, byrow = TRUE)
+    # Compute the absolute difference between indeces: |j1-j2|
+    distance_matrix <- abs(row_indices - col_indices)
+    # returns (rho^|j1-j2|)
+    cor_structure <- rho^distance_matrix
+  }
+  else if (cor_str == "IND") {
+    identity_matrix <- diag(mi)
+    cor_structure <- identity_matrix
+  } else
+    stop("Invalid cor_str")
+
+  # Scale by user_var
+  cor <- user_var * cor_structure
+  return(cor)
+}
 
 
 

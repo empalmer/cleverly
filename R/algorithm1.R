@@ -463,8 +463,95 @@ algorithm1 <- function(Y,
 
 
 
+# Initializing algorithm 1 ------------------------------------------------
 
-# Helpers for Algorithm 1 -------------------------------------------------
+
+#' Get Breaks for B-Spline Basis
+#'
+#' Computes the breakpoints (knots) needed to construct a B-spline basis given a vector of timepoints, the spline order, and the desired number of internal knots.
+#'
+#' @param t A numeric vector of timepoints over which the B-spline basis will be constructed.
+#' @param k The order of the B-spline
+#' @param m The number of internal knots to include.
+#'
+#' @return A numeric vector of knot positions, including boundary and internal knots, suitable for use in B-spline basis construction.
+#'
+#' @export
+
+get_knots <- function(t, k, m) {
+  # external knots are on boundary
+  # return boundary with internal knots only
+  breaks <- c(min(t), seq(from = min(t), to = max(t), length.out = m + 2)[-c(1, m + 2)], max(t))
+  return(breaks)
+}
+
+
+
+#' Construct \eqn{d}th-Order Difference Operator Matrix
+#'
+#' Returns the difference operator matrix \eqn{D} used to penalize differences in coefficient values across responses.
+#' **Note:** Currently implemented only for \eqn{d = 2}.
+#'
+#' @param K The number of response variables.
+#' @param d The order of the difference operator (currently only \code{d = 2} is supported).
+#' @param order The order of the B-spline basis functions.
+#' @param nknots The number of internal knots used in the B-spline basis.
+#'
+#' @return A matrix \code{D} representing the second-order difference operator applied across response curves.
+#'
+#' @export
+get_D <- function(K, d, order, nknots) {
+  # P <- order + nknots
+  C <- matrix(0, nrow = nknots + order - d, ncol = nknots + order)
+  # dth order weighted difference operator
+  for (j in 1:(nknots + order - 2)) {
+    d_j <- c(rep(0, j - 1), 1, -2, 1, rep(0, (nknots + order) - 3 - (j - 1)))
+    e_j <- c(rep(0, j - 1), 1, rep(0, (nknots + order) - 3 - (j - 1)))
+    #C <- C + e_j %*% t(d_j)
+    C <- C + tcrossprod(e_j, d_j)
+  }
+  #D <- t(C) %*% C
+  D <- crossprod(C)
+  diagD <- kronecker(diag(K), D)
+
+  return(diagD)
+}
+
+
+
+#' Construct A Matrix for Pairwise Differences
+#'
+#' Constructs the \code{A} matrix used to track and apply pairwise differences across response curves. This matrix is used in the clustering penalty formulation.
+#'
+#' @param Kappa A matrix or index structure that encodes all unique response pairs to compute pairwise differences.
+#' @param K The number of response variables.
+#' @param P The number of B-spline coefficients (typically \code{order + nknots}).
+#'
+#' @return Matrix \code{A} that maps pairwise differences between responses in the model formulation.
+#'
+#' @export
+get_A <- function(Kappa, K, P) {
+  I <- diag(P)
+  A <- matrix(ncol = K * P, nrow = P * nrow(Kappa))
+  for (kappa in 1:nrow(Kappa)) {
+    k1 <- Kappa[kappa, 1]
+    k2 <- Kappa[kappa, 2]
+
+    e_k1 <- rep(0, K)
+    e_k2 <- rep(0, K)
+    e_k1[k1] <- 1
+    e_k2[k2] <- 1
+
+    A_kappa <- kronecker(t(e_k1 - e_k2), I)
+
+    A[(P * (kappa - 1) + 1):(P * kappa), ] <- A_kappa
+  }
+
+  return(A)
+}
+
+
+# Calculate y_hat-------------------------------------------------
 #' Estimate \eqn{\hat{y}} Given \eqn{\beta}
 #'
 #' Computes fitted values (\eqn{\hat{y}}) using estimated coefficients \eqn{\beta}, a B-spline basis matrix, and covariate information.
@@ -615,129 +702,7 @@ get_clusters <- function(v, K, P) {
 
 
 
-# Initializing algorithm 1 ------------------------------------------------
-
-
-#' Get Breaks for B-Spline Basis
-#'
-#' Computes the breakpoints (knots) needed to construct a B-spline basis given a vector of timepoints, the spline order, and the desired number of internal knots.
-#'
-#' @param t A numeric vector of timepoints over which the B-spline basis will be constructed.
-#' @param k The order of the B-spline
-#' @param m The number of internal knots to include.
-#'
-#' @return A numeric vector of knot positions, including boundary and internal knots, suitable for use in B-spline basis construction.
-#'
-#' @export
-
-get_knots <- function(t, k, m) {
-  # external knots are on boundary
-  # return boundary with internal knots only
-  breaks <- c(min(t), seq(from = min(t), to = max(t), length.out = m + 2)[-c(1, m + 2)], max(t))
-  return(breaks)
-}
-
-
-
-#' Construct \eqn{d}th-Order Difference Operator Matrix
-#'
-#' Returns the difference operator matrix \eqn{D} used to penalize differences in coefficient values across responses.
-#' **Note:** Currently implemented only for \eqn{d = 2}.
-#'
-#' @param K The number of response variables.
-#' @param d The order of the difference operator (currently only \code{d = 2} is supported).
-#' @param order The order of the B-spline basis functions.
-#' @param nknots The number of internal knots used in the B-spline basis.
-#'
-#' @return A matrix \code{D} representing the second-order difference operator applied across response curves.
-#'
-#' @export
-get_D <- function(K, d, order, nknots) {
-  # P <- order + nknots
-  C <- matrix(0, nrow = nknots + order - d, ncol = nknots + order)
-  # dth order weighted difference operator
-  for (j in 1:(nknots + order - 2)) {
-    d_j <- c(rep(0, j - 1), 1, -2, 1, rep(0, (nknots + order) - 3 - (j - 1)))
-    e_j <- c(rep(0, j - 1), 1, rep(0, (nknots + order) - 3 - (j - 1)))
-    #C <- C + e_j %*% t(d_j)
-    C <- C + tcrossprod(e_j, d_j)
-  }
-  #D <- t(C) %*% C
-  D <- crossprod(C)
-  diagD <- kronecker(diag(K), D)
-
-  return(diagD)
-}
-
-
-
-#' Construct A Matrix for Pairwise Differences
-#'
-#' Constructs the \code{A} matrix used to track and apply pairwise differences across response curves. This matrix is used in the clustering penalty formulation.
-#'
-#' @param Kappa A matrix or index structure that encodes all unique response pairs to compute pairwise differences.
-#' @param K The number of response variables.
-#' @param P The number of B-spline coefficients (typically \code{order + nknots}).
-#'
-#' @return Matrix \code{A} that maps pairwise differences between responses in the model formulation.
-#'
-#' @export
-get_A <- function(Kappa, K, P) {
-  I <- diag(P)
-  A <- matrix(ncol = K * P, nrow = P * nrow(Kappa))
-  for (kappa in 1:nrow(Kappa)) {
-    k1 <- Kappa[kappa, 1]
-    k2 <- Kappa[kappa, 2]
-
-    e_k1 <- rep(0, K)
-    e_k2 <- rep(0, K)
-    e_k1[k1] <- 1
-    e_k2[k2] <- 1
-
-    A_kappa <- kronecker(t(e_k1 - e_k2), I)
-
-    A[(P * (kappa - 1) + 1):(P * kappa), ] <- A_kappa
-  }
-
-  return(A)
-}
-
-
-# Calculate cluster BIC ---------------------------------------------------
-
-#' Compute BIC for Clustered Functional Data
-#'
-#' Calculates a modified Bayesian Information Criterion (BIC) for a fitted clustering model on functional data.
-#' The BIC is computed based on the log-transformed relative abundance data and includes a penalty term proportional to the number of clusters and B-spline coefficients.
-#'
-#' @param y_ra_df A data frame containing columns \code{yhat} (fitted values) and \code{y} (observed values), both assumed to be in relative abundance form.
-#' @param K Number of responses
-#' @param n_clusters Number identified clusters
-#' @param mi_vec Vector of number of timepoints for each subject
-#' @param nknots The number of internal knots used in the B-spline basis.
-#' @param order The order of the B-spline basis.
-#' @param L Number of external variables
-#'
-#' @returns A single numeric value representing the modified BIC for the fitted model.
-#' @export
-BIC_cluster <- function(y_ra_df,
-                        K,
-                        L,
-                        n_clusters,
-                        mi_vec,
-                        nknots,
-                        order){
-
-  N <- sum(mi_vec)
-  yhat_y <- log(y_ra_df$yhat + .01) - log(y_ra_df$y + .01)
-  first_term <- sum(yhat_y^2)/(N*K)
-  second_term <- log(N * K) * n_clusters * (L + 1) * (order + nknots)/(N*K)
-
-  BIC <- log(first_term) + second_term
-  return(list(BIC = BIC,
-              first_term = log(first_term),
-              second_term = second_term))
-}
+# Re-fit group beta estimates ---------------------------------------------
 
 
 beta_cluster_group <- function(y, Z, beta, lp,  lp_minus, B, clusters, K, P, M) {
@@ -867,43 +832,3 @@ beta_cluster_group_update <- function(y, Z, beta, lp,  lp_minus, B, clusters, K,
 }
 
 
-#' BIC_cluster_group
-#'
-#' @param y_hat_counts
-#' @param y_counts
-#' @param beta_group
-#' @param clusters
-#' @param M
-#' @param K
-#' @param nknots
-#' @param order
-#'
-#' @returns
-#' @export
-#'
-#' @examples
-BIC_cluster_group <- function(y_hat_counts,
-                              y_counts,
-                              beta_group,
-                              clusters,
-                              M,
-                              K,
-                              nknots,
-                              order) {
-
-  n_clusters <- clusters$no
-
-  y_log <- log(y_counts + 1)
-  y_hat_log <- log(y_hat_counts + 1)
-
-  N <- M * K
-
-  first_term <- log((1/N) * sum((y_log - y_hat_log)^2)) * N
-  second_term <- log(N) * (order + nknots) * n_clusters
-
-  BIC_group <- first_term + second_term
-
-  return(list(BIC = BIC_group,
-              first_term = first_term,
-              second_term = second_term))
-}
