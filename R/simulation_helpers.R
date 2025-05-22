@@ -279,7 +279,7 @@ correct_cluster_option <- function(res, true_cluster = rep(1:3, each = 4)){
               map_dbl(~sum(.x)==12)) %>%
     colSums() %>% unname()
 
-  return(mean(val) > 0)
+  return(mean(val > 0))
 }
 
 
@@ -321,7 +321,7 @@ get_performance_summary <- function(list, output){
         values_from = value
       ) %>%
       knitr::kable(
-        format = table,
+        format = output,
         booktabs = TRUE,
         escape = FALSE,
         col.names = c("Method", "$\\text{Rand}$", "$\\text{Adj Rand}$", "$\\text{Jaccard}$", "$\\text{CER}$", "$\\hat{K}$")) %>%
