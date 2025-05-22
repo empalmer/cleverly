@@ -25,7 +25,7 @@ Cleverly stands for (Cl)ustering with (E)xternal (V)ariabl(e)s in (R) with (L)on
 
 You can install the development version of cleverly from [GitHub](https://github.com/) with:
 
-```{r, echo = F}
+```{r, echo = T, results = 'hide', message = F, warning = F}
 # install.packages("pak")
 pak::pak("empalmer/cleverly")
 library(cleverly)
