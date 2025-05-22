@@ -158,6 +158,12 @@ plot_BIC <- function(res, BIC_type = "BIC", psis){
   if (BIC_type == "BIC") {
     data <- res$BIC
   }
+  if (BIC_type == "BIC_ra_group") {
+    data <- res$BIC_ra_group
+  }
+  if (BIC_type == "BIC_group"){
+    data <- res$BIC_group
+  }
 
   possible_clusters <- res$possible_clusters %>% purrr::map_dbl("no")
   bics <- purrr::map_dbl(data, "BIC")

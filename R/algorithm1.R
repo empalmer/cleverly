@@ -550,6 +550,49 @@ get_A <- function(Kappa, K, P) {
 }
 
 
+# Return clusters ---------------------------------------------------------
+#' Get Cluster Membership from Pairwise Differences
+#'
+#' Derives cluster assignments based on the final pairwise difference estimates (\code{v}) from Algorithm 1.
+#'
+#' @param v A matrix of final pairwise differences from Algorithm 1, used to infer which subjects belong to the same cluster.
+#' @param K The number of response variables.
+#' @param P The number of B-spline coefficients (equal to \code{order + nknots}).
+#'
+#' @return A list containing:
+#' \describe{
+#'   \item{clusters}{A vector of cluster membership assignments.}
+#'   \item{indices}{A list of indices corresponding to each cluster.}
+#'   \item{n_clusters}{The total number of unique clusters identified.}
+#' }
+#'
+#' @export
+
+get_clusters <- function(v, K, P) {
+
+  # Convert v into a matrix of P x length
+  v_mat <- matrix(v, nrow = P)
+  differences <- apply(v_mat, 2, function(x) {
+    norm(as.matrix(x), "f")
+  })
+  connected_ix <- which(differences == 0)
+  index <- t(utils::combn(K, 2))
+  i <- index[connected_ix, 1]
+  j <- index[connected_ix, 2]
+  A <- matrix(0, nrow = K, ncol = K)
+  A[(j - 1) * K + i] <- 1
+
+  # Make graph from adjacency matrix
+  graph <- igraph::graph_from_adjacency_matrix(
+    A,
+    mode = 'upper')
+  #clustering membership
+  clusters <- igraph::components(graph)
+  return(clusters)
+}
+
+
+
 # Calculate y_hat-------------------------------------------------
 #' Estimate \eqn{\hat{y}} Given \eqn{\beta}
 #'
@@ -657,49 +700,6 @@ estimate_y_counts <- function(beta, B, Z, K, Y, time){
 
   return(yhat)
 }
-
-
-# Return clusters ---------------------------------------------------------
-#' Get Cluster Membership from Pairwise Differences
-#'
-#' Derives cluster assignments based on the final pairwise difference estimates (\code{v}) from Algorithm 1.
-#'
-#' @param v A matrix of final pairwise differences from Algorithm 1, used to infer which subjects belong to the same cluster.
-#' @param K The number of response variables.
-#' @param P The number of B-spline coefficients (equal to \code{order + nknots}).
-#'
-#' @return A list containing:
-#' \describe{
-#'   \item{clusters}{A vector of cluster membership assignments.}
-#'   \item{indices}{A list of indices corresponding to each cluster.}
-#'   \item{n_clusters}{The total number of unique clusters identified.}
-#' }
-#'
-#' @export
-
-get_clusters <- function(v, K, P) {
-
-  # Convert v into a matrix of P x length
-  v_mat <- matrix(v, nrow = P)
-  differences <- apply(v_mat, 2, FUN = function(x) {
-    norm(as.matrix(x), "f")
-  })
-  connected_ix <- which(differences == 0)
-  index <- t(utils::combn(K, 2))
-  i <- index[connected_ix, 1]
-  j <- index[connected_ix, 2]
-  A <- matrix(0, nrow = K, ncol = K)
-  A[(j - 1) * K + i] <- 1
-
-  # Make graph from adjacency matrix
-  graph <- igraph::graph_from_adjacency_matrix(
-    A,
-    mode = 'upper')
-  #clustering membership
-  clusters <- igraph::components(graph)
-  return(clusters)
-}
-
 
 
 # Re-fit group beta estimates ---------------------------------------------
