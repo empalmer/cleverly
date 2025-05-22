@@ -25,15 +25,17 @@ Cleverly stands for (Cl)ustering with (E)xternal (V)ariabl(e)s in (R) with (L)on
 
 You can install the development version of cleverly from [GitHub](https://github.com/) with:
 
-```{r}
+```{r, echo = F}
 # install.packages("pak")
 pak::pak("empalmer/cleverly")
 library(cleverly)
 ```
 
+## Example
 
+Simulate data with independence structure, then run cleverly assuming an independence structure:
 
-```{r}
+```{r, cache = T}
 set.seed(127)
 sim <- simulation_data(n = 20,
                        range_start = 5000,
@@ -71,12 +73,27 @@ res <- cleverly(Y = Y,
 
 # Diagnostics: 
 
+Since we know the true clusters: 
+
+
 ```{r}
 res$cluster_diagnostics
+```
+
+We selected the exact right clusters!
+
+Visualize the data + clusters 
+
+```{r}
 plot_clusters(res,
               Z = rep(Z, 12),
               response_names = 1:12, 
               Z_type = "binary")
+```
+
+Look at BIC values for the different hyper parameter values tested: 
+
+```{r}
 plot_BIC(res, BIC_type = "BIC", psis = seq(600, 1400, length.out = 1))
 ```
 
