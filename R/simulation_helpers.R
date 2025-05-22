@@ -266,6 +266,72 @@ get_cluster_diagnostics <- function(res, true_cluster){
 }
 
 
+#' Get proportion correct cluster possible.
+#'
+#' @param res cleverly object
+#' @param true_cluster true cluster membership
+#'
+#' @returns
+#' @export
+correct_cluster_option <- function(res, true_cluster = rep(1:3, each = 4)){
+  val <- purrr::map(res, "possible_clusters") %>%
+    purrr::map_dfc(~map(.x, ~.x$membership == true_cluster ) %>%
+              map_dbl(~sum(.x)==12)) %>%
+    colSums() %>% unname()
+
+  return(mean(val) > 0)
+}
+
+
+#' get performance summary table
+#'
+#' @param list simulation list
+#' @param output output type of "R", "html", or "latex"
+#'
+#' @returns
+#' @export
+get_performance_summary <- function(list, output){
+
+  if (output == "R"){
+    table <- purrr::map_dfr(list, ~map_dfr(.x,"cluster_diagnostics") %>%
+                       summarize_all(list("mean" = mean, "sd" = sd)),
+                     .id = "corstr")
+  } else {
+    table <- purrr::map_dfr(list, ~map_dfr(.x,"cluster_diagnostics") %>%
+                       summarize_all(list("mean" = mean, "sd" = sd)),
+                     .id = "corstr") %>%
+      dplyr::mutate_if(is.numeric, round, 3) %>%
+      tidyr::pivot_longer(
+        cols = -corstr,
+        names_to = c("metric", "stat"),
+        names_pattern = "^(.*)_(mean|sd)$"
+      ) %>%
+      tidyr::pivot_wider(
+        names_from = stat,
+        values_from = value
+      ) %>%
+      dplyr::mutate(
+        mean = formatC(mean, digits = 3, format = "f"),
+        sd   = formatC(sd, digits = 3, format = "f"),
+        value = paste0(mean, " (", sd, ")")
+      ) %>%
+      dplyr::select(corstr, metric, value) %>%
+      tidyr::pivot_wider(
+        names_from = metric,
+        values_from = value
+      ) %>%
+      knitr::kable(
+        format = table,
+        booktabs = TRUE,
+        escape = FALSE,
+        col.names = c("Method", "$\\text{Rand}$", "$\\text{Adj Rand}$", "$\\text{Jaccard}$", "$\\text{CER}$", "$\\hat{K}$")) %>%
+      kableExtra::kable_styling(latex_options = c("hold_position")) %>%
+      cat()
+  }
+  return(table)
+
+}
+
 
 # Visualizations ----------------------------------------------------------
 

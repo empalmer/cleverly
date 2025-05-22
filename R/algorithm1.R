@@ -128,7 +128,7 @@ algorithm1 <- function(Y,
   phi <- 1
 
   # Initialize using Algorithm 2 for ALL responses
-  print(paste0("Initializing beta values for psi = ", psi))
+  print(paste0("Initializing beta values for psi = ", round(psi, 2)))
   zeros_beta <- matrix(0, nrow = K * P, ncol = L + 1)
   beta_init <- algorithm2(Y = Y,
                           Y0 = Y0,
@@ -640,16 +640,27 @@ estimate_y <- function(beta, B, Z, K, Y, time, baseline = F){
 
   y_ra <- Y/rowSums(Y)
 
-  Ys <- data.frame(time = time,
-                   Z = Z_true[, -1],
-                   yhat_ra,
-                   y_ra)
 
 
-  colnames(Ys) <- c("time",
-                    "Z",
-                    paste0("yhat_", 1:K),
-                    paste0("y_", 1:K))
+  # Check if Z is used, otherwise dont add
+  if (identical(Z, matrix(1, nrow = nrow(Z_true), ncol = 1))) {
+    Ys <- data.frame(time = time,
+                     yhat_ra,
+                     y_ra)
+    colnames(Ys) <- c("time",
+                      paste0("yhat_", 1:K),
+                      paste0("y_", 1:K))
+
+  } else {
+    Ys <- data.frame(time = time,
+                     Z = Z_true[, -1],
+                     yhat_ra,
+                     y_ra)
+    colnames(Ys) <- c("time",
+                      "Z",
+                      paste0("yhat_", 1:K),
+                      paste0("y_", 1:K))
+  }
 
   Ys <- Ys %>%
     tidyr::pivot_longer(

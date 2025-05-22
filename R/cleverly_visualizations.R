@@ -183,7 +183,7 @@ plot_BIC <- function(res, BIC_type = "BIC", psis){
   possible_clusters <- df$possible_clusters
 
   plot <- df %>%
-    dplyr::pivot_longer(-c(possible_clusters, row_id), names_to = "term", values_to = "value") %>%
+    tidyr::pivot_longer(-c(possible_clusters, row_id), names_to = "term", values_to = "value") %>%
     ggplot2::ggplot(ggplot2::aes(x = row_id)) +
     ggplot2::geom_line(ggplot2::aes(y = value, color = term)) +
     ggplot2::scale_x_continuous(

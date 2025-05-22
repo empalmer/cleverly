@@ -428,7 +428,7 @@ test_that("Simulation cont", {
                            function(x) 0.5 * sin(2 * pi * x) + 0.5))
   plot_sim_data(sim, Z_type = "continuous")
 
-  sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/continuous_Z/sim_data_1.rds")
+  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/continuous_Z/sim_data_1.rds")
   # Visualize simulated data
 
 
@@ -444,13 +444,13 @@ test_that("Simulation cont", {
 
 
   res <- cleverly(Y = Y,
-                  Z = Z,
+                  #Z = Z,
                   subject_ids = individual,
                   time = time,
                   lp = 0,
                   cor_str = "IND",
                   # Hyperparameters
-                  gammas = c(1, 1),
+                  gammas = c(1),
                   tau = .005,
                   theta = 500,
                   psi_min = 10,
