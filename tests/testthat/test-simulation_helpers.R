@@ -127,44 +127,7 @@ test_that("Simulation Z 0,1", {
     )
 
 
-  res$BIC_group
-
-
-  possible_clusters <- res$possible_clusters %>%
-    map_dbl("no")
-  bics <- res$BIC %>%
-    map_dbl("BIC")
-  first_term <- res$BIC %>%
-    map_dbl("first_term")
-  second_term <- res$BIC %>%
-    map_dbl("second_term")
-
-  chosen <- which(seq(400,1400, length.out = 6) == res$psi)
-
-  df <- data.frame(possible_clusters,
-                   bics,
-                   first_term = first_term,
-                   second_term)
-
-  df$row_id <- seq_len(nrow(df))
-
-  row_id <- seq_len(nrow(df))
-  possible_clusters <- df$possible_clusters
-
-  df %>%
-    pivot_longer(-c(possible_clusters, row_id), names_to = "term", values_to = "value") %>%
-    ggplot(aes(x = row_id)) +
-    geom_line(aes(y = value, color = term)) +
-    scale_x_continuous(
-      breaks = row_id,
-      labels = possible_clusters
-    ) +
-    facet_wrap(~term, nrow = 3, scales = "free") +
-    geom_vline(xintercept = chosen, linetype = "dashed", color = "red") +
-    labs(x = "Possible Clusters (per row)", y = "BIC")
-
-
-
+  plot_BIC(res, BIC_type = "BIC", psis = seq(600, 1400, length.out = 1))
 
 
   res$possible_clusters
@@ -174,21 +137,11 @@ test_that("Simulation Z 0,1", {
 
   res$BIC
 
-  #})
-  # end <- Sys.time()
-  # Rprof(NULL)
-  # summaryRprof("test.out")$by.self[1:15,1:2]
-  #(duration <- end - start)
-
-  res %>%
-    get_cluster_diagnostics(true_cluster = rep(1:3, each = 4))
   res$clusters
   # Diagnostic plots:
   plot_clusters(res = res,
                 response_names = LETTERS[1:12])
 
-  res$phi
-  res$rho
 
 
   plot_initial_fit(res, K = 12)
@@ -460,10 +413,8 @@ test_that("Simulation cont", {
                   run_min = 3,
                   max_admm_iter = 300,
                   max_outer_iter = 10,
-                  max_2_iter = 300,
-  ) %>%
+                  max_2_iter = 300) %>%
     get_cluster_diagnostics(true_cluster)
-
 
 
   # BICs to test:
@@ -472,53 +423,14 @@ test_that("Simulation cont", {
   BIC_test <- res$BIC_group # Currently what is used to select clusters
   BIC_test <- res$BIC_ra_group
 
-  possible_clusters <- res$possible_clusters %>%
-    map_dbl("no")
-  bics <- BIC_test %>%
-    map_dbl("BIC")
-  first_term <- BIC_test %>%
-    map_dbl("first_term")
-  second_term <- BIC_test %>%
-    map_dbl("second_term")
-
-
-
-  chosen <- which.min(bics)
-
-  df <- data.frame(possible_clusters,
-                   bics,
-                   first_term = first_term,
-                   second_term)
-
-  df$row_id <- seq_len(nrow(df))
-
-  row_id <- seq_len(nrow(df))
-  possible_clusters <- df$possible_clusters
-
-
-  max(first_term) - min(first_term)
-  max(second_term) - min(second_term)
-  df %>%
-    pivot_longer(-c(possible_clusters, row_id), names_to = "term", values_to = "value") %>%
-    ggplot(aes(x = row_id)) +
-    geom_line(aes(y = value, color = term)) +
-    scale_x_continuous(
-      breaks = row_id,
-      labels = paste0("C: ", possible_clusters, ", psi: ", round(psis, 2))
-    ) +
-    facet_wrap(~term, nrow = 3, scales = "free") +
-    geom_vline(xintercept = chosen, linetype = "dashed", color = "red") +
-    labs(x = "Possible Clusters (per row)", y = "BIC",
-         title = "BIC RA group refit")
-
-
-
+  plot_BIC(res, BIC_type = "BIC", psis = psis)
   plot_clusters(res,
                 Z = rep(Z, 12),
                 response_names = LETTERS[1:12],
                 Z_type = "continuous")
 
-  library(dplyr)
+
+
   res$y_hat_baseline %>%
     ggplot(aes(x = time)) +
     geom_point(aes(y = y), size = .6, alpha = .5) +

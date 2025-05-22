@@ -277,7 +277,7 @@ correct_cluster_option <- function(res, true_cluster = rep(1:3, each = 4)){
   val <- purrr::map(res, "possible_clusters") %>%
     purrr::map_dfc(~map(.x, ~.x$membership == true_cluster ) %>%
               map_dbl(~sum(.x)==12)) %>%
-    colSums() %>% unname()
+    colSums() %>% unname() %>% suppressMessages()
 
   return(mean(val > 0))
 }
