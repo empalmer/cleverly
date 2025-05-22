@@ -247,8 +247,8 @@ cleverly <- function(Y,
       }
     }
 
-    BICs <- purrr::map_dbl(res_list, ~.x$BIC_group$BIC)
-    #BICs <- purrr::map_dbl(res_list, ~.x$BIC$BIC)
+    #BICs <- purrr::map_dbl(res_list, ~.x$BIC_group$BIC)
+    BICs <- purrr::map_dbl(res_list, ~.x$BIC$BIC)
     best <- which.min(BICs)
     result <- res_list[[best]]
     result$all_clusters_psi <- purrr::map(res_list, ~.x$clusters)
@@ -259,6 +259,7 @@ cleverly <- function(Y,
 
     BIC_list <- purrr::map(res_list, ~.x$BIC)
     BIC_group <- purrr::map(res_list, ~.x$BIC_group)
+    BIC_ra_group <- purrr::map(res_list, ~.x$BIC_ra_group)
 
   } else {
     stop("Invalid response type or type not yet implemented.")
@@ -273,6 +274,7 @@ cleverly <- function(Y,
               y_hat_lp_group = result$y_hat_lp_group,
               BIC = BIC_list,
               BIC_group = BIC_group,
+              BIC_ra_group = BIC_ra_group,
               error = result$error,
               rho = result$rho,
               phi = result$phi,

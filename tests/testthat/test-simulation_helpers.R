@@ -86,7 +86,7 @@ test_that("Simulation Z 0,1", {
                   gammas = c(.1,.1),
                   theta = 300,
                   parralel = F,
-                  psi_min = 1600,
+                  psi_min = 600,
                   psi_max = 1400,
                   npsi = 1,
                   # Iterations max
@@ -450,17 +450,68 @@ test_that("Simulation cont", {
                   lp = 0,
                   cor_str = "IND",
                   # Hyperparameters
-                  gammas = c(100,100),
-                  psi_min = 1000,
-                  npsi = 1,
+                  gammas = c(1, 1),
+                  tau = .005,
+                  theta = 500,
+                  psi_min = 10,
+                  psi_max = 1500,
+                  npsi = 4,
                   # Iterations max
+                  run_min = 3,
                   max_admm_iter = 300,
-                  max_outer_iter = 30,
+                  max_outer_iter = 10,
                   max_2_iter = 300,
   ) %>%
     get_cluster_diagnostics(true_cluster)
 
-  res$BIC
+
+
+  # BICs to test:
+  psis <- seq(10, 1500, length.out = 4)
+  BIC_test <- res$BIC
+  BIC_test <- res$BIC_group # Currently what is used to select clusters
+  BIC_test <- res$BIC_ra_group
+
+  possible_clusters <- res$possible_clusters %>%
+    map_dbl("no")
+  bics <- BIC_test %>%
+    map_dbl("BIC")
+  first_term <- BIC_test %>%
+    map_dbl("first_term")
+  second_term <- BIC_test %>%
+    map_dbl("second_term")
+
+
+
+  chosen <- which.min(bics)
+
+  df <- data.frame(possible_clusters,
+                   bics,
+                   first_term = first_term,
+                   second_term)
+
+  df$row_id <- seq_len(nrow(df))
+
+  row_id <- seq_len(nrow(df))
+  possible_clusters <- df$possible_clusters
+
+
+  max(first_term) - min(first_term)
+  max(second_term) - min(second_term)
+  df %>%
+    pivot_longer(-c(possible_clusters, row_id), names_to = "term", values_to = "value") %>%
+    ggplot(aes(x = row_id)) +
+    geom_line(aes(y = value, color = term)) +
+    scale_x_continuous(
+      breaks = row_id,
+      labels = paste0("C: ", possible_clusters, ", psi: ", round(psis, 2))
+    ) +
+    facet_wrap(~term, nrow = 3, scales = "free") +
+    geom_vline(xintercept = chosen, linetype = "dashed", color = "red") +
+    labs(x = "Possible Clusters (per row)", y = "BIC",
+         title = "BIC RA group refit")
+
+
 
   plot_clusters(res,
                 Z = rep(Z, 12),

@@ -148,7 +148,9 @@ get_Vi_inv <- function(i,
 
       # If independent, can invert each block individually
       # And each block is just the variance components, so we can
-      V_i_inv_mat[((j - 1)*K + 1):(j*K), ((j - 1)*K + 1):(j*K)] <- MASS::ginv(V_ijj)
+      #V_i_inv_mat[((j - 1)*K + 1):(j*K), ((j - 1)*K + 1):(j*K)] <- MASS::ginv(V_ijj)
+      V_i_inv_mat[((j - 1)*K + 1):(j*K), ((j - 1)*K + 1):(j*K)] <- (1/phi) * MASS::ginv(V_ijj)
+
     }
     V_i_inv <- V_i_inv_mat
   }
@@ -194,6 +196,7 @@ get_Vi_inv <- function(i,
     # R_inv <- MASS::ginv(Ri)
     R_sum <- R_i + corR
     R_inv <- MASS::ginv(R_sum)
+
 
 
     # R_sum_pd <- as.matrix(Matrix::nearPD(R_sum)$mat)

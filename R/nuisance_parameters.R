@@ -58,15 +58,15 @@ get_pearson_residuals <- function(Y,
   r_list <- c()
   for (i in 1:n) {
     r_list[[i]] <- get_pearson_residual_i(Y = Y,
-                                 Y0 = Y0,
-                                 i = i,
-                                 beta = beta,
-                                 alpha = alpha,
-                                 Z = Z,
-                                 B = B,
-                                 K = K,
-                                 mi_vec = mi_vec,
-                                 i_index = i_index)
+                                          Y0 = Y0,
+                                          i = i,
+                                          beta = beta,
+                                          alpha = alpha,
+                                          Z = Z,
+                                          B = B,
+                                          K = K,
+                                          mi_vec = mi_vec,
+                                          i_index = i_index)
   }
   return(r_list)
 }
@@ -90,7 +90,7 @@ get_pearson_residual_i <- function(Y,
                                    Y0,
                                    i,
                                    beta,
-                                   alpha = alpha,
+                                   alpha,
                                    Z,
                                    B,
                                    K,

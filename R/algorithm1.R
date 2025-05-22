@@ -70,6 +70,7 @@ algorithm1 <- function(Y,
   M <- nrow(Y)
 
 
+
   # Get indices for the non-cluster responses
   lp_minus <- setdiff(0:L , lp)
 
@@ -127,7 +128,7 @@ algorithm1 <- function(Y,
   phi <- 1
 
   # Initialize using Algorithm 2 for ALL responses
-  print("Initializing beta values")
+  print(paste0("Initializing beta values for psi = ", psi))
   zeros_beta <- matrix(0, nrow = K * P, ncol = L + 1)
   beta_init <- algorithm2(Y = Y,
                           Y0 = Y0,
@@ -389,6 +390,14 @@ algorithm1 <- function(Y,
                                time = time,
                                baseline = T)
 
+  BIC_ra_group <- BIC_cluster(y_ra_df = y_hat_lp_group,
+                              K = K,
+                              L = L,
+                              n_clusters = clusters$no,
+                              mi_vec = mi_vec,
+                              nknots = nknots,
+                              order = order)
+
   y_hat_counts_group <- estimate_y_counts(beta = beta_group,
                                           B = B,
                                           Z = Z,
@@ -405,6 +414,15 @@ algorithm1 <- function(Y,
                                  nknots = nknots,
                                  order = order)
 
+
+  alpha <- get_alpha_list(beta = beta,
+                          Z = Z,
+                          B = B,
+                          K = K,
+                          i_index = i_index,
+                          mi_vec = mi_vec,
+                          L = L,
+                          P = P)
   pearson_residuals <- get_pearson_residuals(Y = Y,
                                              Y0 = Y0,
                                              beta = beta,
@@ -437,6 +455,7 @@ algorithm1 <- function(Y,
               phi = phi,
               BIC = BIC,
               BIC_group = BIC_group,
+              BIC_ra_group = BIC_ra_group,
               s = s,
               error = error))
 }
@@ -729,6 +748,8 @@ beta_cluster_group <- function(y, Z, beta, lp,  lp_minus, B, clusters, K, P, M) 
   num_samples <- ncol(y)
   beta_group <- matrix(nrow = num_features, ncol = num_samples)
 
+  log_y <- log(y + 1)
+
   y_minus_Z_B_beta <- matrix(nrow = M, ncol = K)
   for (k in 1:K) {
     Z_B_beta <- numeric(M)
@@ -738,15 +759,14 @@ beta_cluster_group <- function(y, Z, beta, lp,  lp_minus, B, clusters, K, P, M) 
       #y_k <- y_k + Z_l %*% B %*% beta_k
       Z_B_beta <- Z_B_beta + fast_mat_mult3(Z_l, B, beta_k)
     }
-    y_minus_Z_B_beta[,k] <- y[,k] - exp(Z_B_beta)
+    y_minus_Z_B_beta[,k] <- log_y[,k] - exp(Z_B_beta)
     #y_minus_Z_B_beta[,k] <- y[,k]
   }
 
   y_minus_Z_B_beta[y_minus_Z_B_beta < 0] <- 0
 
   # Log-transform the response
-  log_y_ZB <- log(y_minus_Z_B_beta + 1)
-
+  log_y_ZB <-  y_minus_Z_B_beta
 
 
   # Loop over each unique cluster
@@ -770,6 +790,58 @@ beta_cluster_group <- function(y, Z, beta, lp,  lp_minus, B, clusters, K, P, M) 
     # Prepare design matrix and response vector for current cluster
     B_class <- do.call(rbind, replicate(length(class_indices), B, simplify = FALSE))
     log_y_class <- as.vector(log_y_ZB[, class_indices])
+
+    # Estimate coefficients using least squares (for log(y + 1))
+    beta_hat <- MASS::ginv(t(B_class) %*% B_class) %*% t(B_class) %*% log_y_class
+
+    # Update beta with the estimated group beta values
+    beta_group[(lp * P + 1):((lp + 1) * P), class_indices] <- beta_hat
+  }
+
+
+  # Step 1: Reshape to array of dimensions (P, L, K)
+  beta_array_back <- array(beta_group, dim = c(P, (L + 1), K))
+
+  # Step 2: Permute dimensions back to (P, K, L)
+  beta_array_orig <- aperm(beta_array_back, c(1, 3, 2))
+
+  # Step 3: Flatten to matrix of shape (P*K) x L
+  beta_in <- matrix(beta_array_orig, nrow = P * K, ncol = (L + 1))
+
+
+
+
+  return(beta_in)
+}
+
+
+
+beta_cluster_group_update <- function(y, Z, beta, lp,  lp_minus, B, clusters, K, P, M) {
+
+  L <- ncol(Z) - 1
+  # Initialize matrix to hold coefficient estimates
+  num_features <- ncol(B)
+  num_samples <- ncol(y)
+  beta_group <- matrix(nrow = num_features, ncol = num_samples)
+
+
+
+  # Loop over each unique cluster
+  unique_clusters <- unique(clusters$membership)
+
+
+
+  for (i in seq_along(clusters$csize)) {
+    current_cluster <- unique_clusters[i]
+
+    # Get indices of samples that belong to the current cluster
+    class_indices <- which(clusters$membership == current_cluster)
+
+    # Prepare design matrix and response vector for current cluster
+    B_class <- do.call(rbind, replicate(length(class_indices), B, simplify = FALSE))
+    log_y_class <- as.vector(log(y[, class_indices] + 1))
+
+
 
     # Estimate coefficients using least squares (for log(y + 1))
     beta_hat <- MASS::ginv(t(B_class) %*% B_class) %*% t(B_class) %*% log_y_class
