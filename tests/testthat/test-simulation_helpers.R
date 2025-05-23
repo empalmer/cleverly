@@ -23,21 +23,21 @@ test_that("Simulation Z 0,1", {
                           order = 3,
                           user_var = 1000000,
                           cor_str = "CON-d",
-                          rho = 0.9,
+                          rho = 0.95,
                           prob1 = .5,
                          baseline_fxns = list(
-                           function(t) 2 * cos(2 * pi * t),
-                           function(t) 2 * cos(2 * pi * t),
-                           function(t) 2 * cos(2 * pi * t),
-                           function(t) 2 * cos(2 * pi * t),
+                           function(t) cos(2 * pi * t),
+                           function(t) cos(2 * pi * t),
+                           function(t) cos(2 * pi * t),
+                           function(t) cos(2 * pi * t),
                            function(t) sin(pi * t),
                            function(t) sin(pi * t),
                            function(t) sin(pi * t),
                            function(t) sin(pi * t),
-                           function(t) -3 * t + 3,
-                           function(t) -3 * t + 3,
-                           function(t) -3 * t + 3,
-                           function(t) -3 * t + 3
+                           function(t) -t + 1,
+                           function(t) -t + 1,
+                           function(t) -t + 1,
+                           function(t) -t + 1
                          ),
                           # Slope functions
                           slope_fxns = list(
@@ -50,7 +50,7 @@ test_that("Simulation Z 0,1", {
                             function(t) -t,
                             function(t) 3 - 2*t,
                             function(t) 1.5,
-                            function(t) -2,
+                            function(t) -.75,
                             function(t) .75,
                             function(t) t))
 
@@ -83,48 +83,42 @@ test_that("Simulation Z 0,1", {
                   lp = 0,
                   cor_str = "CON-d",
                   # Hyperparameters
-                  gammas = c(.1,.1),
-                  theta = 300,
+                  gammas = c(1,1),
+                  theta = 500,
                   parralel = F,
-                  psi_min = 600,
-                  psi_max = 1400,
+                  psi_min = 275,
+                  psi_max = 300,
                   npsi = 1,
                   # Iterations max
                   run_min = 3,
-                  max_admm_iter = 100,
-                  max_outer_iter = 5,
-                  max_2_iter = 100,
+                  max_admm_iter = 50,
+                  max_outer_iter = 3,
+                  max_2_iter = 50,
   ) %>%
     get_cluster_diagnostics(true_cluster)
 
-  cluster_key <- data.frame(
-    response_names = factor(1:K,
-                            levels = 1:K),
-    cluster = factor(res$clusters$membership))
+  plot_clusters(res,
+                Z = rep(Z, 12),
+                response_names = 1:12,
+                Z_type = "binary",
+                y_type = "y_hat_baseline",
+                scales = "fixed")
 
-  Z_true <- Z
-  res$y_hat_lp_group %>%
-    dplyr::mutate(response = factor(response)) %>%
-    dplyr::left_join(cluster_key, by = c("response" = "response_names")) %>%
-    dplyr::mutate(response = factor(response, labels = 1:K)) %>%
-    ggplot2::ggplot(ggplot2::aes(x = time)) +
-    ggplot2::geom_jitter(ggplot2::aes(y = y,
-                                     color = factor(Z),
-                                     shape = factor(Z),
-                                     alpha = factor(Z))) +
-    ggplot2::guides(color = ggplot2::guide_legend("EV"),
-                    shape = ggplot2::guide_legend("EV")) +
-    ggplot2::scale_alpha_manual(values = c(`1` = 0.5, `0` = 1)) +
-    ggnewscale::new_scale_color() +
-    ggplot2::geom_line(ggplot2::aes(y = yhat,
-                                    color = cluster),
-                       linewidth = 1) +
-    ggplot2::facet_wrap(~response,
-                        nrow = 3) +
-    ggplot2::scale_color_manual(
-      values = viridis::viridis(length(unique(cluster_key$cluster))),
-      name = "Cluster"
-    )
+  plot_clusters(res,
+                Z = rep(Z, 12),
+                response_names = 1:12,
+                Z_type = "binary",
+                y_type = "y_hat_lp_group",
+                scales = "fixed")
+
+
+  plot_clusters(res,
+                Z = rep(Z, 12),
+                response_names = 1:12,
+                Z_type = "binary",
+                y_type = "y_hat_counts_group")
+
+
 
 
   plot_BIC(res, BIC_type = "BIC", psis = seq(600, 1400, length.out = 1))
@@ -138,9 +132,6 @@ test_that("Simulation Z 0,1", {
   res$BIC
 
   res$clusters
-  # Diagnostic plots:
-  plot_clusters(res = res,
-                response_names = LETTERS[1:12])
 
 
 

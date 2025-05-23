@@ -372,14 +372,14 @@ algorithm1 <- function(Y,
 # New fxns ----------------------------------------------------------------
 
 
-  beta_group <- beta_cluster_group(y = Y,
-                                   Z = Z,
-                                   beta = beta,
-                                   lp = lp,
-                                   lp_minus = lp_minus,
-                                   B = B,
-                                   clusters = clusters,
-                                   K = K, P = P, M = M)
+  beta_group <- beta_cluster_group_update(y = Y,
+                                          Z = Z,
+                                          beta = beta,
+                                          lp = lp,
+                                          lp_minus = lp_minus,
+                                          B = B,
+                                          clusters = clusters,
+                                          K = K, P = P, M = M)
 
   y_hat_lp_group <- estimate_y(beta = beta_group,
                                B = B,
@@ -448,6 +448,7 @@ algorithm1 <- function(Y,
               y_hat_init = y_hat_init,
               y_hat_lp_group = y_hat_lp_group,
               y_hat_baseline = y_hat_baseline,
+              y_hat_counts_group = y_hat_counts_group,
               beta = beta,
               v = v,
               rho = rho,
@@ -795,49 +796,72 @@ beta_cluster_group <- function(y, Z, beta, lp,  lp_minus, B, clusters, K, P, M) 
 beta_cluster_group_update <- function(y, Z, beta, lp,  lp_minus, B, clusters, K, P, M) {
 
   L <- ncol(Z) - 1
-  # Initialize matrix to hold coefficient estimates
-  num_features <- ncol(B)
-  num_samples <- ncol(y)
-  beta_group <- matrix(nrow = num_features, ncol = num_samples)
-
-
 
   # Loop over each unique cluster
   unique_clusters <- unique(clusters$membership)
 
+  beta_group <- matrix(nrow = P * (L + 1), ncol = K)
+
+  ZB_list <- list()
+  for (l in 0:L) {
+    Z_l <- diag(Z[,l + 1])
+    ZB_list[[l + 1]] <- Z_l %*% B
+  }
 
 
-  for (i in seq_along(clusters$csize)) {
-    current_cluster <- unique_clusters[i]
-
-    # Get indices of samples that belong to the current cluster
+  for (c in seq_along(clusters$csize)) {
+    current_cluster <- unique_clusters[c]
     class_indices <- which(clusters$membership == current_cluster)
+    cluster_size <- length(class_indices)
 
-    # Prepare design matrix and response vector for current cluster
-    B_class <- do.call(rbind, replicate(length(class_indices), B, simplify = FALSE))
+    df_list <- list()
+    beta_names <- c()
+    for (l in 0:L) {
+      I_k <- diag(cluster_size)
+      one_k <- matrix(1, nrow = cluster_size)
+
+      if (l == lp) {
+        df_list[[l + 1]] <- kronecker(one_k, ZB_list[[l + 1]])
+      } else {
+        df_list[[l + 1]] <- kronecker(I_k, ZB_list[[l + 1]])
+      }
+    }
+    df <- do.call(cbind, df_list)
+
     log_y_class <- as.vector(log(y[, class_indices] + 1))
 
 
 
-    # Estimate coefficients using least squares (for log(y + 1))
-    beta_hat <- MASS::ginv(t(B_class) %*% B_class) %*% t(B_class) %*% log_y_class
+    mod_g <- lm(log_y_class ~ 0 + df)
+    coefs <- coef(mod_g)
+    beta_c_mat <- matrix(coefs, nrow = P)
 
-    # Update beta with the estimated group beta values
-    beta_group[(lp * P + 1):((lp + 1) * P), class_indices] <- beta_hat
+
+
+    col_index <- 1
+
+    for (l in 0:L) {
+      if (l == lp) {
+        # Shared coefficients across all in cluster
+        beta_group[(lp * P + 1):((lp + 1) * P), class_indices] <- beta_c_mat[, col_index]
+        col_index <- col_index + 1
+      } else {
+        for (k in seq_along(class_indices)) {
+          col_k <- col_index
+          idx_k <- class_indices[k]
+          beta_group[(l * P + 1):((l + 1) * P), idx_k] <- beta_c_mat[, col_k]
+          col_index <- col_index + 1
+        }
+      }
+    }
+
   }
 
 
-  # Step 1: Reshape to array of dimensions (P, L, K)
+  # Convert back to original structure
   beta_array_back <- array(beta_group, dim = c(P, (L + 1), K))
-
-  # Step 2: Permute dimensions back to (P, K, L)
   beta_array_orig <- aperm(beta_array_back, c(1, 3, 2))
-
-  # Step 3: Flatten to matrix of shape (P*K) x L
   beta_in <- matrix(beta_array_orig, nrow = P * K, ncol = (L + 1))
-
-
-
 
   return(beta_in)
 }

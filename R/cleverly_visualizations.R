@@ -25,7 +25,21 @@ plot_clusters <- function(res,
                           order = "response",
                           nrow = 3,
                           Z_type = "binary",
+                          y_type = "y_hat_baseline",
                           baseline = T){
+
+
+  if (y_type == "y_hat_baseline") {
+    Y <- res$y_hat_baseline
+  }
+  if (y_type == "y_hat_lp_group") {
+    Y <- res$y_hat_lp_group
+  }
+  if (y_type == "y_hat_counts_group") {
+    Y <- res$y_hat_counts_group
+  }
+
+
 
   cluster_key <- data.frame(
     response_names = factor(1:length(response_names),
@@ -44,7 +58,7 @@ plot_clusters <- function(res,
     if (Z_type == "continuous") {
 
       Z_new <- Z
-      plot <- res$y_hat_baseline %>%
+      plot <- Y %>%
         dplyr::mutate(response = factor(response),
                       Z = Z_new) %>%
         dplyr::left_join(cluster_key, by = c("response" = "response_names")) %>%
@@ -64,9 +78,10 @@ plot_clusters <- function(res,
         ggplot2::scale_color_manual(
           values = values,
           name = "Cluster"
-        )
+        ) +
+        ggplot2::labs(title = y_type)
     } else if (Z_type == "binary") {
-      plot <- res$y_hat_baseline %>%
+      plot <- Y %>%
         dplyr::mutate(response = factor(response)) %>%
         dplyr::left_join(cluster_key, by = c("response" = "response_names")) %>%
         dplyr::mutate(response = factor(response, labels = response_names)) %>%
@@ -89,7 +104,8 @@ plot_clusters <- function(res,
         ggplot2::scale_color_manual(
           values = values,
           name = "Cluster"
-        )
+        ) +
+        ggplot2::labs(title = y_type)
     }
 
 
