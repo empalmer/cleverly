@@ -13,6 +13,7 @@ plot_clusters(
   order = "response",
   nrow = 3,
   Z_type = "binary",
+  y_type = "y_hat_baseline",
   baseline = T
 )
 }

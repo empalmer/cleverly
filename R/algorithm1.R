@@ -717,6 +717,23 @@ estimate_y_counts <- function(beta, B, Z, K, Y, time){
 # Re-fit group beta estimates ---------------------------------------------
 
 
+#' Title
+#'
+#' @param y
+#' @param Z
+#' @param beta
+#' @param lp
+#' @param lp_minus
+#' @param B
+#' @param clusters
+#' @param K
+#' @param P
+#' @param M
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 beta_cluster_group <- function(y, Z, beta, lp,  lp_minus, B, clusters, K, P, M) {
 
   L <- ncol(Z) - 1
@@ -793,6 +810,21 @@ beta_cluster_group <- function(y, Z, beta, lp,  lp_minus, B, clusters, K, P, M) 
 
 
 
+#' Title
+#'
+#' @param y
+#' @param Z
+#' @param beta
+#' @param lp
+#' @param lp_minus
+#' @param B
+#' @param clusters
+#' @param K
+#' @param P
+#' @param M
+#'
+#' @returns
+#' @export
 beta_cluster_group_update <- function(y, Z, beta, lp,  lp_minus, B, clusters, K, P, M) {
 
   L <- ncol(Z) - 1
