@@ -214,6 +214,7 @@ algorithm1 <- function(Y,
       # If there is an error, exit out of the loop
       if (is.character(alg2)) {
         error <- alg2
+        beta_lp_minus <- beta
         break
       }
       beta_lp_minus <- alg2$beta

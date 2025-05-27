@@ -22,7 +22,7 @@ test_that("Simulation Z 0,1", {
                           K = 12,
                           order = 3,
                           user_var = 1000000,
-                          cor_str = "CON-d",
+                          cor_str = "AR1-d",
                           rho = 0.95,
                           prob1 = .5,
                          baseline_fxns = list(
@@ -30,36 +30,38 @@ test_that("Simulation Z 0,1", {
                            function(t) cos(2 * pi * t),
                            function(t) cos(2 * pi * t),
                            function(t) cos(2 * pi * t),
-                           function(t) sin(pi * t),
-                           function(t) sin(pi * t),
-                           function(t) sin(pi * t),
-                           function(t) sin(pi * t),
-                           function(t) -t + 1,
-                           function(t) -t + 1,
-                           function(t) -t + 1,
-                           function(t) -t + 1
+                           function(t) 2 * sin(pi * t) - 1,
+                           function(t) 2 * sin(pi * t) - 1,
+                           function(t) 2 * sin(pi * t) - 1,
+                           function(t) 2 * sin(pi * t) - 1,
+                           function(t) 2 - 2 * t,
+                           function(t) 2 - 2 * t,
+                           function(t) 2 - 2 * t,
+                           function(t) 2 - 2 * t
                          ),
                           # Slope functions
                           slope_fxns = list(
-                            function(t) 1,
-                            function(t) -1,
+                            function(t) 2 - t,
+                            function(t) 2 * sin(pi * t),
                             function(t) .5,
                             function(t) t^2,
-                            function(t) 2,
-                            function(t) t - 2,
-                            function(t) -t,
-                            function(t) 3 - 2*t,
-                            function(t) 1.5,
+                            function(t)  -.5 ,
+                            function(t) 2 * t - 2,
+                            function(t) t,
+                            function(t) 2 - t,
+                            function(t) 1,
                             function(t) -.75,
                             function(t) .75,
-                            function(t) t))
+                            function(t) 2 * t))
 
   plot_sim_data(sim)
 
   # This is the one where it did not work in simulation
-  sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_large_rho_var/sim_data_2.rds")
+  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_large_rho_var/sim_data_2.rds")
   sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_small_var_Y0/sim_data_2.rds")
   sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_1mil_similar_ranges/sim_data_2.rds")
+  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/CONd_may22_1mil/sim_data_74.rds")
+  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_binary_baseline/sim_data_27.rds")
 
   # Visualize simulated data
   plot_sim_data(sim)
@@ -86,14 +88,14 @@ test_that("Simulation Z 0,1", {
                   gammas = c(1,1),
                   theta = 500,
                   parralel = F,
-                  psi_min = 275,
-                  psi_max = 300,
+                  psi_min = 157.14,
+                  psi_max = 228.57,
                   npsi = 1,
                   # Iterations max
                   run_min = 3,
-                  max_admm_iter = 50,
+                  max_admm_iter = 300,
                   max_outer_iter = 3,
-                  max_2_iter = 50,
+                  max_2_iter = 300,
   ) %>%
     get_cluster_diagnostics(true_cluster)
 
@@ -121,8 +123,8 @@ test_that("Simulation Z 0,1", {
 
 
 
-  plot_BIC(res, BIC_type = "BIC", psis = seq(600, 1400, length.out = 1))
-
+  plot_BIC(res, BIC_type = "BIC", psis = seq(600, 1400, length.out = 2))
+  plot_BIC(res, BIC_type = "BIC_ra_group", psis = seq(600, 1400, length.out = 2))
 
   res$possible_clusters
   res$psi

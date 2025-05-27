@@ -424,6 +424,16 @@ update_beta_admm <- function(Y,
   #beta_lp_new <- MASS::ginv(first_term) %*% second_term
   #beta_lp_new <- fast_mat_mult2(MASS::ginv(first_term), second_term)
 
+  # theta_test_term <- -H + gamma * D
+  # condition_num <- kappa(theta_test_term)
+
+
+  # if (condition_num < 10) {
+  #   theta
+  # } else {
+  #   theta <- eigen(A)
+  # }
+
   beta_lp_new <- calculate_beta_lp_new(H = H,
                                        gamma = gamma,
                                        D = D,
