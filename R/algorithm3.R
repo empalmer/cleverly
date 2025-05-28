@@ -448,11 +448,6 @@ update_beta_admm <- function(Y,
   # All other beta elements are fixed, only the lp column is updated.
   beta[,lp + 1] <- beta_lp_new
 
-
-  # if (any(is.nan(beta_lp_new))) {
-  #   stop("Beta ADMM is NaN")
-  # }
-
   return(beta)
 }
 

@@ -22,7 +22,7 @@ test_that("Simulation Z 0,1", {
                           K = 12,
                           order = 3,
                           user_var = 1000000,
-                          cor_str = "AR1-d",
+                          cor_str = "CON-d",
                           rho = 0.95,
                           prob1 = .5,
                          baseline_fxns = list(
@@ -62,9 +62,14 @@ test_that("Simulation Z 0,1", {
   sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_1mil_similar_ranges/sim_data_2.rds")
   sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/CONd_may22_1mil/sim_data_74.rds")
   sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_binary_baseline/sim_data_27.rds")
+  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_binary_slope/sim_data_27.rds")
+  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_cont_baseline/sim_data_1.rds")
+  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_cont_slope/sim_data_27.rds")
 
   # Visualize simulated data
-  plot_sim_data(sim)
+  Z_type = "continuous"
+  Z_type = "binary"
+  plot_sim_data(sim, Z_type = Z_type)
 
   true_cluster <- rep(1:3, each = 4)
 
@@ -73,22 +78,18 @@ test_that("Simulation Z 0,1", {
     "Capture.Number",
     "Z"))
   Z <- sim$Z
-  #start <- Sys.time()
-  #Rprof("test.out", interval = .02)
-  #profvis::profvis({
-
 
   res <- cleverly(Y = Y,
                   Z = Z,
                   subject_ids = individual,
                   time = time,
-                  lp = 0,
+                  lp = 1,
                   cor_str = "CON-d",
                   # Hyperparameters
                   gammas = c(1,1),
                   theta = 500,
                   parralel = F,
-                  psi_min = 157.14,
+                  psi_min = 50,
                   psi_max = 228.57,
                   npsi = 1,
                   # Iterations max
@@ -99,18 +100,17 @@ test_that("Simulation Z 0,1", {
   ) %>%
     get_cluster_diagnostics(true_cluster)
 
+
+  res$y_hat_baseline
   plot_clusters(res,
-                Z = rep(Z, 12),
                 response_names = 1:12,
-                Z_type = "binary",
-                y_type = "y_hat_baseline",
-                scales = "fixed")
+                Z_type = Z_type,
+                y_type = "y_hat_baseline")
 
   plot_clusters(res,
-                Z = rep(Z, 12),
                 response_names = 1:12,
-                Z_type = "binary",
-                y_type = "y_hat_lp_group",
+                y_type = "slope",
+                Z_type = Z_type,
                 scales = "fixed")
 
 
@@ -119,8 +119,6 @@ test_that("Simulation Z 0,1", {
                 response_names = 1:12,
                 Z_type = "binary",
                 y_type = "y_hat_counts_group")
-
-
 
 
   plot_BIC(res, BIC_type = "BIC", psis = seq(600, 1400, length.out = 2))

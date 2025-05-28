@@ -13,20 +13,20 @@
 #' @param EV_color color for the EV line
 #' @param Z value of Z
 #' @param Z_type binary or continuous
-#' @param baseline plot only baseline? Has to be true for continuous, but for binary slope can be plotted
+#' @param lp_curve_only plot only the lp_curve_only? Has to be true for continuous, but for binary slope can be plotted
 #'
 #' @returns ggplot object
 #' @export
 plot_clusters <- function(res,
                           Z,
                           response_names,
-                          scales = "free_y",
-                          EV_color = "grey50",
                           order = "response",
-                          nrow = 3,
                           Z_type = "binary",
                           y_type = "y_hat_baseline",
-                          baseline = T){
+                          lp_curve_only = T,
+                          nrow = 3,
+                          scales = "fixed",
+                          EV_color = "grey50"){
 
 
   if (y_type == "y_hat_baseline") {
@@ -35,18 +35,42 @@ plot_clusters <- function(res,
   if (y_type == "y_hat_lp_group") {
     Y <- res$y_hat_lp_group
   }
-  if (y_type == "y_hat_counts_group") {
-    Y <- res$y_hat_counts_group
+  if (y_type == "slope") {
+
+    Y_baseline <- res$y_hat_baseline
+    Y_hat <- res$y_hat
+
+    # Fix the slope:
+    slope <- Y_hat$yhat - Y_baseline$yhat
+
+    Y_baseline$slope <- slope
+
+    Y <- Y_baseline
   }
 
+  if (Z_type == "binary") {
+    Y <- Y %>% dplyr::mutate(Z = factor(Z))
+  }
 
+  # if (y_type == "y_hat_counts_group") {
+  #   Y <- res$y_hat_counts_group
+  # }
+
+
+  # Data formatting, adding cluster info:
 
   cluster_key <- data.frame(
     response_names = factor(1:length(response_names),
                             levels = 1:length(response_names)),
     cluster = factor(res$clusters$membership))
+  Y <- Y %>%
+    dplyr::mutate(response = factor(response)) %>%
+    dplyr::left_join(cluster_key, by = c("response" = "response_names")) %>%
+    dplyr::mutate(response = factor(response, labels = response_names))
 
-  if (baseline) {
+
+  if (lp_curve_only) {
+    # Figure out how to order responses, based on response ordering or cluster ordering
     if (order == "response") {
       values <- viridis::viridis(length(unique(cluster_key$cluster)))
     } else if (order == "cluster") {
@@ -55,63 +79,28 @@ plot_clusters <- function(res,
       stop("order must be either 'response' or 'cluster'")
     }
 
-    if (Z_type == "continuous") {
-
-      Z_new <- Z
-      plot <- Y %>%
-        dplyr::mutate(response = factor(response),
-                      Z = Z_new) %>%
-        dplyr::left_join(cluster_key, by = c("response" = "response_names")) %>%
-        dplyr::mutate(response = factor(response, labels = response_names)) %>%
-        ggplot2::ggplot(ggplot2::aes(x = time)) +
-        ggplot2::geom_point(ggplot2::aes(y = y,
-                                         color = Z),
-                            size = 1, alpha = .5) +
-        ggplot2::guides(color = ggplot2::guide_legend("EV")) +
-        ggnewscale::new_scale_color() +
-        ggplot2::geom_line(ggplot2::aes(y = yhat,
-                                        color = cluster),
-                           linewidth = 1.5) +
-        ggplot2::facet_wrap(~response,
-                            scales = scales,
-                            nrow = nrow) +
-        ggplot2::scale_color_manual(
-          values = values,
-          name = "Cluster"
-        ) +
-        ggplot2::labs(title = y_type)
-    } else if (Z_type == "binary") {
-      plot <- Y %>%
-        dplyr::mutate(response = factor(response)) %>%
-        dplyr::left_join(cluster_key, by = c("response" = "response_names")) %>%
-        dplyr::mutate(response = factor(response, labels = response_names)) %>%
-        ggplot2::ggplot(ggplot2::aes(x = time)) +
-        ggplot2::geom_point(ggplot2::aes(y = y,
-                                         color = factor(Z),
-                                         shape = factor(Z)),
-                            size = 1, alpha = .8) +
-        ggplot2::guides(color = ggplot2::guide_legend("EV"),
-                        shape = ggplot2::guide_legend("EV")) +
-        # ggplot2::labs(color = "EV",
-        #               shape = "EV") +
-        ggnewscale::new_scale_color() +
-        ggplot2::geom_line(ggplot2::aes(y = yhat,
-                                        color = cluster),
-                           linewidth = 1) +
-        ggplot2::facet_wrap(~response,
-                            scales = scales,
-                            nrow = nrow) +
-        ggplot2::scale_color_manual(
-          values = values,
-          name = "Cluster"
-        ) +
-        ggplot2::labs(title = y_type)
-    }
-
-
+    plot <- Y %>%
+      ggplot2::ggplot(ggplot2::aes(x = time)) +
+      ggplot2::geom_point(ggplot2::aes(y = y, color = Z),
+                          size = 1, alpha = .8) +
+      #ggplot2::guides(color = ggplot2::guide_legend("EV")) +
+      ggnewscale::new_scale_color() +
+      ggplot2::geom_line(ggplot2::aes(y = yhat,
+                                      color = cluster),
+                         linewidth = 1.5) +
+      ggplot2::facet_wrap(~response,
+                          scales = scales,
+                          nrow = nrow) +
+      ggplot2::scale_color_manual(
+        values = values,
+        name = "Cluster"
+      ) +
+      ggplot2::labs(title = y_type)
   }
 
-  else if (!baseline) {
+
+# Not baseline ------------------------------------------------------------
+  else if (!lp_curve_only) {
     if (order == "response") {
       values <- c(viridis::viridis(length(unique(cluster_key$cluster))), EV_color)
     } else if (order == "cluster") {
@@ -126,9 +115,7 @@ plot_clusters <- function(res,
       #           "grey50"),
     }
     # plot clusters
-    plot <- res$y_hat %>%
-      dplyr::mutate(response = factor(response)) %>%
-      dplyr::left_join(cluster_key, by = c("response" = "response_names")) %>%
+    plot <- res$y_hat
       dplyr::mutate(clusterZ = ifelse(Z == 1, "EV", cluster),
                     response = factor(response, labels = response_names)) %>%
       ggplot2::ggplot(ggplot2::aes(x = time)) +
@@ -154,6 +141,17 @@ plot_clusters <- function(res,
       )
   }
 
+# Slope plots:  -----------------------------------------------------------
+#
+#   if (y_type == "slope") {
+#     plot <- Y %>%
+#       ggplot2::ggplot(ggplot2::aes(x = time, y = slope, color = cluster)) +
+#       ggplot2::geom_point() +
+#       ggplot2::facet_wrap(~response, scales = scales, nrow = nrow)
+#   }
+
+
+
 
   return(plot)
 
@@ -177,7 +175,7 @@ plot_BIC <- function(res, BIC_type = "BIC", psis){
   if (BIC_type == "BIC_ra_group") {
     data <- res$BIC_ra_group
   }
-  if (BIC_type == "BIC_group"){
+  if (BIC_type == "BIC_group") {
     data <- res$BIC_group
   }
 

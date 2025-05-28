@@ -324,7 +324,8 @@ algorithm1 <- function(Y,
   }
 
 
-  # After loop:
+  # After loop ----------------------------------------------------------------
+
   # Calculate v for the last time (since v is updated before beta in admm)
   v <- update_v(beta = beta,
                 lp = lp,
@@ -340,6 +341,22 @@ algorithm1 <- function(Y,
                            K = K,
                            P = P)
 
+  # Refit based on chosen cluster, forcing betas in the same group to be identical
+  beta_group <- beta_cluster_group_update(y = Y,
+                                          Z = Z,
+                                          beta = beta,
+                                          lp = lp,
+                                          lp_minus = lp_minus,
+                                          B = B,
+                                          clusters = clusters,
+                                          K = K,
+                                          P = P,
+                                          M = M)
+
+
+# y-hat -------------------------------------------------------------------
+
+
   # This is in relative abundance
   y_hat <- estimate_y(beta = beta,
                       B = B,
@@ -347,7 +364,23 @@ algorithm1 <- function(Y,
                       K = K,
                       Y = Y,
                       time = time)
+  # Get ya for just the lp estimates.
   y_hat_baseline <- estimate_y(beta = beta,
+                               B = B,
+                               Z = Z,
+                               K = K,
+                               Y = Y,
+                               time = time,
+                               baseline = T)
+  # Get initial values (plotted just after 1st alg2 - no penalization)
+  y_hat_init <- estimate_y(beta = beta_init$beta,
+                           B = B,
+                           Z = Z,
+                           K = K,
+                           Y = Y,
+                           time = time)
+  # Re-fit penalized ys.
+  y_hat_lp_group <- estimate_y(beta = beta_group,
                                B = B,
                                Z = Z,
                                K = K,
@@ -356,13 +389,7 @@ algorithm1 <- function(Y,
                                baseline = T)
 
 
-
-  y_hat_init <- estimate_y(beta = beta_init$beta,
-                      B = B,
-                      Z = Z,
-                      K = K,
-                      Y = Y,
-                      time = time)
+# BIC ---------------------------------------------------------------------
   BIC <- BIC_cluster(y_ra_df = y_hat,
                      K = K,
                      L = L,
@@ -372,26 +399,6 @@ algorithm1 <- function(Y,
                      order = order)
 
 
-# New fxns ----------------------------------------------------------------
-
-
-  beta_group <- beta_cluster_group_update(y = Y,
-                                          Z = Z,
-                                          beta = beta,
-                                          lp = lp,
-                                          lp_minus = lp_minus,
-                                          B = B,
-                                          clusters = clusters,
-                                          K = K, P = P, M = M)
-
-  y_hat_lp_group <- estimate_y(beta = beta_group,
-                               B = B,
-                               Z = Z,
-                               K = K,
-                               Y = Y,
-                               time = time,
-                               baseline = T)
-
   BIC_ra_group <- BIC_cluster(y_ra_df = y_hat_lp_group,
                               K = K,
                               L = L,
@@ -400,22 +407,24 @@ algorithm1 <- function(Y,
                               nknots = nknots,
                               order = order)
 
-  y_hat_counts_group <- estimate_y_counts(beta = beta_group,
-                                          B = B,
-                                          Z = Z,
-                                          K = K,
-                                          Y = Y,
-                                          time = time)
+  # y_hat_counts_group <- estimate_y_counts(beta = beta_group,
+  #                                         B = B,
+  #                                         Z = Z,
+  #                                         K = K,
+  #                                         Y = Y,
+  #                                         time = time)
+  #
+  # BIC_group <- BIC_cluster_group(y_hat_counts = y_hat_counts_group,
+  #                                y_counts = Y,
+  #                                beta_group = beta_group,
+  #                                clusters = clusters,
+  #                                M = M,
+  #                                K = K,
+  #                                nknots = nknots,
+  #                                order = order)
 
-  BIC_group <- BIC_cluster_group(y_hat_counts = y_hat_counts_group,
-                                 y_counts = Y,
-                                 beta_group = beta_group,
-                                 clusters = clusters,
-                                 M = M,
-                                 K = K,
-                                 nknots = nknots,
-                                 order = order)
 
+# rho ---------------------------------------------------------------------
 
   alpha <- get_alpha_list(beta = beta,
                           Z = Z,
@@ -445,19 +454,20 @@ algorithm1 <- function(Y,
                  cor_blocks = cor_blocks,
                  j1_j2_list = j1_j2_list)
 
+# Return ------------------------------------------------------------------
 
   return(list(clusters = clusters,
               y_hat = y_hat,
               y_hat_init = y_hat_init,
               y_hat_lp_group = y_hat_lp_group,
               y_hat_baseline = y_hat_baseline,
-              y_hat_counts_group = y_hat_counts_group,
+              #y_hat_counts_group = y_hat_counts_group,
               beta = beta,
               v = v,
               rho = rho,
               phi = phi,
               BIC = BIC,
-              BIC_group = BIC_group,
+              #BIC_group = BIC_group,
               BIC_ra_group = BIC_ra_group,
               s = s,
               error = error))
@@ -629,7 +639,6 @@ estimate_y <- function(beta, B, Z, K, Y, time, baseline = F){
   for (k in 1:K) {
     y_k <- numeric(M)
     for (l in 0:L) {
-
       beta_k <- beta[((k - 1)*P + 1):(k*P), l + 1, drop = F]
       Z_l <- diag(Z[,l + 1])
       #y_k <- y_k + Z_l %*% B %*% beta_k
@@ -646,8 +655,8 @@ estimate_y <- function(beta, B, Z, K, Y, time, baseline = F){
 
 
 
-  # Check if Z is used, otherwise dont add
-  if (identical(Z, matrix(1, nrow = nrow(Z_true), ncol = 1))) {
+  # Check if Z is used, otherwise don't add
+  if (identical(Z_true, matrix(1, nrow = nrow(Z_true), ncol = 1))) {
     Ys <- data.frame(time = time,
                      yhat_ra,
                      y_ra)

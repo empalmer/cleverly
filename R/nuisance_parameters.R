@@ -13,6 +13,7 @@
 get_phi <- function(pearson_residuals, K, M, L, P){
 
   phi <- sum(unlist(pearson_residuals)^2) / (K * M - ((L + 1) * P))
+
   if (phi > 1e3) {
     warning("Phi is too large; setting to 1e3.")
     print("Phi is too large; setting to 1e3.")
@@ -127,5 +128,6 @@ get_pearson_residual_i <- function(Y,
   if (print_warning) {
     print("Some denominator values in the pearson residuals are too small; replacing with 1e-6.")
   }
+
   return(ri)
 }

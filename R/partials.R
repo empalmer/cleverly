@@ -42,6 +42,12 @@ get_partials_ijl <- function(i,
                    i_index = i_index)
 
   partials_ijl <- Y_ij0 * Z_ijl * kronecker(U_ij, B_ij)
+
+  if (any(as.numeric(partials_ijl) > 1000)) {
+    browser()
+  }
+
+
   return(partials_ijl)
 }
 
@@ -91,6 +97,8 @@ get_partials_il <- function(i,
                                                              beta = beta,
                                                              alpha_ij = alpha_ij)
   }
+
+
   return(partials_il)
 }
 

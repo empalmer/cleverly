@@ -40,7 +40,7 @@ CLR_cluster <- function(Y, Z, time, B, lp, K, P, M) {
   E <- kronecker(matrix(1, ncol = K), diag(K))
 
 
-  # Lsei solves min(|AX - B|) subject to EX = F
+  # Lsei solves min(|AX - B|2) subject to EX = F
   lsei <- limSolve::lsei(A = X,
                          B = Y_vec,
                          E = E,
@@ -98,9 +98,6 @@ CLR_cluster <- function(Y, Z, time, B, lp, K, P, M) {
       names_pattern = "(yhat|y)_(\\d+)"  # Splits into two parts: yhat/y and the number
     ) %>%
     dplyr::mutate(response = factor(response, levels = 1:K))
-
-
-
 
 
   # Perform k means clustering using gap statistic to determine number of clusters

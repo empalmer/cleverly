@@ -350,31 +350,12 @@ get_B <- function(time, order, nknots) {
 #' @export
 get_alpha_ijk <- function(i, j, k, beta_ks, Z_ij, B_ij, i_index, P, L) {
   # Extract all beta_lk at once for efficiency
-  #beta_k <- beta[((k - 1) * P + 1):(k * P), ]
-
   beta_k <- beta_ks[[k]]
 
-  # Compute the weighted sum efficiently
-  #lsum <- Z_ij * (t(B_ij) %*% beta_k)
-  lsum <- Z_ij * crossprod(B_ij,beta_k)
-
   # Compute alpha_ijk
+  lsum <- Z_ij * crossprod(B_ij,beta_k)
   alpha_ijk <- exp(sum(lsum))
 
-
-  # alpha_ijk_cpp <- compute_alpha_ijk(beta,
-  #                                    k = k,
-  #                                    P = P,
-  #                                    Z_ij = Z_ij,
-  #                                    B_ij = B_ij)
-
-
-  # if (any(is.infinite(alpha_ijk))) {
-  #   stop("Infinite alpha")
-  # }
-  # if (sum(alpha_ijk < 0) != 0) {
-  #   stop("Negative alpha")
-  # }
   return(alpha_ijk)
 }
 
@@ -400,11 +381,8 @@ get_alpha_ij <- function(i, j, beta_ks, Z, B, K, i_index, L, P) {
                    B = B,
                    i_index = i_index)
 
-
-
   # Z_ij is a vector of length L
   Z_ij <- Z[i_index[i] + j, 0:L + 1]
-
 
   alphas <- numeric(K)
   for (k in 1:K) {
@@ -418,6 +396,12 @@ get_alpha_ij <- function(i, j, beta_ks, Z, B, K, i_index, L, P) {
                                L = L,
                                P = P)
   }
+
+
+  if (any(is.infinite(alphas))) {
+    print(paste0("Infinite alpha for i = ", i))
+  }
+
   return(alphas)
 }
 
