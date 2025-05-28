@@ -43,11 +43,6 @@ get_partials_ijl <- function(i,
 
   partials_ijl <- Y_ij0 * Z_ijl * kronecker(U_ij, B_ij)
 
-  if (any(as.numeric(partials_ijl) > 1000)) {
-    browser()
-  }
-
-
   return(partials_ijl)
 }
 

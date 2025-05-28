@@ -14,11 +14,11 @@ get_phi <- function(pearson_residuals, K, M, L, P){
 
   phi <- sum(unlist(pearson_residuals)^2) / (K * M - ((L + 1) * P))
 
-  if (phi > 1e3) {
-    warning("Phi is too large; setting to 1e3.")
-    print("Phi is too large; setting to 1e3.")
-    phi <- 1e3
-  }
+  # if (phi > 1e3) {
+  #   warning("Phi is too large; setting to 1e3.")
+  #   print("Phi is too large; setting to 1e3.")
+  #   phi <- 1e3
+  # }
 
   return(phi)
 }

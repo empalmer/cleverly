@@ -94,9 +94,9 @@ test_that("Simulation Z 0,1", {
                   npsi = 1,
                   # Iterations max
                   run_min = 3,
-                  max_admm_iter = 300,
+                  max_admm_iter = 100,
                   max_outer_iter = 3,
-                  max_2_iter = 300,
+                  max_2_iter = 100,
   ) %>%
     get_cluster_diagnostics(true_cluster)
 
@@ -202,9 +202,10 @@ test_that("CLR", {
 
   plot_clusters(clr_res,
                 response_names = 1:12,
-                Z_type = "binary",
+                Z_type = "continuous",
                 y_type = "y_hat_baseline",
                 scales = "fixed")
+  plot_sim_data(sim, Z_type = "continuous")
 
 
 })

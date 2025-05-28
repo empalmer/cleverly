@@ -82,23 +82,31 @@ CLR_cluster <- function(Y, Z, time, B, lp, K, P, M) {
     dplyr::mutate(response = factor(response, levels = 1:K))
 
   # Compute fitted baseline values.
-  y_hat_baseline <- matrix(NA, nrow = nrow(Y), ncol = K)
+  y_hat_clr_baseline <- matrix(NA, nrow = nrow(Y), ncol = K)
   for (k in 1:K) {
-    y_hat_baseline[, k] <- ZB_list[[1]] %*% beta0[, k]
+    y_hat_clr_baseline[, k] <- ZB_list[[1]] %*% beta0[, k]
   }
-  y_hat_baseline_df <- data.frame(time = time, Z = Z[, 2], y_hat_baseline, y_clr)
+
+  # Transform back into relative abundances.
+  y_hat_baseline <- compositions::clrInv(y_hat_clr_baseline)
+  #y <- compositions::clrInv(y_clr)
+  y <- Y/rowSums(Y)
+
+  y_hat_baseline_df <- data.frame(time = time, Z = Z[, 2], y_hat_baseline, y, y_hat_clr_baseline, y_clr)
+
   colnames(y_hat_baseline_df) <- c("time",
                                    "Z",
                                    paste0("yhat_", 1:K),
-                                   paste0("y_", 1:K))
+                                   paste0("y_", 1:K),
+                                   paste0("yhatclr_", 1:K),
+                                   paste0("yclr_", 1:K))
   y_hat_baseline_df <- y_hat_baseline_df %>%
     tidyr::pivot_longer(
       cols = tidyr::matches("yhat|y"),  # Selects both yhat and y columns
       names_to = c(".value", "response"),
-      names_pattern = "(yhat|y)_(\\d+)"  # Splits into two parts: yhat/y and the number
+      names_pattern = "(yhat|y|yhatclr|yclr)_(\\d+)"  # Splits into two parts: yhat/y and the number
     ) %>%
     dplyr::mutate(response = factor(response, levels = 1:K))
-
 
   # Perform k means clustering using gap statistic to determine number of clusters
   if (lp == 0) {

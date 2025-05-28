@@ -36,6 +36,9 @@ get_V_ijj <- function(Y_ij0,
   DM_overdispersion_ij <- (Y_ij0 + alpha_ij0)/(1 + alpha_ij0)
   #V_ijj <- phi * Y_ij0 * U_ij
   V_ijj <- Y_ij0 * U_ij * DM_overdispersion_ij
+
+
+
   return(V_ijj)
 }
 
@@ -90,6 +93,7 @@ get_V_inv <- function(Y,
                              K = K,
                              cor_str = cor_str,
                              rho_cor = rho_cor)
+
   }
   return(V_inv)
 }

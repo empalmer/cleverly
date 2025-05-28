@@ -81,7 +81,7 @@ plot_clusters <- function(res,
 
     plot <- Y %>%
       ggplot2::ggplot(ggplot2::aes(x = time)) +
-      ggplot2::geom_point(ggplot2::aes(y = y, color = Z),
+      ggplot2::geom_jitter(ggplot2::aes(y = y, color = Z),
                           size = 1, alpha = .8) +
       #ggplot2::guides(color = ggplot2::guide_legend("EV")) +
       ggnewscale::new_scale_color() +
