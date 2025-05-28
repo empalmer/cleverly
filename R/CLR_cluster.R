@@ -31,50 +31,35 @@ CLR_cluster <- function(Y, Z, time, B, lp, K, P, M) {
   y_clr <- compositions::clr(Y)
 
   # Multivariate constrained optimization
-  # Build design matrix for each outcome: [A | B], size M x 12
   X <- kronecker(diag(K), ZB)  # (M*K) x (12*p)
 
-  # Stack responses
+  # Vectorize y (not multivariate)
   Y_vec <- as.vector(y_clr)
 
-  C <- matrix(0, nrow = (L + 1) * P, ncol = (L + 1) * P * K)
-
-  # Fill in C for beta_0 constraints (rows 1:6)
-  for (j in 1:P) {
-    for (k in 1:K) {
-      idx <- (k - 1) * (L + 1) * P + j  # location of beta_0[j, k]
-      C[j, idx] <- 1
-    }
-  }
-  # Fill in C for beta_1 constraints (rows 7:12)
-  for (j in 1:P) {
-    for (k in 1:K) {
-      idx <- (k - 1) * (L + 1) * P + P + j  # location of beta_1[j, k]
-      C[P + j, idx] <- 1
-    }
-  }
-
-  # KKT system
-  XtX <- t(X) %*% X
-  XtY <- t(X) %*% Y_vec
-  zero_block <- matrix(0, nrow = nrow(C), ncol = nrow(C))
-
-  KKT_mat <- rbind(
-    cbind(XtX, t(C)),
-    cbind(C, zero_block)
-  )
-  rhs <- rbind(XtY, matrix(0, nrow = nrow(C), ncol = 1))
-  sol <- solve(KKT_mat, rhs)
-  beta_constrained <- sol[1:((L + 1) * P * K), ]
+  # Make constraint matrix
+  E <- kronecker(matrix(1, ncol = K), diag(K))
 
 
-  # Reshape into 2 coefficient matrices
+  # Lsei solves min(|AX - B|) subject to EX = F
+  lsei <- limSolve::lsei(A = X,
+                         B = Y_vec,
+                         E = E,
+                         F = rep(0, nrow(E)))
+
+
+  # lsei outputs one long beta vector, so we need to reshape it
+  beta_constrained <- lsei$X
   beta0 <- matrix(NA, nrow = P, ncol = K)
   beta1 <- matrix(NA, nrow = P, ncol = K)
+
   for (k in 1:K) {
-    beta_k <- beta_constrained[((k - 1) * (L + 1) * P + 1):(k * (L + 1) * P)]
-    beta0[, k] <- beta_k[1:P]
-    beta1[, k] <- beta_k[(P + 1):((L + 1) * P)]
+    # Indices for beta_0 and beta_1 for outcome k
+    idx_start <- (k - 1) * 2 * P + 1
+    idx_end <- k * 2 * P
+    beta_k <- beta_constrained[idx_start:idx_end]
+
+    beta0[, k] <- beta_k[1:P]             # first P values = beta_0
+    beta1[, k] <- beta_k[(P + 1):(2 * P)] # next P values = beta_1
   }
 
 

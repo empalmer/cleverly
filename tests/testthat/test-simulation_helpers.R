@@ -190,6 +190,16 @@ test_that("CLR", {
     get_cluster_diagnostics(true_cluster)
   clr_res$cluster_diagnostics
 
+
+
+  x <- as.matrix( iris[1:50, 1:4] )
+  y <- matrix(rnorm(100), ncol = 2)
+  R <- matrix(c(1, 1, 1, 1, 1, 1, 1, 1), nrow = 2)
+  c <- matrix(c(1, 1), nrow = 2)
+  cols::mvcls(y, x, R, c)
+
+
+
   clr_res$y_hat_baseline
 
   plot_clusters(clr_res,
