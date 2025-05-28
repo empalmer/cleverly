@@ -342,16 +342,16 @@ algorithm1 <- function(Y,
                            P = P)
 
   # Refit based on chosen cluster, forcing betas in the same group to be identical
-  beta_group <- beta_cluster_group_update(y = Y,
-                                          Z = Z,
-                                          beta = beta,
-                                          lp = lp,
-                                          lp_minus = lp_minus,
-                                          B = B,
-                                          clusters = clusters,
-                                          K = K,
-                                          P = P,
-                                          M = M)
+  beta_group <- beta_cluster(y = Y,
+                             Z = Z,
+                             beta = beta,
+                             lp = lp,
+                             lp_minus = lp_minus,
+                             B = B,
+                             clusters = clusters,
+                             K = K,
+                             P = P,
+                             M = M)
 
 
 # y-hat -------------------------------------------------------------------
@@ -728,116 +728,22 @@ estimate_y_counts <- function(beta, B, Z, K, Y, time){
 
 # Re-fit group beta estimates ---------------------------------------------
 
-
-#' Title
+#' Group update beta
 #'
-#' @param y
-#' @param Z
-#' @param beta
-#' @param lp
-#' @param lp_minus
-#' @param B
-#' @param clusters
-#' @param K
-#' @param P
-#' @param M
+#' @param y #' A matrix of response values (e.g., counts), with \eqn{M} rows and \eqn{K} columns. Each row corresponds to a subject-time combination.
+#' @param Z  formatted external variable matrix with intercept column
+#' @param beta Original unpenalized beta
+#' @param lp clustering index
+#' @param lp_minus non clustering indeces
+#' @param B B spline basis
+#' @param clusters identified clusters
+#' @param K number of responses
+#' @param P order + nknots
+#' @param M total rows, timepoints times subjects
 #'
-#' @returns
+#' @returns beta matrix where betas are equal in each cluster
 #' @export
-#'
-#' @examples
-beta_cluster_group <- function(y, Z, beta, lp,  lp_minus, B, clusters, K, P, M) {
-
-  L <- ncol(Z) - 1
-  # Initialize matrix to hold coefficient estimates
-  num_features <- ncol(B)
-  num_samples <- ncol(y)
-  beta_group <- matrix(nrow = num_features, ncol = num_samples)
-
-  log_y <- log(y + 1)
-
-  y_minus_Z_B_beta <- matrix(nrow = M, ncol = K)
-  for (k in 1:K) {
-    Z_B_beta <- numeric(M)
-    for (l in lp_minus) {
-      beta_k <- beta[((k - 1)*P + 1):(k*P), l + 1, drop = F]
-      Z_l <- diag(Z[,l + 1])
-      #y_k <- y_k + Z_l %*% B %*% beta_k
-      Z_B_beta <- Z_B_beta + fast_mat_mult3(Z_l, B, beta_k)
-    }
-    y_minus_Z_B_beta[,k] <- log_y[,k] - exp(Z_B_beta)
-    #y_minus_Z_B_beta[,k] <- y[,k]
-  }
-
-  y_minus_Z_B_beta[y_minus_Z_B_beta < 0] <- 0
-
-  # Log-transform the response
-  log_y_ZB <-  y_minus_Z_B_beta
-
-
-  # Loop over each unique cluster
-  unique_clusters <- unique(clusters$membership)
-
-  # transform beta for easier indexing.
-  # Reshape beta_in: (P*K) x L --> (P, K, L)
-  beta_array <- array(beta, dim = c(P, K, L + 1))
-  # Permute to (P, L, K)
-  beta_array_perm <- aperm(beta_array, c(1, 3, 2))
-  # Reshape to matrix: (P*L) x K
-  beta_group <- matrix(beta_array_perm, nrow = P * (L + 1), ncol = K)
-
-
-  for (i in seq_along(clusters$csize)) {
-    current_cluster <- unique_clusters[i]
-
-    # Get indices of samples that belong to the current cluster
-    class_indices <- which(clusters$membership == current_cluster)
-
-    # Prepare design matrix and response vector for current cluster
-    B_class <- do.call(rbind, replicate(length(class_indices), B, simplify = FALSE))
-    log_y_class <- as.vector(log_y_ZB[, class_indices])
-
-    # Estimate coefficients using least squares (for log(y + 1))
-    beta_hat <- MASS::ginv(t(B_class) %*% B_class) %*% t(B_class) %*% log_y_class
-
-    # Update beta with the estimated group beta values
-    beta_group[(lp * P + 1):((lp + 1) * P), class_indices] <- beta_hat
-  }
-
-
-  # Step 1: Reshape to array of dimensions (P, L, K)
-  beta_array_back <- array(beta_group, dim = c(P, (L + 1), K))
-
-  # Step 2: Permute dimensions back to (P, K, L)
-  beta_array_orig <- aperm(beta_array_back, c(1, 3, 2))
-
-  # Step 3: Flatten to matrix of shape (P*K) x L
-  beta_in <- matrix(beta_array_orig, nrow = P * K, ncol = (L + 1))
-
-
-
-
-  return(beta_in)
-}
-
-
-
-#' Title
-#'
-#' @param y
-#' @param Z
-#' @param beta
-#' @param lp
-#' @param lp_minus
-#' @param B
-#' @param clusters
-#' @param K
-#' @param P
-#' @param M
-#'
-#' @returns
-#' @export
-beta_cluster_group_update <- function(y, Z, beta, lp,  lp_minus, B, clusters, K, P, M) {
+beta_cluster <- function(y, Z, beta, lp,  lp_minus, B, clusters, K, P, M) {
 
   L <- ncol(Z) - 1
 

@@ -3,16 +3,14 @@
 #'
 #' Note: only implemented for the case of 1 external variable.
 #'
-#' @param y
-#' @param Z
-#' @param beta
-#' @param lp
-#' @param lp_minus
-#' @param B
-#' @param clusters
-#' @param K
-#' @param P
-#' @param M
+#' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
+#' @param Z Full Z matrix (including intercept)
+#' @param lp Which column is clustering can only be 0 or 1
+#' @param B B spline basis matrix
+#' @param K Number of responses
+#' @param P number of B-spline coefficients (order + nknots)
+#' @param M Number of samples times time points for each sample
+#' @param time Vector of numeric time values.
 #'
 #' @returns
 #' @export
@@ -131,47 +129,3 @@ CLR_cluster <- function(Y, Z, time, B, lp, K, P, M) {
   return(res)
 }
 
-
-
-#' CLR cluster
-#'
-#' @param y
-#' @param Z
-#' @param beta
-#' @param lp
-#' @param lp_minus
-#' @param B
-#' @param clusters
-#' @param K
-#' @param P
-#' @param M
-#'
-#' @returns
-#' @export
-logY_ols_cluster <- function(Y, Z, lp,  lp_minus, B, K, P, M) {
-
-  L <- ncol(Z) - 1
-
-
-  gamma <- matrix(nrow = P * (L + 1), ncol = K)
-
-
-  B <- get_B(time = sim$time,
-             order = 3,
-             nknots = 3)
-
-  ZB_list <- list()
-  for (l in 0:L) {
-    Z_l <- diag(Z[,l + 1])
-    ZB_list[[l + 1]] <- Z_l %*% B
-  }
-  ZB <- do.call(cbind, ZB_list)
-
-  Y <- dplyr::select(Y,-c(time, individual))
-  logY <- log(Y + 1)
-
-  for (k in 1:K) {
-
-  }
-
-}

@@ -152,10 +152,10 @@ test_that("Simulation Z 0,1", {
 
 
 test_that("CLR", {
-
+  skip("Skip - used as test file for cleverly")
   sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_large_rho_var/sim_data_2.rds")
-  sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_small_var_Y0/sim_data_2.rds")
-  sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_1mil_similar_ranges/sim_data_2.rds")
+  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_small_var_Y0/sim_data_2.rds")
+  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_1mil_similar_ranges/sim_data_2.rds")
   sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/CONd_may22_1mil/sim_data_74.rds")
   sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_binary_baseline/sim_data_27.rds")
   sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_cont_baseline/sim_data_27.rds")
@@ -187,14 +187,6 @@ test_that("CLR", {
                          M = nrow(Y)) %>%
     get_cluster_diagnostics(true_cluster)
   clr_res$cluster_diagnostics
-
-
-
-  x <- as.matrix( iris[1:50, 1:4] )
-  y <- matrix(rnorm(100), ncol = 2)
-  R <- matrix(c(1, 1, 1, 1, 1, 1, 1, 1), nrow = 2)
-  c <- matrix(c(1, 1), nrow = 2)
-  cols::mvcls(y, x, R, c)
 
 
 

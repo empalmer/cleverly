@@ -14,6 +14,7 @@
 #' @param Z value of Z
 #' @param Z_type binary or continuous
 #' @param lp_curve_only plot only the lp_curve_only? Has to be true for continuous, but for binary slope can be plotted
+#' @param y_type which yhat to plot, either "y_hat_baseline", "y_hat_lp_group", or "slope"
 #'
 #' @returns ggplot object
 #' @export

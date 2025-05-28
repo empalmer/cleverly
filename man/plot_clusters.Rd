@@ -8,13 +8,13 @@ plot_clusters(
   res,
   Z,
   response_names,
-  scales = "free_y",
-  EV_color = "grey50",
   order = "response",
-  nrow = 3,
   Z_type = "binary",
   y_type = "y_hat_baseline",
-  baseline = T
+  lp_curve_only = T,
+  nrow = 3,
+  scales = "fixed",
+  EV_color = "grey50"
 )
 }
 \arguments{
@@ -24,17 +24,19 @@ plot_clusters(
 
 \item{response_names}{vector of names for each response}
 
-\item{scales}{"free_y" or "fixed" to control scaling of the y axis}
-
-\item{EV_color}{color for the EV line}
-
 \item{order}{"response" or "cluster" to have original ordering or cluster ordering of responses on the facet plots}
-
-\item{nrow}{number of rows for the facet plot}
 
 \item{Z_type}{binary or continuous}
 
-\item{baseline}{plot only baseline? Has to be true for continuous, but for binary slope can be plotted}
+\item{y_type}{which yhat to plot, either "y_hat_baseline", "y_hat_lp_group", or "slope"}
+
+\item{lp_curve_only}{plot only the lp_curve_only? Has to be true for continuous, but for binary slope can be plotted}
+
+\item{nrow}{number of rows for the facet plot}
+
+\item{scales}{"free_y" or "fixed" to control scaling of the y axis}
+
+\item{EV_color}{color for the EV line}
 }
 \value{
 ggplot object

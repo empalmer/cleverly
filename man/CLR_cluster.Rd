@@ -7,7 +7,21 @@
 CLR_cluster(Y, Z, time, B, lp, K, P, M)
 }
 \arguments{
-\item{M}{}
+\item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
+
+\item{Z}{Full Z matrix (including intercept)}
+
+\item{time}{Vector of numeric time values.}
+
+\item{B}{B spline basis matrix}
+
+\item{lp}{Which column is clustering can only be 0 or 1}
+
+\item{K}{Number of responses}
+
+\item{P}{number of B-spline coefficients (order + nknots)}
+
+\item{M}{Number of samples times time points for each sample}
 }
 \description{
 Note: only implemented for the case of 1 external variable.
