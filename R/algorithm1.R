@@ -97,7 +97,6 @@ algorithm1 <- function(Y,
   Y0 <- rowSums(Y)
 
 
-
   # Calculate helpers for correlation matrices:
   if (cor_str == "AR1" | cor_str == "AR1-d") {
     j1_j2_list <- lapply(mi_vec, function(mi) {
@@ -209,15 +208,18 @@ algorithm1 <- function(Y,
         print(paste0("ERROR alg2: ", e$message))
         return(e$message)
       })
-      rs[[s + 1]] <- alg2$r
-      alg_2_beta_diff[[s]] <- alg2$beta_diff
+
+
       # If there is an error, exit out of the loop
       if (is.character(alg2)) {
         error <- alg2
         beta_lp_minus <- beta
+        print("Alg2 skipped, using beta from last iteration.")
         break
+      } else {
+        beta_lp_minus <- alg2$beta
       }
-      beta_lp_minus <- alg2$beta
+
     } else {
       beta_lp_minus <- beta
     }

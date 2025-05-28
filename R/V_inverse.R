@@ -12,7 +12,6 @@ get_U_ij <- function(alpha_ij) {
     alpha_ij0 <- alpha_ij0 + 1e-10
     warning("alpha_ij = alphaij0, adding 1e-10")
     print("alpha_ij = alphaij0, adding 1e-10")
-    browser()
   }
   U_ij <- diag(alpha_ij / alpha_ij0) - tcrossprod(alpha_ij) / alpha_ij0^2
   return(U_ij)

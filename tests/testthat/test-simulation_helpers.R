@@ -151,6 +151,56 @@ test_that("Simulation Z 0,1", {
 
 })
 
+
+
+test_that("CLR", {
+
+  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_large_rho_var/sim_data_2.rds")
+  sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_small_var_Y0/sim_data_2.rds")
+  sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_1mil_similar_ranges/sim_data_2.rds")
+  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/CONd_may22_1mil/sim_data_74.rds")
+  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_binary_baseline/sim_data_27.rds")
+  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_cont_baseline/sim_data_27.rds")
+
+
+  true_cluster <- rep(1:3, each = 4)
+
+
+  Y <- dplyr::select(sim, -c(
+    "total_n",
+    "Capture.Number",
+    "Z",
+    "time",
+    "individual"))
+  Z <- sim$Z
+
+  # Calculate B-spline basis based on time for each subject/time
+  B <- get_B(time = sim$time,
+             order = 3,
+             nknots = 3)
+
+  clr_res <- CLR_cluster(Y = Y,
+                         Z = cbind(1, Z),
+                         time = sim$time,
+                         B = B,
+                         lp = 0,
+                         K = 12,
+                         P = 6,
+                         M = nrow(Y)) %>%
+    get_cluster_diagnostics(true_cluster)
+  clr_res$cluster_diagnostics
+
+  clr_res$y_hat_baseline
+
+  plot_clusters(clr_res,
+                response_names = 1:12,
+                Z_type = "binary",
+                y_type = "y_hat_baseline",
+                scales = "fixed")
+
+
+})
+
 test_that("SMALL", {
   skip("Skip - used as test file for cleverly")
   # Generate simulation data
