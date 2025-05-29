@@ -1,6 +1,5 @@
 
-# Not Diagonalized Hessians: (Used)  -------------------------------------------------
-
+# Not Diagonalized Hessians: (Used) -------------------------------------------------
 
 #' Get hessian elements
 #'
