@@ -19,7 +19,6 @@
 #' @returns ggplot object
 #' @export
 plot_clusters <- function(res,
-                          Z,
                           response_names,
                           order = "response",
                           Z_type = "binary",
@@ -65,9 +64,9 @@ plot_clusters <- function(res,
                             levels = 1:length(response_names)),
     cluster = factor(res$clusters$membership))
   Y <- Y %>%
-    dplyr::mutate(response = factor(response)) %>%
+    dplyr::mutate(response = factor(.data$response)) %>%
     dplyr::left_join(cluster_key, by = c("response" = "response_names")) %>%
-    dplyr::mutate(response = factor(response, labels = response_names))
+    dplyr::mutate(response = factor(.data$response, labels = response_names))
 
 
   if (lp_curve_only) {
@@ -117,8 +116,8 @@ plot_clusters <- function(res,
     }
     # plot clusters
     plot <- res$y_hat
-      dplyr::mutate(clusterZ = ifelse(Z == 1, "EV", cluster),
-                    response = factor(response, labels = response_names)) %>%
+      dplyr::mutate(clusterZ = ifelse(Z == 1, "EV", .data$cluster),
+                    response = factor(.data$response, labels = response_names)) %>%
       ggplot2::ggplot(ggplot2::aes(x = time)) +
       ggplot2::geom_point(ggplot2::aes(y = y,
                                        color = factor(Z),
@@ -229,7 +228,7 @@ plot_initial_fit <- function(res, K){
   y_hat_init <- res$y_hat_init
   # plot clusters
   plot <- y_hat_init %>%
-    dplyr::mutate(response = factor(response, levels = 1:K)) %>%
+    dplyr::mutate(response = factor(.data$response, levels = 1:K)) %>%
     ggplot2::ggplot(ggplot2::aes(x = time)) +
     ggplot2::geom_point(ggplot2::aes(y = y,
                                      color = factor(Z),
@@ -259,7 +258,6 @@ plot_initial_fit <- function(res, K){
 #' @returns ggplot object
 visualize_final_fit <- function(Y, res){
   K <- ncol(Y)
-  beta <- res$result$beta
 
   # Rename yhats
   y_hat <- res$result$y_hat
@@ -289,7 +287,7 @@ visualize_final_fit <- function(Y, res){
     dplyr::mutate(y_hat = y_hat_ra$y_hat) %>%
     dplyr::left_join(cluster_df,
                      by = c("response" = "response")) %>%
-    dplyr::mutate(taxa = factor(response,
+    dplyr::mutate(taxa = factor(.data$response,
                                 levels = paste0("Response.", 1:K)))
 
   # Make plot
@@ -343,7 +341,7 @@ beta_path <- function(betas, K, B, Z, time){
                order = 3,
                nknots = 3)
   }
-  if (missing(Z)){
+  if (missing(Z)) {
     Z <- matrix(1, nrow = length(time))
   }
 
@@ -357,8 +355,8 @@ beta_path <- function(betas, K, B, Z, time){
                        paste0("Taxa.", 1:K))
 
   yhats <- yhats %>%
-    tidyr::pivot_longer(-c(time, run)) %>%
-    dplyr::mutate(name = factor(name,
+    tidyr::pivot_longer(-c(time, .data$run)) %>%
+    dplyr::mutate(name = factor(.data$name,
                                 levels = paste0("Taxa.", 1:K)))
 
   yhats %>%
@@ -396,9 +394,9 @@ plot_clusters_yhat <- function(yhat, chosen_cluster, K = 12){
 
   # plot clusters
   plot <- yhat %>%
-    dplyr::mutate(response = factor(response, levels = 1:K)) %>%
+    dplyr::mutate(response = factor(.data$response, levels = 1:K)) %>%
     dplyr::left_join(cluster_df, by = c("response" = "K")) %>%
-    dplyr::mutate(clusterZ = ifelse(Z == 1, "EV", cluster)) %>%
+    dplyr::mutate(clusterZ = ifelse(.data$Z == 1, "EV", .data$cluster)) %>%
     ggplot2::ggplot(ggplot2::aes(x = time)) +
     ggplot2::geom_point(ggplot2::aes(y = y,
                                      color = factor(Z),

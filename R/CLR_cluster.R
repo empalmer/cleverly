@@ -77,7 +77,7 @@ CLR_cluster <- function(Y, Z, time, B, lp, K, P, M) {
       names_to = c(".value", "response"),
       names_pattern = "(yhat|y)_(\\d+)"  # Splits into two parts: yhat/y and the number
     ) %>%
-    dplyr::mutate(response = factor(response, levels = 1:K))
+    dplyr::mutate(response = factor(.data$response, levels = 1:K))
 
   # Compute fitted baseline values.
   y_hat_clr_baseline <- matrix(NA, nrow = nrow(Y), ncol = K)
@@ -104,7 +104,7 @@ CLR_cluster <- function(Y, Z, time, B, lp, K, P, M) {
       names_to = c(".value", "response"),
       names_pattern = "(yhat|y|yhatclr|yclr)_(\\d+)"  # Splits into two parts: yhat/y and the number
     ) %>%
-    dplyr::mutate(response = factor(response, levels = 1:K))
+    dplyr::mutate(response = factor(.data$response, levels = 1:K))
 
   # Perform k means clustering using gap statistic to determine number of clusters
   if (lp == 0) {

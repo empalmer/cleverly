@@ -6,7 +6,6 @@
 \usage{
 plot_clusters(
   res,
-  Z,
   response_names,
   order = "response",
   Z_type = "binary",
@@ -19,8 +18,6 @@ plot_clusters(
 }
 \arguments{
 \item{res}{cleverly model object}
-
-\item{Z}{value of Z}
 
 \item{response_names}{vector of names for each response}
 
@@ -37,6 +34,8 @@ plot_clusters(
 \item{scales}{"free_y" or "fixed" to control scaling of the y axis}
 
 \item{EV_color}{color for the EV line}
+
+\item{Z}{value of Z}
 }
 \value{
 ggplot object

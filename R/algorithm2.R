@@ -50,7 +50,6 @@ algorithm2 <- function(Y,
                        cor_blocks,
                        j1_j2_list){
 
-  lp_minus <- NULL
   beta_diffs <- list()
 
   # Loop only through non-clustering values

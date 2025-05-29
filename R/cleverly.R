@@ -161,12 +161,10 @@ cleverly <- function(Y,
   # subject_ids <- Y_list$subject_id_values
   # Get is and js
   # Time needs to be changed to indexes
-  is <- subject_ids
 
   # Get m_is
   # Currently a data frame with subject id and mi
   mi_vec <- get_mi_vec(Y_user, subject_ids, time)$mi
-  js <- sequence(mi_vec)
 
   # Format Z
   if (!missing(Z)) {
@@ -258,7 +256,7 @@ cleverly <- function(Y,
     print(paste0("chosen psi: ", psis[best], ", cluster", clusters[[best]]))
 
     BIC_list <- purrr::map(res_list, ~.x$BIC)
-    BIC_group <- purrr::map(res_list, ~.x$BIC_group)
+    #BIC_group <- purrr::map(res_list, ~.x$BIC_group)
     BIC_ra_group <- purrr::map(res_list, ~.x$BIC_ra_group)
 
   } else {

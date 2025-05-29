@@ -158,17 +158,9 @@ algorithm1 <- function(Y,
   lambda <- numeric(nrow(Kappa)*P)
   # loop initialization
   error <- NULL
-  alg1_beta <- list()
-  alg1_diff <- list()
-  alg_2_beta_diff <- list()
-  admm_beta_list <- list()
-  admm_diffs <- list()
-  phis_list <- list()
   cluster_list <- list()
-  r_list <- list()
-  d_list <- list()
   rs <- list()
-  ts <- list()
+
   diff <- Inf
   s <- 1
   rs[[1]] <- beta_init$r
@@ -623,6 +615,7 @@ get_clusters <- function(v, K, P) {
 #' @return A numeric vector of fitted values (\eqn{\hat{y}}) of length \eqn{M \cdot K}, representing the estimated responses.
 #'
 #' @export
+#' @importFrom rlang .data
 
 estimate_y <- function(beta, B, Z, K, Y, time, baseline = F){
 
@@ -681,7 +674,7 @@ estimate_y <- function(beta, B, Z, K, Y, time, baseline = F){
       names_to = c(".value", "response"),
       names_pattern = "(yhat|y)_(\\d+)"  # Splits into two parts: yhat/y and the number
     ) %>%
-    dplyr::mutate(response = factor(response, levels = 1:K))
+    dplyr::mutate(response = factor(.data$response, levels = 1:K))
 
   return(Ys)
 }
@@ -758,14 +751,12 @@ beta_cluster <- function(y, Z, beta, lp,  lp_minus, B, clusters, K, P, M) {
     ZB_list[[l + 1]] <- Z_l %*% B
   }
 
-
   for (c in seq_along(clusters$csize)) {
     current_cluster <- unique_clusters[c]
     class_indices <- which(clusters$membership == current_cluster)
     cluster_size <- length(class_indices)
 
     df_list <- list()
-    beta_names <- c()
     for (l in 0:L) {
       I_k <- diag(cluster_size)
       one_k <- matrix(1, nrow = cluster_size)
@@ -777,16 +768,10 @@ beta_cluster <- function(y, Z, beta, lp,  lp_minus, B, clusters, K, P, M) {
       }
     }
     df <- do.call(cbind, df_list)
-
     log_y_class <- as.vector(log(y[, class_indices] + 1))
-
-
-
     mod_g <- lm(log_y_class ~ 0 + df)
     coefs <- coef(mod_g)
     beta_c_mat <- matrix(coefs, nrow = P)
-
-
 
     col_index <- 1
 

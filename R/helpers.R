@@ -28,7 +28,7 @@ get_mi_vec <- function(Y, subject_ids, time_ids) {
   Y_wrapper <- get_Y_wrapper(Y, subject_ids, time_ids)
 
   mi_vec <- data.frame(subject_id = Y_wrapper$subject_id_values) %>%
-    dplyr::group_by(subject_id) %>%
+    dplyr::group_by(.data$subject_id) %>%
     dplyr::summarise(mi = dplyr::n())
 
   return(mi_vec)
@@ -207,8 +207,8 @@ get_Y_i_vec <- function(i, mi_vec, Y, Y_mat) {
   }
   # This goes row by row.
   Y_i_vec <- as.vector(t(Y_i_mat))
-  js <- rep(1:mi_vec[i], each = ncol(Y))
-  ks <- rep(1:ncol(Y), mi_vec[i])
+  # js <- rep(1:mi_vec[i], each = ncol(Y))
+  # ks <- rep(1:ncol(Y), mi_vec[i])
   # removing rownames since that takes a long time!
   # names(Y_i_vec) <- paste0("i=", i, ",j=", js, ",k=", ks)
   return(Y_i_vec)
@@ -433,6 +433,7 @@ get_alpha_i <- function(i, beta_ks, Z, B, K, i_index, mi_vec, L, P){
                                            i_index = i_index,
                                            L = L,
                                            P = P))
+  return(alpha_i)
 
 }
 

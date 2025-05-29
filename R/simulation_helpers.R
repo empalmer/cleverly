@@ -292,7 +292,7 @@ correct_cluster_option <- function(res, true_cluster = rep(1:3, each = 4)){
 #' @export
 get_performance_summary <- function(list, output){
 
-  if (output == "R"){
+  if (output == "R") {
     table <- purrr::map_dfr(list, ~map_dfr(.x,"cluster_diagnostics") %>%
                        summarize_all(list("mean" = mean, "sd" = sd)),
                      .id = "corstr")
@@ -302,29 +302,34 @@ get_performance_summary <- function(list, output){
                      .id = "corstr") %>%
       dplyr::mutate_if(is.numeric, round, 3) %>%
       tidyr::pivot_longer(
-        cols = -corstr,
+        cols = -.data$corstr,
         names_to = c("metric", "stat"),
         names_pattern = "^(.*)_(mean|sd)$"
       ) %>%
       tidyr::pivot_wider(
-        names_from = stat,
-        values_from = value
+        names_from = .data$stat,
+        values_from = .data$value
       ) %>%
       dplyr::mutate(
         mean = formatC(mean, digits = 3, format = "f"),
         sd   = formatC(sd, digits = 3, format = "f"),
         value = paste0(mean, " (", sd, ")")
       ) %>%
-      dplyr::select(corstr, metric, value) %>%
+      dplyr::select(.data$corstr, .data$metric, .data$value) %>%
       tidyr::pivot_wider(
-        names_from = metric,
-        values_from = value
+        names_from = .data$metric,
+        values_from = .data$value
       ) %>%
       knitr::kable(
         format = output,
         booktabs = TRUE,
         escape = FALSE,
-        col.names = c("Method", "$\\text{Rand}$", "$\\text{Adj Rand}$", "$\\text{Jaccard}$", "$\\text{CER}$", "$\\hat{K}$")) %>%
+        col.names = c("Method",
+                      "$\\text{Rand}$",
+                      "$\\text{Adj Rand}$",
+                      "$\\text{Jaccard}$",
+                      "$\\text{CER}$",
+                      "$\\hat{K}$")) %>%
       kableExtra::kable_styling(latex_options = c("hold_position")) %>%
       cat()
   }
@@ -349,12 +354,12 @@ plot_sim_data <- function(sim, K = 12, Z_type = "binary"){
 
   if (Z_type == "binary") {
     plot <- sim %>%
-      tidyr::pivot_longer(-c(individual,
-                             time,
-                             Capture.Number,
-                             total_n,
-                             Z)) %>%
-      dplyr::mutate(name = factor(name,
+      tidyr::pivot_longer(-c(.data$individual,
+                             .data$time,
+                             .data$Capture.Number,
+                             .data$total_n,
+                             .data$Z)) %>%
+      dplyr::mutate(name = factor(.data$name,
                                   levels = paste0("Taxa.", 1:K))) %>%
       ggplot2::ggplot(ggplot2::aes(x = time,
                                    y = value,
@@ -369,12 +374,12 @@ plot_sim_data <- function(sim, K = 12, Z_type = "binary"){
                     x = "Time")
   } else {
     plot <- sim %>%
-      tidyr::pivot_longer(-c(individual,
-                             time,
-                             Capture.Number,
-                             total_n,
-                             Z)) %>%
-      dplyr::mutate(name = factor(name,
+      tidyr::pivot_longer(-c(.data$individual,
+                             .data$time,
+                             .data$Capture.Number,
+                             .data$total_n,
+                             .data$Z)) %>%
+      dplyr::mutate(name = factor(.data$name,
                                   levels = paste0("Taxa.", 1:K))) %>%
       ggplot2::ggplot(ggplot2::aes(x = time,
                                    y = value,

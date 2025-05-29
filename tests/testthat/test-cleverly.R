@@ -9,14 +9,13 @@ test_that("cleverly wrapper works", {
   Z <- Z_mat[,-1]
 
   # Test the wrapper function
-
   result <- cleverly(Y = Y_mat,
                      Z = Z,
                      subject_ids = sid,
                      time = tid,
                      lp = 1,
                      gammas = rep(1, 3),
-                     psi = 1,
+                     psi_min = 1,
                      tau = 8/100,
                      theta = 1,
                      d = 2,
