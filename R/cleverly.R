@@ -2,7 +2,7 @@
 #'
 #' Runs the Cleverly algorithm over a range of \eqn{\psi} values and selects the optimal one based on BIC.
 #'
-#' @param Y A data frame or matrix of numeric response variables. Each column should represent a response variable, and each row a subject-time observation. Must be ordered by time. Total number of rows is \eqn{M}.
+#' @param Y A data frame or matrix of count response variables. Each column should represent a response variable, and each row a subject-time observation. Must be ordered by time. Total number of rows is \eqn{M}. Make sure Y counts are not transformed to RA or rarified.
 #' @param Z A data frame or matrix containing external variables. Must have \eqn{M} rows and \eqn{L} columns.
 #' @param subject_ids A vector of subject identifiers (length \eqn{M}) or a column name/index if \code{Y} is a data frame.
 #' @param time A numeric vector of time points (length \eqn{M}) or a column name/index if \code{Y} is a data frame.
@@ -77,7 +77,7 @@ cleverly <- function(Y,
                      nworkers = 2,
                      # Other hyper parameters
                      tau = 0.005,
-                     theta = 300,
+                     theta = 500,
                      C = 100,
                      d = 2,
                      nknots = 3,
@@ -91,7 +91,8 @@ cleverly <- function(Y,
                      run_min = 3,
                      max_outer_iter = 30,
                      max_admm_iter = 100,
-                     max_2_iter = 100) {
+                     max_2_iter = 100,
+                     BIC_type = "refit") {
 
 
 # Hyperparameter checks ---------------------------------------------------
@@ -245,19 +246,25 @@ cleverly <- function(Y,
       }
     }
 
-    #BICs <- purrr::map_dbl(res_list, ~.x$BIC_group$BIC)
-    BICs <- purrr::map_dbl(res_list, ~.x$BIC$BIC)
+    # Calculate both unrefit (BIC) and refit (BIC_ra_group)
+    BIC_list <- purrr::map(res_list, ~.x$BIC)
+    BIC_ra_group <- purrr::map(res_list, ~.x$BIC_ra_group)
+
+    # But just use the one specified
+    if (BIC_type == "refit") {
+      BICs <- purrr::map_dbl(res_list, ~.x$BIC_ra_group$BIC)
+    } else {
+      BICs <- purrr::map_dbl(res_list, ~.x$BIC$BIC)
+    }
+    # Which psi result had the minimum BIC
     best <- which.min(BICs)
     result <- res_list[[best]]
     result$all_clusters_psi <- purrr::map(res_list, ~.x$clusters)
 
+    # What was the chosen cluster?
     clusters <- purrr::map(res_list, ~.x$clusters)
     print(paste0("psi:", psis,", cluster:", clusters))
     print(paste0("chosen psi: ", psis[best], ", cluster", clusters[[best]]))
-
-    BIC_list <- purrr::map(res_list, ~.x$BIC)
-    #BIC_group <- purrr::map(res_list, ~.x$BIC_group)
-    BIC_ra_group <- purrr::map(res_list, ~.x$BIC_ra_group)
 
   } else {
     stop("Invalid response type or type not yet implemented.")

@@ -11,10 +11,19 @@
 #' @param P number of B-spline coefficients (order + nknots)
 #' @param M Number of samples times time points for each sample
 #' @param time Vector of numeric time values.
+#' @param cluster_method One of kmeans, hclust, pam
 #'
 #' @returns
 #' @export
-CLR_cluster <- function(Y, Z, time, B, lp, K, P, M) {
+CLR_cluster <- function(Y,
+                        Z,
+                        time,
+                        B,
+                        lp,
+                        cluster_method = "kmeans",
+                        K,
+                        P,
+                        M) {
 
   # Get design matrix ready:
   L <- ncol(Z) - 1
@@ -113,13 +122,54 @@ CLR_cluster <- function(Y, Z, time, B, lp, K, P, M) {
     beta <- t(beta1)
   }
 
-  gap_stat <- cluster::clusGap(beta, FUN = kmeans, nstart = 25, K.max = K - 1)
-  no <- cluster::maxSE(gap_stat$Tab[, "gap"], gap_stat$Tab[, "SE.sim"], method = "firstSEmax")
-  kmeans_res <- kmeans(beta, centers = no, nstart = 25)
+  beta <- scale(beta)
+  if (cluster_method == "kmeans") {
+    # K-means clustering
+    gap_stat <- cluster::clusGap(beta, FUN = kmeans, nstart = 25, K.max = K - 1)
+    no <- cluster::maxSE(gap_stat$Tab[, "gap"], gap_stat$Tab[, "SE.sim"], method = "firstSEmax")
+    kmeans_res <- kmeans(beta, centers = no, nstart = 25)
+    clusters <- list(membership = kmeans_res$cluster,
+                    no = no)
+  }
+  if (cluster_method == "hclust") {
+    # Hierarchical clustering
+    dist_matrix <- dist(beta, method = "euclidean")
+    hc <- hclust(dist_matrix, method = "ward.D2")
+    gap_stat <- cluster::clusGap(beta,
+                                 FUN = factoextra::hcut,  # Hierarchical clustering
+                                 K.max = K - 1,
+                                 B = 100)
+    no <- cluster::maxSE(gap_stat$Tab[, "gap"], gap_stat$Tab[, "SE.sim"], method = "firstSEmax")
+    hclust_res <- cutree(hc, k = no)
 
 
-  res <- list(clusters = list(membership = kmeans_res$cluster,
-                              no = no),
+    clusters <- list(membership = hclust_res,
+                     no = no)
+
+  }
+  if (cluster_method == "gmm") {
+    # Gaussian Mixture Model clustering
+    gmm_model <- mclust::Mclust(beta, G = K - 1)
+    clusters <- list(membership  = gmm_model$classification,
+                     no = gmm_model$G)
+
+  }
+  if (cluster_method == "pam") {
+    # Partitioning around medoids
+    gap_stat <- cluster::clusGap(beta,
+                                 FUN = cluster::pam,
+                                 K.max = K - 1,
+                                 B = 100)
+
+    no <- cluster::maxSE(gap_stat$Tab[, "gap"], gap_stat$Tab[, "SE.sim"], method = "firstSEmax")
+    pam_res <- cluster::pam(beta, k = no)
+
+    clusters <- list(membership = pam_res$clustering,
+                     no = K - 1)
+  }
+
+
+  res <- list(clusters = clusters,
               y = y_clr,
               y_hat = y_hat_df,
               y_hat_baseline = y_hat_baseline_df,
@@ -128,4 +178,6 @@ CLR_cluster <- function(Y, Z, time, B, lp, K, P, M) {
 
   return(res)
 }
+
+
 

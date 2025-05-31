@@ -79,9 +79,9 @@ test_that("Simulation Z", {
                   npsi = 1,
                   # Iterations max
                   run_min = 3,
-                  max_admm_iter = 100,
+                  max_admm_iter = 20,
                   max_outer_iter = 3,
-                  max_2_iter = 100,
+                  max_2_iter = 20,
   ) %>%
     get_cluster_diagnostics(true_cluster)
 
@@ -90,7 +90,8 @@ test_that("Simulation Z", {
   plot_clusters(res,
                 response_names = 1:12,
                 Z_type = Z_type,
-                y_type = "y_hat_baseline")
+                y_type = "y_hat_baseline",
+                lp_curve_only = T)
 
   plot_clusters(res,
                 response_names = 1:12,
@@ -146,6 +147,7 @@ test_that("CLR", {
   sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_cont_baseline/sim_data_27.rds")
 
 
+  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_binary_baseline/sim_data_27.rds")
   true_cluster <- rep(1:3, each = 4)
 
 
@@ -169,9 +171,11 @@ test_that("CLR", {
                          lp = 0,
                          K = 12,
                          P = 6,
-                         M = nrow(Y)) %>%
+                         M = nrow(Y),
+                         cluster_method = "hclust") %>%
     get_cluster_diagnostics(true_cluster)
   clr_res$cluster_diagnostics
+  clr_res$clusters
 
 
 
@@ -263,125 +267,3 @@ test_that("SMALL", {
 })
 
 
-test_that("real data", {
-
-  skip("Skip")
-
-#
-#   library(phyloseq)
-#   library(tidyverse)
-
-  ps <- readRDS("~/Desktop/Research/buffalo-sciris/buffalo/Buffalo_Data/phyloseq_to_publish.rds")
-
-
-
-  total_gen <- otu_table(ps) %>%
-    base::colMeans() %>%
-    sort()
-  length(names(total_gen))
-  selected_genera <- names(total_gen[total_gen > 89.75])
-  length(selected_genera)
-
-
-
-  ps_filtered <- subset_taxa(ps, Genus %in% selected_genera)
-  ps_filtered
-
-  metadata <- sample_data(ps_filtered)
-  names(metadata)
-
-
-  # Extract informatino needed for clevelry
-
-  time <- as.numeric(metadata$Capture)
-
-  time <- as.numeric(metadata$Age_At_Capture)
-  # Check that this code is working...
-  ids <- as.numeric(metadata$AnimalID)
-  Z <- as.numeric(metadata$High_Nutrition) - 1
-
-  Y <- otu_table(ps_filtered, taxa_are_rows = FALSE) %>%
-    data.frame()
-
-  library(cleverly)
-  res <- cleverly(Y = Y,
-                  Z = Z,
-                  subject_ids = ids,
-                  lp = 0,
-                  time = time,
-                  gammas = c(1, 1), # controls smoothness
-                  tau = 0.005, # Controls cuttoff for highest shrinkage
-                  theta = 300, # for lambda, but also for d
-                  psi = 800, # controls clustering
-                  C = 100,
-                  max_admm_iter = 100,
-                  max_outer_iter = 10,
-                  max_2_iter = 100,
-                  cor_str = "IND")
-
-res$clusters
-plot_clusters(res = res,
-                K = 32,
-              EV = "grey60")
-
-
-
-
-cluster_df <- data.frame(
-  K = factor(1:K, levels = 1:K, labels = names(Y)),
-  cluster = factor(res$clusters$membership)) %>%
-  arrange(cluster, K) %>%
-  mutate(K = factor(K, levels = K, ))
-
-K = 32
-ordering <- cluster_df$K
-
-# plot clusters
-res$y_hat %>%
-  dplyr::mutate(response = factor(response, levels = 1:K, labels = names(Y))) %>%
-  dplyr::left_join(cluster_df, by = c("response" = "K")) %>%
-  dplyr::mutate(clusterZ = ifelse(Z == 1, "EV", cluster),
-                response = factor(response, levels = ordering, ordered = T)) %>%
-  ggplot2::ggplot(ggplot2::aes(x = time)) +
-  ggplot2::geom_point(ggplot2::aes(y = y,
-                                   color = factor(Z),
-                                   shape = factor(Z)),
-                      size = 1, alpha = .8) +
-  ggplot2::labs(color = "EV",
-                shape = "EV") +
-  ggnewscale::new_scale_color() +
-  ggplot2::geom_line(ggplot2::aes(y = yhat,
-                                  color = clusterZ,
-                                  group = factor(Z)),
-                     linewidth = 1) +
-  ggplot2::facet_wrap(~response, scales = "free_y", nrow = 4) +
-  ggplot2::scale_color_manual(
-    values = c(sample(viridis::viridis(length(unique(cluster_df$cluster)))), "grey"),
-    name = "Cluster"
-  )
-
-# Start 1053
-res_list <- list()
-psis <- seq(500, 1500, length.out = 5)
-for (p in 1:length(psis)) {
-  psi <- psis[p]
-  print(psi)
-  res_list[[p]] <- cleverly(Y = Y,
-                            Z = Z,
-                            subject_ids = ids,
-                            time = time,
-                            lp = 0,
-                            cor_str = "IND",
-                            max_outer_iter = 10,
-                            max_admm_iter = 100,
-                            max_2_iter = 200,
-                            gammas = c(1, 1), # controls smoothness
-                            tau = 0.005, # Controls cuttoff for highest shrinkage
-                            theta = 300, # for lambda, but also for d
-                            psi = psi) # controls clustering)
-}
-
-best <- which.min(purrr::map_dbl(res_list, ~.x$BIC))
-res <- res_list[[best]]
-
-})

@@ -36,29 +36,29 @@ plot_clusters <- function(res,
     Y <- res$y_hat_lp_group
   }
   if (y_type == "slope") {
-
     Y_baseline <- res$y_hat_baseline
     Y_hat <- res$y_hat
 
     # Fix the slope:
-    slope <- Y_hat$yhat - Y_baseline$yhat
+    # slope <- Y_hat$yhat - Y_baseline$yhat
+    #
+    # Y_baseline$slope <- slope
+    #
+    # Y <- Y_baseline
+    Y <- res$y_hat
 
-    Y_baseline$slope <- slope
+    Z_min <- min(Y$Z)
+    Z_max <- max(Y$Z)
 
-    Y <- Y_baseline
+
   }
 
   if (Z_type == "binary") {
-    Y <- Y %>% dplyr::mutate(Z = factor(Z))
+    Y <- Y %>% dplyr::mutate(Z = factor(.data$Z))
   }
-
-  # if (y_type == "y_hat_counts_group") {
-  #   Y <- res$y_hat_counts_group
-  # }
 
 
   # Data formatting, adding cluster info:
-
   cluster_key <- data.frame(
     response_names = factor(1:length(response_names),
                             levels = 1:length(response_names)),
@@ -115,8 +115,9 @@ plot_clusters <- function(res,
       #           "grey50"),
     }
     # plot clusters
-    plot <- res$y_hat
-      dplyr::mutate(clusterZ = ifelse(Z == 1, "EV", .data$cluster),
+    browser()
+    plot <- y_hat %>%
+      dplyr::mutate(clusterZ = ifelse(Z == 1, "EV", cluster),
                     response = factor(.data$response, labels = response_names)) %>%
       ggplot2::ggplot(ggplot2::aes(x = time)) +
       ggplot2::geom_point(ggplot2::aes(y = y,
