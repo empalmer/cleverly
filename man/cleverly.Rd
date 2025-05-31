@@ -19,7 +19,7 @@ cleverly(
   parralel = FALSE,
   nworkers = 2,
   tau = 0.005,
-  theta = 300,
+  theta = 500,
   C = 100,
   d = 2,
   nknots = 3,
@@ -31,11 +31,12 @@ cleverly(
   run_min = 3,
   max_outer_iter = 30,
   max_admm_iter = 100,
-  max_2_iter = 100
+  max_2_iter = 100,
+  BIC_type = "refit"
 )
 }
 \arguments{
-\item{Y}{A data frame or matrix of numeric response variables. Each column should represent a response variable, and each row a subject-time observation. Must be ordered by time. Total number of rows is \eqn{M}.}
+\item{Y}{A data frame or matrix of count response variables. Each column should represent a response variable, and each row a subject-time observation. Must be ordered by time. Total number of rows is \eqn{M}. Make sure Y counts are not transformed to RA or rarified.}
 
 \item{Z}{A data frame or matrix containing external variables. Must have \eqn{M} rows and \eqn{L} columns.}
 

@@ -4,7 +4,7 @@
 \alias{CLR_cluster}
 \title{CLR cluster}
 \usage{
-CLR_cluster(Y, Z, time, B, lp, K, P, M)
+CLR_cluster(Y, Z, time, B, lp, cluster_method = "kmeans", K, P, M)
 }
 \arguments{
 \item{Y}{Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.}
@@ -16,6 +16,8 @@ CLR_cluster(Y, Z, time, B, lp, K, P, M)
 \item{B}{B spline basis matrix}
 
 \item{lp}{Which column is clustering can only be 0 or 1}
+
+\item{cluster_method}{One of kmeans, hclust, pam}
 
 \item{K}{Number of responses}
 
