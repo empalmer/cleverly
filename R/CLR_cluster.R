@@ -132,17 +132,48 @@ CLR_cluster <- function(Y,
                     no = no)
   }
   if (cluster_method == "hclust") {
-    # Hierarchical clustering
+    # # Hierarchical clustering
+    # dist_matrix <- dist(beta, method = "euclidean")
+    # hc <- hclust(dist_matrix, method = "ward.D2")
+    # gap_stat <- cluster::clusGap(beta,
+    #                              FUN = factoextra::hcut,
+    #                              K.max = K - 1,
+    #                              B = 100)
+    # no <- cluster::maxSE(gap_stat$Tab[, "gap"], gap_stat$Tab[, "SE.sim"], method = "firstSEmax")
+    # hclust_res <- cutree(hc, k = no)
+    #
+    #
+    # clusters <- list(membership = hclust_res,
+    #                  no = no)
+    # Compute the distance matrix
+
     dist_matrix <- dist(beta, method = "euclidean")
+
+    # Perform hierarchical clustering
     hc <- hclust(dist_matrix, method = "ward.D2")
+
+
+    # Custom function for clusGap (replaces factoextra::hcut)
+    hcut_custom <- function(x, k) {
+      dist_x <- dist(x)
+      hc_x <- hclust(dist_x, method = "ward.D2")
+      cluster_assignments <- cutree(hc_x, k = k)
+      return(list(cluster = cluster_assignments))
+    }
+
+    # Compute Gap Statistic
     gap_stat <- cluster::clusGap(beta,
-                                 FUN = factoextra::hcut,  # Hierarchical clustering
+                                 FUN = hcut_custom,
                                  K.max = K - 1,
                                  B = 100)
+
+    # Choose optimal number of clusters
     no <- cluster::maxSE(gap_stat$Tab[, "gap"], gap_stat$Tab[, "SE.sim"], method = "firstSEmax")
+
+    # Cut the dendrogram into 'no' clusters
     hclust_res <- cutree(hc, k = no)
 
-
+    # Return clustering results
     clusters <- list(membership = hclust_res,
                      no = no)
 
