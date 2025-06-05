@@ -190,6 +190,7 @@ CLR_cluster <- function(Y,
   }
   if (cluster_method == "gmm") {
     # Gaussian Mixture Model clustering
+
     gmm_model <- mclust::Mclust(beta, G = 1:K)
     clusters <- list(membership  = gmm_model$classification,
                      no = gmm_model$G)
