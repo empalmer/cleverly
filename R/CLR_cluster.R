@@ -5,7 +5,7 @@
 #'
 #' @param Y Matrix of counts. Each response should be a separate column (K). Each row should be a separate subject/time combination. There should be M total rows.
 #' @param Z Full Z matrix (including intercept)
-#' @param lp Which column is clustering can only be 0 or 1
+#' @param cluster_index Which column is clustering can only be 0 or 1
 #' @param B B spline basis matrix
 #' @param K Number of responses
 #' @param P number of B-spline coefficients (order + nknots)
@@ -19,7 +19,7 @@ CLR_cluster <- function(Y,
                         Z,
                         time,
                         B,
-                        lp,
+                        cluster_index,
                         cluster_method = "kmeans",
                         K,
                         P,
@@ -116,7 +116,7 @@ CLR_cluster <- function(Y,
     dplyr::mutate(response = factor(.data$response, levels = 1:K))
 
   # Perform k means clustering using gap statistic to determine number of clusters
-  if (lp == 0) {
+  if (cluster_index == 0) {
     beta <- t(beta0)
   } else {
     beta <- t(beta1)

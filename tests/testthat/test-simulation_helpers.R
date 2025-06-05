@@ -46,7 +46,7 @@ test_that("Simulation Z", {
   sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_small_var_Y0/sim_data_2.rds")
   sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_1mil_similar_ranges/sim_data_2.rds")
   sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/CONd_may22_1mil/sim_data_74.rds")
-  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_binary_baseline/sim_data_27.rds")
+  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_binary_baseline/sim_data_47.rds")
   sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_binary_slope/sim_data_27.rds")
   sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_cont_baseline/sim_data_1.rds")
   sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_cont_slope/sim_data_27.rds")
@@ -69,19 +69,19 @@ test_that("Simulation Z", {
                   subject_ids = individual,
                   time = time,
                   cluster_index = 0,
-                  cor_str = "IND",
+                  cor_str = "CON-d",
                   # Hyperparameters
                   gammas = c(1,1),
                   theta = 500,
                   parralel = F,
-                  psi_min = 500,
+                  psi_min = 50,
                   psi_max = 600,
                   npsi = 1,
                   # Iterations max
                   run_min = 3,
-                  max_admm_iter = 100,
+                  max_admm_iter = 300,
                   max_outer_iter = 3,
-                  max_2_iter = 100,
+                  max_2_iter = 300,
   ) %>%
     get_cluster_diagnostics(true_cluster)
 
