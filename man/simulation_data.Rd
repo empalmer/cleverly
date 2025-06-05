@@ -52,7 +52,7 @@ simulation_data(
 
 \item{miss_p}{proportion of missing samples}
 
-\item{prob1}{Probability of the binary external variable being 1}
+\item{prob1}{Equivalent to p if Z ~ Binomial(p = prob1)}
 
 \item{maxt}{maximum number of times}
 

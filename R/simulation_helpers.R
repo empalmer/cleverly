@@ -16,7 +16,7 @@
 #' @param cor_str Type of correlation structure (IND, CON, AR1)
 #' @param rho Correlation parameter
 #' @param miss_p proportion of missing samples
-#' @param prob1 Probability of the binary external variable being 1
+#' @param prob1 Equivalent to p if Z ~ Binomial(p = prob1)
 #' @param Z_type Type of external variable (binary or continuous)
 #' @param maxt maximum number of times
 #' @param baseline_fxns list of functions to use for the baseline

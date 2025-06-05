@@ -6,7 +6,6 @@
 #' @param Z A data frame or matrix containing external variables. Must have \eqn{M} rows and \eqn{L} columns.
 #' @param subject_ids A vector of subject identifiers (length \eqn{M}) or a column name/index if \code{Y} is a data frame.
 #' @param time A numeric vector of time points (length \eqn{M}) or a column name/index if \code{Y} is a data frame.
-#' @param lp Either a numeric index or name of the column in \code{Z} used for clustering. Use 0 to indicate baseline clustering.
 #' @param response_type Type of response variable. Should be either \code{"Counts"} or \code{"Continuous"}.
 #' @param cor_str Correlation structure to use. One of \code{"IND"}, \code{"CON"}, \code{"AR1"}, \code{"CON-d"}, or \code{"AR1-d"}.
 #' @param gammas A numeric vector of length \eqn{L + 1} specifying penalties applied to the D matrix.
@@ -29,6 +28,8 @@
 #' @param max_outer_iter Maximum number of iterations for the outer loop (Algorithm 1).
 #' @param max_2_iter Maximum number of iterations for Algorithm 2 (per outer iteration).
 #' @param max_admm_iter Maximum number of iterations for the ADMM clustering step (Algorithm 3).
+#' @param BIC_type Choose the "best" psi using unrefit or refit betas
+#' @param cluster_index index for which external variable to cluster on. Usually 0 (baseline) or 1 (slope), but can be >1 if there are multiple external variables.
 #'
 #' @return A list with the following components:
 #' \describe{
@@ -64,7 +65,7 @@ cleverly <- function(Y,
                      Z,
                      subject_ids,
                      time,
-                     lp = 0,
+                     cluster_index = 0,
                      response_type = "counts",
                      cor_str = "IND",
                      gammas,
@@ -176,8 +177,8 @@ cleverly <- function(Y,
   }
 
   # Format l_p
-  if (lp != 0) {
-    lp <- format_lp(lp = lp, Z = Z)
+  if (cluster_index != 0) {
+    cluster_index <- format_lp(lp = cluster_index, Z = Z)
   }
   # Check gamma vector is of correct dimension
   if (length(gammas) != ncol(Z)) {
@@ -197,7 +198,7 @@ cleverly <- function(Y,
                                                       Z = Z,
                                                       time = time,
                                                       mi_vec = mi_vec,
-                                                      lp = lp,
+                                                      lp = cluster_index,
                                                       gammas = gammas,
                                                       psi = ..1,
                                                       tau = tau,
@@ -225,7 +226,7 @@ cleverly <- function(Y,
                                     Z = Z,
                                     time = time,
                                     mi_vec = mi_vec,
-                                    lp = lp,
+                                    lp = cluster_index,
                                     gammas = gammas,
                                     psi = psi,
                                     tau = tau,
@@ -270,13 +271,16 @@ cleverly <- function(Y,
     stop("Invalid response type or type not yet implemented.")
   }
 
-  # Return what is inputted and the result
-  # Change eventually
+
+# Returns -----------------------------------------------------------------
+
+
   return(list(clusters = result$clusters,
               y_hat = result$y_hat,
               y_hat_init = result$y_hat_init,
               y_hat_baseline = result$y_hat_baseline,
               y_hat_lp_group = result$y_hat_lp_group,
+              B = result$B,
               BIC = BIC_list,
               BIC_ra_group = BIC_ra_group,
               error = result$error,

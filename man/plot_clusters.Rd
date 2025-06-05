@@ -9,11 +9,11 @@ plot_clusters(
   response_names,
   order = "response",
   Z_type = "binary",
-  y_type = "y_hat_baseline",
-  lp_curve_only = T,
+  curve_type = "baseline",
   nrow = 3,
   scales = "fixed",
-  EV_color = "grey50"
+  EV_color = "grey50",
+  Y_counts
 )
 }
 \arguments{
@@ -25,9 +25,7 @@ plot_clusters(
 
 \item{Z_type}{binary or continuous}
 
-\item{y_type}{which yhat to plot, either "y_hat_baseline", "y_hat_lp_group", or "slope"}
-
-\item{lp_curve_only}{plot only the lp_curve_only? Has to be true for continuous, but for binary slope can be plotted}
+\item{curve_type}{= baseline, refit_baseline, or slope}
 
 \item{nrow}{number of rows for the facet plot}
 
@@ -35,7 +33,7 @@ plot_clusters(
 
 \item{EV_color}{color for the EV line}
 
-\item{Z}{value of Z}
+\item{Y_counts}{need if curve_type = "slope}
 }
 \value{
 ggplot object

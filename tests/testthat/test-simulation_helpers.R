@@ -68,20 +68,20 @@ test_that("Simulation Z", {
                   Z = Z,
                   subject_ids = individual,
                   time = time,
-                  lp = 0,
+                  cluster_index = 0,
                   cor_str = "IND",
                   # Hyperparameters
                   gammas = c(1,1),
                   theta = 500,
                   parralel = F,
-                  psi_min = 50,
-                  psi_max = 228.57,
+                  psi_min = 500,
+                  psi_max = 600,
                   npsi = 1,
                   # Iterations max
                   run_min = 3,
-                  max_admm_iter = 20,
+                  max_admm_iter = 100,
                   max_outer_iter = 3,
-                  max_2_iter = 20,
+                  max_2_iter = 100,
   ) %>%
     get_cluster_diagnostics(true_cluster)
 
@@ -90,14 +90,36 @@ test_that("Simulation Z", {
   plot_clusters(res,
                 response_names = 1:12,
                 Z_type = Z_type,
-                y_type = "y_hat_baseline",
-                lp_curve_only = T)
+                curve_type = "slope",
+                Y_counts = dplyr::select(Y, -c(time, individual)))
+
+  plot_one_cluster(res,
+                   cluster_val = 1,
+                   response_names = 1:12,
+                   Z_type = Z_type,
+                   curve_type = "slope",
+                   Y_counts = dplyr::select(Y, -c(time, individual)))
+
 
   plot_clusters(res,
                 response_names = 1:12,
-                y_type = "slope",
                 Z_type = Z_type,
-                scales = "fixed")
+                curve_type = "baseline")
+  plot_one_cluster(res,
+                   cluster_val = 2,
+                   response_names = 1:12,
+                   Z_type = Z_type,
+                   curve_type = "baseline",
+                   Y_counts = dplyr::select(Y, -c(time, individual)))
+
+
+
+
+  plot_clusters(res,
+                response_names = 1:12,
+                Z_type = Z_type,
+                y_type = "baseline")
+
 
 
   plot_clusters(res,
@@ -172,8 +194,10 @@ test_that("CLR", {
                          K = 12,
                          P = 6,
                          M = nrow(Y),
-                         cluster_method = "hclust") %>%
+                         cluster_method = "gmm") %>%
     get_cluster_diagnostics(true_cluster)
+
+
   clr_res$cluster_diagnostics
   clr_res$clusters
 

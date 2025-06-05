@@ -9,7 +9,7 @@ cleverly(
   Z,
   subject_ids,
   time,
-  lp = 0,
+  cluster_index = 0,
   response_type = "counts",
   cor_str = "IND",
   gammas,
@@ -44,7 +44,7 @@ cleverly(
 
 \item{time}{A numeric vector of time points (length \eqn{M}) or a column name/index if \code{Y} is a data frame.}
 
-\item{lp}{Either a numeric index or name of the column in \code{Z} used for clustering. Use 0 to indicate baseline clustering.}
+\item{cluster_index}{index for which external variable to cluster on. Usually 0 (baseline) or 1 (slope), but can be >1 if there are multiple external variables.}
 
 \item{response_type}{Type of response variable. Should be either \code{"Counts"} or \code{"Continuous"}.}
 
@@ -89,6 +89,8 @@ cleverly(
 \item{max_admm_iter}{Maximum number of iterations for the ADMM clustering step (Algorithm 3).}
 
 \item{max_2_iter}{Maximum number of iterations for Algorithm 2 (per outer iteration).}
+
+\item{BIC_type}{Choose the "best" psi using unrefit or refit betas}
 }
 \value{
 A list with the following components:

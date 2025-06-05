@@ -122,6 +122,10 @@ CLR_cluster <- function(Y,
     beta <- t(beta1)
   }
 
+
+# kmeans ------------------------------------------------------------------
+
+
   beta <- scale(beta)
   if (cluster_method == "kmeans") {
     # K-means clustering
@@ -131,6 +135,10 @@ CLR_cluster <- function(Y,
     clusters <- list(membership = kmeans_res$cluster,
                     no = no)
   }
+
+# hclust ------------------------------------------------------------------
+
+
   if (cluster_method == "hclust") {
     # # Hierarchical clustering
     # dist_matrix <- dist(beta, method = "euclidean")
@@ -177,14 +185,21 @@ CLR_cluster <- function(Y,
     clusters <- list(membership = hclust_res,
                      no = no)
 
+# gmm ---------------------------------------------------------------------
+
   }
   if (cluster_method == "gmm") {
     # Gaussian Mixture Model clustering
-    gmm_model <- mclust::Mclust(beta, G = K - 1)
+    gmm_model <- mclust::Mclust(beta, G = 1:K)
     clusters <- list(membership  = gmm_model$classification,
                      no = gmm_model$G)
 
+
   }
+
+
+# pam ---------------------------------------------------------------------
+
   if (cluster_method == "pam") {
     # Partitioning around medoids
     gap_stat <- cluster::clusGap(beta,

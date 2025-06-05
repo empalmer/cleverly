@@ -11,10 +11,9 @@
 #' @param order "response" or "cluster" to have original ordering or cluster ordering of responses on the facet plots
 #' @param nrow number of rows for the facet plot
 #' @param EV_color color for the EV line
-#' @param Z value of Z
+#' @param curve_type = baseline, refit_baseline, or slope
 #' @param Z_type binary or continuous
-#' @param lp_curve_only plot only the lp_curve_only? Has to be true for continuous, but for binary slope can be plotted
-#' @param y_type which yhat to plot, either "y_hat_baseline", "y_hat_lp_group", or "slope"
+#' @param Y_counts need if curve_type = "slope
 #'
 #' @returns ggplot object
 #' @export
@@ -22,36 +21,23 @@ plot_clusters <- function(res,
                           response_names,
                           order = "response",
                           Z_type = "binary",
-                          y_type = "y_hat_baseline",
-                          lp_curve_only = T,
+                          curve_type = "baseline",
                           nrow = 3,
                           scales = "fixed",
-                          EV_color = "grey50"){
+                          EV_color = "grey50",
+                          Y_counts){
 
 
-  if (y_type == "y_hat_baseline") {
+  if (curve_type == "baseline") {
     Y <- res$y_hat_baseline
   }
-  if (y_type == "y_hat_lp_group") {
+  if (curve_type == "refit_baseline") {
     Y <- res$y_hat_lp_group
   }
-  if (y_type == "slope") {
-    Y_baseline <- res$y_hat_baseline
-    Y_hat <- res$y_hat
-
-    # Fix the slope:
-    # slope <- Y_hat$yhat - Y_baseline$yhat
-    #
-    # Y_baseline$slope <- slope
-    #
-    # Y <- Y_baseline
+  if (curve_type == "slope") {
     Y <- res$y_hat
-
-    Z_min <- min(Y$Z)
-    Z_max <- max(Y$Z)
-
-
   }
+
 
   if (Z_type == "binary") {
     Y <- Y %>% dplyr::mutate(Z = factor(.data$Z))
@@ -69,8 +55,11 @@ plot_clusters <- function(res,
     dplyr::mutate(response = factor(.data$response, labels = response_names))
 
 
-  if (lp_curve_only) {
-    # Figure out how to order responses, based on response ordering or cluster ordering
+# baseline ----------------------------------------------------------------
+
+
+  if (curve_type == "baseline" | curve_type == "refit_baseline" ) {
+    # Figure out how to order colors, based on response ordering or cluster ordering
     if (order == "response") {
       values <- viridis::viridis(length(unique(cluster_key$cluster)))
     } else if (order == "cluster") {
@@ -83,7 +72,7 @@ plot_clusters <- function(res,
       ggplot2::ggplot(ggplot2::aes(x = time)) +
       ggplot2::geom_jitter(ggplot2::aes(y = y, color = Z),
                           size = 1, alpha = .8) +
-      #ggplot2::guides(color = ggplot2::guide_legend("EV")) +
+      ggplot2::labs(color = "Z") +
       ggnewscale::new_scale_color() +
       ggplot2::geom_line(ggplot2::aes(y = yhat,
                                       color = cluster),
@@ -94,13 +83,12 @@ plot_clusters <- function(res,
       ggplot2::scale_color_manual(
         values = values,
         name = "Cluster"
-      ) +
-      ggplot2::labs(title = y_type)
+      )
   }
 
 
-# Not baseline ------------------------------------------------------------
-  else if (!lp_curve_only) {
+# slope, binary ------------------------------------------------------------
+  else if (Z_type == "binary") {
     if (order == "response") {
       values <- c(viridis::viridis(length(unique(cluster_key$cluster))), EV_color)
     } else if (order == "cluster") {
@@ -115,19 +103,16 @@ plot_clusters <- function(res,
       #           "grey50"),
     }
     # plot clusters
-    browser()
-    plot <- y_hat %>%
-      dplyr::mutate(clusterZ = ifelse(Z == 1, "EV", cluster),
+    plot <- Y %>%
+      dplyr::mutate(clusterZ = ifelse(.data$Z == 0, "Baseline Curve", .data$cluster),
                     response = factor(.data$response, labels = response_names)) %>%
       ggplot2::ggplot(ggplot2::aes(x = time)) +
       ggplot2::geom_point(ggplot2::aes(y = y,
                                        color = factor(Z),
                                        shape = factor(Z)),
                           size = 1, alpha = .8) +
-      ggplot2::guides(color = ggplot2::guide_legend("EV"),
-                      shape = ggplot2::guide_legend("EV")) +
-      # ggplot2::labs(color = "EV",
-      #               shape = "EV") +
+      ggplot2::guides(color = ggplot2::guide_legend("Z"),
+                      shape = ggplot2::guide_legend("Z")) +
       ggnewscale::new_scale_color() +
       ggplot2::geom_line(ggplot2::aes(y = yhat,
                                       color = clusterZ,
@@ -138,25 +123,276 @@ plot_clusters <- function(res,
                           nrow = nrow) +
       ggplot2::scale_color_manual(
         values = values,
-        name = "Cluster"
+        name = "Cluster",
+        labels = function(x) stringr::str_wrap(x, width = 10)
       )
+# slope, continuous ------------------------------------------------------------
+  } else if (Z_type == "continuous") {
+
+    response_val <- res$y_hat$response[1]
+    Z_orig <- res$y_hat$Z
+    Z <- res$y_hat %>%
+      dplyr::filter(response == response_val) %>%
+      dplyr::pull(Z)
+    time <- res$y_hat %>%
+      dplyr::filter(response == response_val) %>%
+      dplyr::pull(time)
+    y_baseline <- res$y_hat_baseline$yhat
+
+    # Round Z into 4 distinct values.
+    bins <- cut(Z, breaks = 3)
+    breaks <- levels(cut(Z, breaks = 3, include.lowest = TRUE)) # string intervals
+    numeric_breaks <- as.numeric(gsub("\\(|\\]|\\[|\\)", "", unlist(strsplit(breaks, ","))))
+    break_mat <- matrix(numeric_breaks, ncol = 2, byrow = TRUE)
+
+    midpoints <- rowMeans(as.data.frame(break_mat)) %>% round(2)
+
+    # Map factor levels to midpoints
+    Z_mid <- midpoints[as.integer(bins)]
+
+    Z_rounded <- data.frame(rep(1, length(Z_mid)), Z_mid)
+
+    #need original counts of y
+    y_hat <- estimate_y(beta = res$beta,
+                        B = res$B,
+                        Z = as.matrix(Z_rounded),
+                        K = length(response_names),
+                        Y = Y_counts,
+                        time = time,
+                        baseline = F)
+
+    y_hat <- y_hat %>%
+      dplyr::mutate(response = factor(.data$response)) %>%
+      dplyr::left_join(cluster_key, by = c("response" = "response_names")) %>%
+      dplyr::mutate(response = factor(.data$response, labels = response_names))
+
+    if (order == "cluster") {
+      cluster_key <- cluster_key %>%
+        dplyr::arrange(.data$cluster)
+    }
+    response_names <- paste0(" (Cluster ", cluster_key$cluster, ") ", cluster_key$response_names)
+
+    plot <- y_hat %>%
+      dplyr::mutate(response = factor(.data$response, labels = response_names),
+                    Z_orig = Z_orig,
+                    y_baseline = y_baseline) %>%
+      ggplot2::ggplot(ggplot2::aes(x = time)) +
+      ggplot2::geom_jitter(ggplot2::aes(y = y,
+                                        color = Z_orig,
+                                        shape = cluster),
+                          alpha = .6) +
+      ggplot2::labs(color = "Z") +
+      #ggplot2::guides(color = ggplot2::guide_legend("Z")) +
+      ggnewscale::new_scale_color() +
+      ggplot2::geom_line(ggplot2::aes(y = yhat,
+                                      color = Z,
+                                      group = factor(Z)),
+                         linewidth = 1) +
+      ggplot2::guides(color = "none") +
+      ggplot2::labs(shape = "Cluster") +
+      ggplot2::geom_line(ggplot2::aes(y = y_baseline), color = "grey",
+                         linewidth = 1) +
+      ggplot2::facet_wrap(~response,
+                          scales = scales,
+                          nrow = nrow)
+
   }
-
-# Slope plots:  -----------------------------------------------------------
-#
-#   if (y_type == "slope") {
-#     plot <- Y %>%
-#       ggplot2::ggplot(ggplot2::aes(x = time, y = slope, color = cluster)) +
-#       ggplot2::geom_point() +
-#       ggplot2::facet_wrap(~response, scales = scales, nrow = nrow)
-#   }
-
-
-
 
   return(plot)
 
 }
+
+#' Title
+#'
+#' @param res
+#' @param response_names
+#' @param cluster_val
+#' @param order
+#' @param Z_type
+#' @param curve_type
+#' @param nrow
+#' @param scales
+#' @param EV_color
+#' @param Y_counts
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+plot_one_cluster <- function(res,
+                             response_names,
+                             cluster_val,
+                             Z_type = "binary",
+                             curve_type = "baseline",
+                             nrow = 3,
+                             scales = "fixed",
+                             EV_color = "grey50",
+                             Y_counts){
+
+
+  if (curve_type == "baseline") {
+    Y <- res$y_hat_baseline
+  }
+  if (curve_type == "refit_baseline") {
+    Y <- res$y_hat_lp_group
+  }
+  if (curve_type == "slope") {
+    Y <- res$y_hat
+  }
+
+
+  if (Z_type == "binary") {
+    Y <- Y %>% dplyr::mutate(Z = factor(.data$Z))
+  }
+
+
+  # Data formatting, adding cluster info:
+  cluster_key <- data.frame(
+    response_names = factor(1:length(response_names),
+                            levels = 1:length(response_names)),
+    cluster = factor(res$clusters$membership))
+  Y <- Y %>%
+    dplyr::mutate(response = factor(.data$response)) %>%
+    dplyr::left_join(cluster_key, by = c("response" = "response_names")) %>%
+    dplyr::mutate(response = factor(.data$response, labels = response_names))
+
+
+  # baseline ----------------------------------------------------------------
+
+
+  if (curve_type == "baseline" | curve_type == "refit_baseline" ) {
+    # Figure out how to order colors, based on response ordering or cluster ordering
+
+    values <- viridis::viridis(length(unique(cluster_key$cluster)))
+
+    plot <- Y %>%
+      dplyr::filter(cluster == cluster_val) %>%
+      ggplot2::ggplot(ggplot2::aes(x = time)) +
+      ggplot2::geom_jitter(ggplot2::aes(y = y, color = Z),
+                           size = 1, alpha = .8) +
+      ggplot2::guides(color = ggplot2::guide_legend("Z")) +
+      ggnewscale::new_scale_color() +
+      ggplot2::geom_line(ggplot2::aes(y = yhat,
+                                      color = cluster),
+                         linewidth = 1.5) +
+      ggplot2::facet_wrap(~response,
+                          scales = scales,
+                          nrow = nrow) +
+      ggplot2::scale_color_manual(
+        values = values,
+        name = "Cluster"
+      )
+  }
+
+
+  # slope, binary ------------------------------------------------------------
+  else if (Z_type == "binary") {
+
+    values <- c(viridis::viridis(1), EV_color)
+
+    # plot clusters
+    plot <- Y %>%
+      dplyr::mutate(clusterZ = ifelse(.data$Z == 0, "Baseline Curve", .data$cluster),
+                    response = factor(.data$response, labels = response_names)) %>%
+      dplyr::filter(cluster == cluster_val) %>%
+      ggplot2::ggplot(ggplot2::aes(x = time)) +
+      ggplot2::geom_point(ggplot2::aes(y = y,
+                                       color = factor(Z),
+                                       shape = factor(Z)),
+                          size = 1, alpha = .8) +
+      ggplot2::guides(color = ggplot2::guide_legend("Z"),
+                      shape = ggplot2::guide_legend("Z")) +
+      ggnewscale::new_scale_color() +
+      ggplot2::geom_line(ggplot2::aes(y = yhat,
+                                      color = clusterZ,
+                                      group = factor(Z)),
+                         linewidth = 1) +
+      ggplot2::facet_wrap(~response,
+                          scales = scales,
+                          nrow = nrow) +
+      ggplot2::scale_color_manual(
+        values = values,
+        name = "Cluster",
+        labels = function(x) stringr::str_wrap(x, width = 10)
+      )
+    # slope, continuous ------------------------------------------------------------
+  } else if (Z_type == "continuous") {
+
+    response_val <- res$y_hat$response[1]
+    Z_orig <- res$y_hat$Z
+    Z <- res$y_hat %>%
+      dplyr::filter(response == response_val) %>%
+      dplyr::pull(Z)
+    time <- res$y_hat %>%
+      dplyr::filter(response == response_val) %>%
+      dplyr::pull(time)
+    y_baseline <- res$y_hat_baseline$yhat
+
+    # Round Z into 4 distinct values.
+    bins <- cut(Z, breaks = 3)
+    breaks <- levels(cut(Z, breaks = 3, include.lowest = TRUE)) # string intervals
+    numeric_breaks <- as.numeric(gsub("\\(|\\]|\\[|\\)", "", unlist(strsplit(breaks, ","))))
+    break_mat <- matrix(numeric_breaks, ncol = 2, byrow = TRUE)
+
+    midpoints <- rowMeans(as.data.frame(break_mat)) %>% round(2)
+
+    # Map factor levels to midpoints
+    Z_mid <- midpoints[as.integer(bins)]
+
+    Z_rounded <- data.frame(rep(1, length(Z_mid)), Z_mid)
+
+    #need original counts of y
+    y_hat <- estimate_y(beta = res$beta,
+                        B = res$B,
+                        Z = as.matrix(Z_rounded),
+                        K = length(response_names),
+                        Y = Y_counts,
+                        time = time,
+                        baseline = F)
+
+    y_hat <- y_hat %>%
+      dplyr::mutate(response = factor(.data$response)) %>%
+      dplyr::left_join(cluster_key, by = c("response" = "response_names")) %>%
+      dplyr::mutate(response = factor(.data$response, labels = response_names))
+
+    if (order == "cluster") {
+      cluster_key <- cluster_key %>%
+        dplyr::arrange(.data$cluster)
+    }
+    response_names <- paste0(" (Cluster ", cluster_key$cluster, ") ", cluster_key$response_names)
+
+
+    plot <- y_hat %>%
+      dplyr::mutate(response = factor(.data$response, labels = response_names),
+                    Z_orig = Z_orig,
+                    y_baseline = y_baseline) %>%
+      dplyr::filter(cluster == cluster_val) %>%
+      ggplot2::ggplot(ggplot2::aes(x = time)) +
+      ggplot2::geom_jitter(ggplot2::aes(y = y,
+                                        color = Z_orig),
+                           alpha = .6) +
+      ggplot2::labs(color = "Z") +
+      #ggplot2::guides(color = ggplot2::guide_legend("Z")) +
+      ggnewscale::new_scale_color() +
+      ggplot2::geom_line(ggplot2::aes(y = yhat,
+                                      color = Z,
+                                      group = factor(Z)),
+                         linewidth = 1) +
+      ggplot2::guides(color = "none") +
+      ggplot2::labs(shape = "Cluster") +
+      ggplot2::geom_line(ggplot2::aes(y = y_baseline), color = "grey",
+                         linewidth = 1) +
+      ggplot2::facet_wrap(~response,
+                          scales = scales,
+                          nrow = nrow)
+
+  }
+
+  return(plot)
+
+}
+
+
 
 
 
