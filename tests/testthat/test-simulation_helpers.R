@@ -66,13 +66,13 @@ test_that("Simulation Z", {
                   Z = Z,
                   subject_ids = individual,
                   time = time,
-                  cluster_index = 0,
+                  cluster_index = 1,
                   cor_str = "IND",
                   # Hyperparameters
                   gammas = c(1,1),
                   theta = 500,
                   parralel = F,
-                  psi_min = 50,
+                  psi_min = 500,
                   psi_max = 600,
                   npsi = 1,
                   # Iterations max
@@ -85,10 +85,11 @@ test_that("Simulation Z", {
 
 
   res$y_hat_baseline
-  plot_clusters(res,
-                response_names = 1:12,
-                curve_type = "slope",
-                Y_counts = dplyr::select(Y, -c(time, individual)))
+  cont_slope_plot <- plot_clusters(res,
+                                   response_names = 1:12,
+                                   curve_type = "slope",
+
+
 
   plot_one_cluster(res,
                    cluster_val = 1,

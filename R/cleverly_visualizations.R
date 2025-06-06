@@ -24,7 +24,7 @@ plot_clusters <- function(res,
                           nrow = 3,
                           scales = "fixed",
                           EV_color = "grey50",
-                          Y_counts){
+                          Y_counts = NULL){
 
 
   if (curve_type == "baseline") {
@@ -37,7 +37,7 @@ plot_clusters <- function(res,
     Y <- res$y_hat
   }
 
-  Z <- Y$Z
+  Z <- res$y_hat$Z
 
   binary_Z <- length(unique(Z)) <= 2
 
@@ -228,7 +228,7 @@ plot_one_cluster <- function(res,
                              nrow = 3,
                              scales = "fixed",
                              EV_color = "grey50",
-                             Y_counts){
+                             Y_counts = NULL){
 
 
   if (curve_type == "baseline") {
@@ -240,6 +240,8 @@ plot_one_cluster <- function(res,
   if (curve_type == "slope") {
     Y <- res$y_hat
   }
+
+  Z <- Y$Z
   binary_Z <- length(unique(Z)) <= 2
 
   if (binary_Z ) {
