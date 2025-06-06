@@ -52,8 +52,6 @@ test_that("Simulation Z", {
   sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_cont_slope/sim_data_27.rds")
 
   # Visualize simulated data
-  Z_type = "continuous"
-  Z_type = "binary"
   plot_sim_data(sim, Z_type = Z_type)
 
   true_cluster <- rep(1:3, each = 4)
@@ -69,7 +67,7 @@ test_that("Simulation Z", {
                   subject_ids = individual,
                   time = time,
                   cluster_index = 0,
-                  cor_str = "CON-d",
+                  cor_str = "IND",
                   # Hyperparameters
                   gammas = c(1,1),
                   theta = 500,
@@ -79,9 +77,9 @@ test_that("Simulation Z", {
                   npsi = 1,
                   # Iterations max
                   run_min = 3,
-                  max_admm_iter = 300,
+                  max_admm_iter = 100,
                   max_outer_iter = 3,
-                  max_2_iter = 300,
+                  max_2_iter = 100,
   ) %>%
     get_cluster_diagnostics(true_cluster)
 
@@ -89,26 +87,22 @@ test_that("Simulation Z", {
   res$y_hat_baseline
   plot_clusters(res,
                 response_names = 1:12,
-                Z_type = Z_type,
                 curve_type = "slope",
                 Y_counts = dplyr::select(Y, -c(time, individual)))
 
   plot_one_cluster(res,
                    cluster_val = 1,
                    response_names = 1:12,
-                   Z_type = Z_type,
                    curve_type = "slope",
                    Y_counts = dplyr::select(Y, -c(time, individual)))
 
 
   plot_clusters(res,
                 response_names = 1:12,
-                Z_type = Z_type,
                 curve_type = "baseline")
   plot_one_cluster(res,
                    cluster_val = 2,
                    response_names = 1:12,
-                   Z_type = Z_type,
                    curve_type = "baseline",
                    Y_counts = dplyr::select(Y, -c(time, individual)))
 

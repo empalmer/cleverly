@@ -20,7 +20,6 @@
 plot_clusters <- function(res,
                           response_names,
                           order = "response",
-                          Z_type = "binary",
                           curve_type = "baseline",
                           nrow = 3,
                           scales = "fixed",
@@ -38,8 +37,11 @@ plot_clusters <- function(res,
     Y <- res$y_hat
   }
 
+  Z <- Y$Z
 
-  if (Z_type == "binary") {
+  binary_Z <- length(unique(Z)) <= 2
+
+  if (binary_Z) {
     Y <- Y %>% dplyr::mutate(Z = factor(.data$Z))
   }
 
@@ -88,7 +90,7 @@ plot_clusters <- function(res,
 
 
 # slope, binary ------------------------------------------------------------
-  else if (Z_type == "binary") {
+  else if (binary_Z ) {
     if (order == "response") {
       values <- c(viridis::viridis(length(unique(cluster_key$cluster))), EV_color)
     } else if (order == "cluster") {
@@ -127,7 +129,7 @@ plot_clusters <- function(res,
         labels = function(x) stringr::str_wrap(x, width = 10)
       )
 # slope, continuous ------------------------------------------------------------
-  } else if (Z_type == "continuous") {
+  } else if (!binary_Z ) {
 
     response_val <- res$y_hat$response[1]
     Z_orig <- res$y_hat$Z
@@ -222,7 +224,6 @@ plot_clusters <- function(res,
 plot_one_cluster <- function(res,
                              response_names,
                              cluster_val,
-                             Z_type = "binary",
                              curve_type = "baseline",
                              nrow = 3,
                              scales = "fixed",
@@ -239,9 +240,9 @@ plot_one_cluster <- function(res,
   if (curve_type == "slope") {
     Y <- res$y_hat
   }
+  binary_Z <- length(unique(Z)) <= 2
 
-
-  if (Z_type == "binary") {
+  if (binary_Z ) {
     Y <- Y %>% dplyr::mutate(Z = factor(.data$Z))
   }
 
@@ -286,7 +287,7 @@ plot_one_cluster <- function(res,
 
 
   # slope, binary ------------------------------------------------------------
-  else if (Z_type == "binary") {
+  else if (binary_Z) {
 
     values <- c(viridis::viridis(1), EV_color)
 
@@ -316,7 +317,7 @@ plot_one_cluster <- function(res,
         labels = function(x) stringr::str_wrap(x, width = 10)
       )
     # slope, continuous ------------------------------------------------------------
-  } else if (Z_type == "continuous") {
+  } else if (!binary_Z ) {
 
     response_val <- res$y_hat$response[1]
     Z_orig <- res$y_hat$Z
