@@ -56,7 +56,7 @@ plot_clusters <- function(res,
     dplyr::left_join(cluster_key, by = c("response" = "response_names")) %>%
     dplyr::mutate(response = factor(.data$response, labels = response_names))
 
-
+  response_names <- paste0("Cluster ", cluster_key$cluster, " - ", cluster_key$response_names)
 # baseline ----------------------------------------------------------------
 
 
@@ -70,22 +70,36 @@ plot_clusters <- function(res,
       stop("order must be either 'response' or 'cluster'")
     }
 
+
+    Y$Z_color <- rep(min(as.numeric(as.character(Z))), length(Y$Z))
+    if (binary_Z) {
+      Y$Z_color <- factor(Y$Z_color)
+    }
     plot <- Y %>%
+      dplyr::mutate(response = factor(.data$response, labels = response_names)) %>%
       ggplot2::ggplot(ggplot2::aes(x = time)) +
-      ggplot2::geom_jitter(ggplot2::aes(y = y, color = Z),
+      ggplot2::geom_jitter(ggplot2::aes(y = y,
+                                        color = Z,
+                                        shape = cluster),
                           size = 1, alpha = .8) +
-      ggplot2::labs(color = "Z") +
-      ggnewscale::new_scale_color() +
+      ggplot2::labs(color = "Z",
+                    shape = "Cluster") +
+      ggplot2::geom_line(ggplot2::aes(y = yhat),
+                         color = "black",
+                         linewidth = 1.6) +
       ggplot2::geom_line(ggplot2::aes(y = yhat,
-                                      color = cluster),
+                                      color = Z_color),
+                         #color = "#F8766D",
                          linewidth = 1.5) +
+      #ggnewscale::new_scale_color() +
+      # ggplot2::geom_line(ggplot2::aes(y = yhat,
+      #                                 color = cluster),
+      #                    linewidth = 1.5) +
       ggplot2::facet_wrap(~response,
                           scales = scales,
-                          nrow = nrow) +
-      ggplot2::scale_color_manual(
-        values = values,
-        name = "Cluster"
-      )
+                          nrow = nrow)
+      # ggplot2::scale_color_manual(values = values,
+      #                             name = "Cluster")
   }
 
 
@@ -109,22 +123,20 @@ plot_clusters <- function(res,
       dplyr::mutate(clusterZ = ifelse(.data$Z == 0, "Baseline Curve", .data$cluster),
                     response = factor(.data$response, labels = response_names)) %>%
       ggplot2::ggplot(ggplot2::aes(x = time)) +
-      ggplot2::geom_point(ggplot2::aes(y = y,
+      ggplot2::geom_jittter(ggplot2::aes(y = y,
                                        color = factor(Z),
-                                       shape = factor(Z)),
+                                       shape = cluster),
                           size = 1, alpha = .8) +
       ggplot2::guides(color = ggplot2::guide_legend("Z"),
                       shape = ggplot2::guide_legend("Z")) +
-      ggnewscale::new_scale_color() +
-      ggplot2::geom_line(ggplot2::aes(y = yhat,
-                                      color = clusterZ,
-                                      group = factor(Z)),
-                         linewidth = 1) +
+      # ggnewscale::new_scale_color() +
+      ggplot2::geom_line(ggplot2::aes(y = yhat, color = factor(Z), group = Z),
+                         linewidth = 1.5) +
       ggplot2::facet_wrap(~response,
                           scales = scales,
                           nrow = nrow) +
-      ggplot2::scale_color_manual(
-        values = values,
+      ggplot2::scale_color_discrete(
+        #values = values,
         name = "Cluster",
         labels = function(x) stringr::str_wrap(x, width = 10)
       )
@@ -142,15 +154,16 @@ plot_clusters <- function(res,
     y_baseline <- res$y_hat_baseline$yhat
 
     # Round Z into 4 distinct values.
-    bins <- cut(Z, breaks = 3)
-    breaks <- levels(cut(Z, breaks = 3, include.lowest = TRUE)) # string intervals
+    bins <- cut(Z, breaks = 4)
+    breaks <- levels(cut(Z, breaks = 4, include.lowest = TRUE)) # string intervals
     numeric_breaks <- as.numeric(gsub("\\(|\\]|\\[|\\)", "", unlist(strsplit(breaks, ","))))
     break_mat <- matrix(numeric_breaks, ncol = 2, byrow = TRUE)
 
     midpoints <- rowMeans(as.data.frame(break_mat)) %>% round(2)
+    mins <- apply(as.data.frame(break_mat), 1, min) %>% round(2)
 
     # Map factor levels to midpoints
-    Z_mid <- midpoints[as.integer(bins)]
+    Z_mid <- mins[as.integer(bins)]
 
     Z_rounded <- data.frame(rep(1, length(Z_mid)), Z_mid)
 
@@ -172,7 +185,6 @@ plot_clusters <- function(res,
       cluster_key <- cluster_key %>%
         dplyr::arrange(.data$cluster)
     }
-    response_names <- paste0(" (Cluster ", cluster_key$cluster, ") ", cluster_key$response_names)
 
     plot <- y_hat %>%
       dplyr::mutate(response = factor(.data$response, labels = response_names),
@@ -192,8 +204,8 @@ plot_clusters <- function(res,
                          linewidth = 1) +
       ggplot2::guides(color = "none") +
       ggplot2::labs(shape = "Cluster") +
-      ggplot2::geom_line(ggplot2::aes(y = y_baseline), color = "grey",
-                         linewidth = 1) +
+      # ggplot2::geom_line(ggplot2::aes(y = y_baseline), color = "grey",
+      #                    linewidth = 1) +
       ggplot2::facet_wrap(~response,
                           scales = scales,
                           nrow = nrow)
@@ -259,32 +271,44 @@ plot_one_cluster <- function(res,
     dplyr::left_join(cluster_key, by = c("response" = "response_names")) %>%
     dplyr::mutate(response = factor(.data$response, labels = response_names))
 
-
+  response_names <- paste0("Cluster ",
+                           cluster_key$cluster,
+                           " - ",
+                           cluster_key$response_names)
   # baseline ----------------------------------------------------------------
 
 
   if (curve_type == "baseline" | curve_type == "refit_baseline" ) {
     # Figure out how to order colors, based on response ordering or cluster ordering
+    # values <- viridis::viridis(length(unique(cluster_key$cluster)))
 
-    values <- viridis::viridis(length(unique(cluster_key$cluster)))
-
+    Y$Z_color <- rep(min(as.numeric(as.character(Z))), length(Y$Z))
+    if (binary_Z) {
+      Y$Z_color <- factor(Y$Z_color)
+    }
     plot <- Y %>%
       dplyr::filter(cluster == cluster_val) %>%
       ggplot2::ggplot(ggplot2::aes(x = time)) +
       ggplot2::geom_jitter(ggplot2::aes(y = y, color = Z),
                            size = 1, alpha = .8) +
       ggplot2::guides(color = ggplot2::guide_legend("Z")) +
-      ggnewscale::new_scale_color() +
       ggplot2::geom_line(ggplot2::aes(y = yhat,
-                                      color = cluster),
+                                      color = Z),
+                         color = "black",
+                         linewidth = 1.6) +
+      ggplot2::geom_line(ggplot2::aes(y = yhat,
+                                      color = Z_color),
+                         #color = "#F8766D",
                          linewidth = 1.5) +
+      # ggnewscale::new_scale_color() +
+      # ggplot2::geom_line(ggplot2::aes(y = yhat,
+      #                                 color = cluster),
+      #                    linewidth = 1.5) +
       ggplot2::facet_wrap(~response,
                           scales = scales,
                           nrow = nrow) +
-      ggplot2::scale_color_manual(
-        values = values,
-        name = "Cluster"
-      )
+      ggplot2::labs(title = paste0("Baseline cluster ", cluster_val),
+                    color = "Cluster")
   }
 
 
@@ -299,25 +323,28 @@ plot_one_cluster <- function(res,
                     response = factor(.data$response, labels = response_names)) %>%
       dplyr::filter(cluster == cluster_val) %>%
       ggplot2::ggplot(ggplot2::aes(x = time)) +
-      ggplot2::geom_point(ggplot2::aes(y = y,
-                                       color = factor(Z),
-                                       shape = factor(Z)),
+      ggplot2::geom_jitter(ggplot2::aes(y = y,
+                                       color = factor(Z)),
                           size = 1, alpha = .8) +
       ggplot2::guides(color = ggplot2::guide_legend("Z"),
                       shape = ggplot2::guide_legend("Z")) +
-      ggnewscale::new_scale_color() +
       ggplot2::geom_line(ggplot2::aes(y = yhat,
-                                      color = clusterZ,
-                                      group = factor(Z)),
-                         linewidth = 1) +
+                                      color = factor(Z), group = Z),
+                         linewidth = 1.5) +
+      # ggnewscale::new_scale_color() +
+      # ggplot2::geom_line(ggplot2::aes(y = yhat,
+      #                                 color = clusterZ,
+      #                                 group = factor(Z)),
+      #                    linewidth = 1) +
       ggplot2::facet_wrap(~response,
                           scales = scales,
                           nrow = nrow) +
-      ggplot2::scale_color_manual(
-        values = values,
+      ggplot2::scale_color_discrete(
+        #values = values,
         name = "Cluster",
         labels = function(x) stringr::str_wrap(x, width = 10)
-      )
+      ) +
+      ggplot2::ggtitle(paste0("Slope cluster ", cluster_val))
     # slope, continuous ------------------------------------------------------------
   } else if (!binary_Z ) {
 
@@ -338,9 +365,9 @@ plot_one_cluster <- function(res,
     break_mat <- matrix(numeric_breaks, ncol = 2, byrow = TRUE)
 
     midpoints <- rowMeans(as.data.frame(break_mat)) %>% round(2)
-
+    mins <- apply(as.data.frame(break_mat), 1, min) %>% round(2)
     # Map factor levels to midpoints
-    Z_mid <- midpoints[as.integer(bins)]
+    Z_mid <- mins[as.integer(bins)]
 
     Z_rounded <- data.frame(rep(1, length(Z_mid)), Z_mid)
 
@@ -358,11 +385,6 @@ plot_one_cluster <- function(res,
       dplyr::left_join(cluster_key, by = c("response" = "response_names")) %>%
       dplyr::mutate(response = factor(.data$response, labels = response_names))
 
-    if (order == "cluster") {
-      cluster_key <- cluster_key %>%
-        dplyr::arrange(.data$cluster)
-    }
-    response_names <- paste0(" (Cluster ", cluster_key$cluster, ") ", cluster_key$response_names)
 
 
     plot <- y_hat %>%
@@ -375,19 +397,15 @@ plot_one_cluster <- function(res,
                                         color = Z_orig),
                            alpha = .6) +
       ggplot2::labs(color = "Z") +
-      #ggplot2::guides(color = ggplot2::guide_legend("Z")) +
-      ggnewscale::new_scale_color() +
       ggplot2::geom_line(ggplot2::aes(y = yhat,
                                       color = Z,
                                       group = factor(Z)),
                          linewidth = 1) +
-      ggplot2::guides(color = "none") +
       ggplot2::labs(shape = "Cluster") +
-      ggplot2::geom_line(ggplot2::aes(y = y_baseline), color = "grey",
-                         linewidth = 1) +
       ggplot2::facet_wrap(~response,
                           scales = scales,
-                          nrow = nrow)
+                          nrow = nrow) +
+      ggplot2::ggtitle(paste0("Slope cluster ", cluster_val))
 
   }
 

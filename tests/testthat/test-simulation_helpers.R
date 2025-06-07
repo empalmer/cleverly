@@ -42,17 +42,17 @@ test_that("Simulation Z", {
                             function(t) 2 * t))
 
   # This is the one where it did not work in simulation
-  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_large_rho_var/sim_data_2.rds")
-  sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_small_var_Y0/sim_data_2.rds")
-  sim <- read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_1mil_similar_ranges/sim_data_2.rds")
-  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/CONd_may22_1mil/sim_data_74.rds")
-  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_binary_baseline/sim_data_47.rds")
-  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_binary_slope/sim_data_27.rds")
-  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_cont_baseline/sim_data_1.rds")
-  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_cont_slope/sim_data_27.rds")
+  # Setting 1: binary baseline
+  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/cleverly_simulation/simulation_data_results/sim_data/Z_binary_baseline/sim_data_47.rds")
+  # Setting 2: binary slope
+  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/cleverly_simulation/simulation_data_results/sim_data/Z_binary_slope/sim_data_27.rds")
+  # Setting 3: cont baseline
+  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/cleverly_simulation/simulation_data_results/sim_data/Z_cont_baseline/sim_data_1.rds")
+  # Setting 4: cont slope
+  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/cleverly_simulation/simulation_data_results/sim_data/Z_cont_slope/sim_data_27.rds")
 
   # Visualize simulated data
-  plot_sim_data(sim, Z_type = Z_type)
+  plot_sim_data(sim, Z_type = "binary")
 
   true_cluster <- rep(1:3, each = 4)
 
@@ -73,7 +73,7 @@ test_that("Simulation Z", {
                   theta = 500,
                   parralel = F,
                   psi_min = 500,
-                  psi_max = 600,
+                  psi_max = 2200,
                   npsi = 1,
                   # Iterations max
                   run_min = 3,
@@ -85,11 +85,12 @@ test_that("Simulation Z", {
 
 
   res$y_hat_baseline
-  cont_slope_plot <- plot_clusters(res,
-                                   response_names = 1:12,
-                                   curve_type = "slope",
 
 
+  plot_clusters(res,
+                response_names = 1:12,
+                curve_type = "slope",
+                Y_counts = dplyr::select(Y, -c(time, individual)))
 
   plot_one_cluster(res,
                    cluster_val = 1,
@@ -97,31 +98,17 @@ test_that("Simulation Z", {
                    curve_type = "slope",
                    Y_counts = dplyr::select(Y, -c(time, individual)))
 
-
   plot_clusters(res,
                 response_names = 1:12,
-                curve_type = "baseline")
+                curve_type = "baseline",
+                Y_counts = dplyr::select(Y, -c(time, individual)))
+
   plot_one_cluster(res,
-                   cluster_val = 2,
+                   cluster_val = 1,
                    response_names = 1:12,
                    curve_type = "baseline",
                    Y_counts = dplyr::select(Y, -c(time, individual)))
 
-
-
-
-  plot_clusters(res,
-                response_names = 1:12,
-                Z_type = Z_type,
-                y_type = "baseline")
-
-
-
-  plot_clusters(res,
-                Z = rep(Z, 12),
-                response_names = 1:12,
-                Z_type = "binary",
-                y_type = "y_hat_counts_group")
 
 
   plot_BIC(res, BIC_type = "BIC", psis = seq(600, 1400, length.out = 2))
@@ -140,15 +127,6 @@ test_that("Simulation Z", {
 
   plot_initial_fit(res, K = 12)
 
-  # Get cluster membership
-  cluster_df <- data.frame(
-    K = factor(1:12, levels = 1:12),
-    cluster = factor(res$clusters$membership))
-  knitr::kable(table(cluster_df$cluster, rep(1:3, each = 4)))
-
-
-  get_corR("CON", mi = 3, K = 2, rho = .4)
-
 
 })
 
@@ -156,19 +134,13 @@ test_that("Simulation Z", {
 
 test_that("CLR", {
   skip("Skip - used as test file for cleverly")
-  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_large_rho_var/sim_data_2.rds")
-  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_small_var_Y0/sim_data_2.rds")
-  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/cond_1mil_similar_ranges/sim_data_2.rds")
-  sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/CONd_may22_1mil/sim_data_74.rds")
   sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_binary_baseline/sim_data_27.rds")
   sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_cont_baseline/sim_data_27.rds")
   sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_binary_slope/sim_data_27.rds")
-
-
   sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/novus_results/sim_data/Z_binary_baseline/sim_data_27.rds")
+
+
   true_cluster <- rep(1:3, each = 4)
-
-
   Y <- dplyr::select(sim, -c(
     "total_n",
     "Capture.Number",
