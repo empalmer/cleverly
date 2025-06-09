@@ -216,30 +216,24 @@ plot_clusters <- function(res,
 
 }
 
-#' Title
+#' Plot fits and data for a single cluster
 #'
-#' @param res
-#' @param response_names
-#' @param cluster_val
-#' @param order
-#' @param Z_type
-#' @param curve_type
-#' @param nrow
-#' @param scales
-#' @param EV_color
-#' @param Y_counts
+#' @param res cleverly result
+#' @param response_names vector of response naes
+#' @param cluster_val numeric which cluster to plot
+#' @param curve_type "baseline" "refit" or "slope"
+#' @param nrow number of rows for the facet plot to include
+#' @param scales "fixed" or "free_y"
+#' @param Y_counts needed if curve_type = "slope" and continuous Z
 #'
 #' @returns
 #' @export
-#'
-#' @examples
 plot_one_cluster <- function(res,
                              response_names,
                              cluster_val,
                              curve_type = "baseline",
                              nrow = 3,
                              scales = "fixed",
-                             EV_color = "grey50",
                              Y_counts = NULL){
 
 
@@ -315,7 +309,7 @@ plot_one_cluster <- function(res,
   # slope, binary ------------------------------------------------------------
   else if (binary_Z) {
 
-    values <- c(viridis::viridis(1), EV_color)
+    #values <- c(viridis::viridis(1), EV_color)
 
     # plot clusters
     plot <- Y %>%

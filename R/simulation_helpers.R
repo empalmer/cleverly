@@ -360,7 +360,7 @@ plot_sim_data <- function(sim, K = 12, Z_type = "binary"){
                              .data$total_n,
                              .data$Z)) %>%
       dplyr::mutate(name = factor(.data$name,
-                                  levels = paste0("Taxa.", 1:K))) %>%
+                                  levels = paste0("Response ", 1:K))) %>%
       ggplot2::ggplot(ggplot2::aes(x = time,
                                    y = value,
                                    color = factor(Z),
@@ -368,8 +368,8 @@ plot_sim_data <- function(sim, K = 12, Z_type = "binary"){
       ggplot2::geom_jitter(size = 1) +
       ggplot2::facet_wrap(~name) +
       ggplot2::labs(title = "Simulated Data",
-                    color = "EV",
-                    shape = "EV",
+                    color = "Z",
+                    shape = "Z",
                     y = "Count",
                     x = "Time")
   } else {
@@ -380,15 +380,15 @@ plot_sim_data <- function(sim, K = 12, Z_type = "binary"){
                              .data$total_n,
                              .data$Z)) %>%
       dplyr::mutate(name = factor(.data$name,
-                                  levels = paste0("Taxa.", 1:K))) %>%
+                                  levels = paste0("Response ", 1:K))) %>%
       ggplot2::ggplot(ggplot2::aes(x = time,
                                    y = value,
                                    color = Z)) +
       ggplot2::geom_jitter(size = 1) +
       ggplot2::facet_wrap(~name) +
       ggplot2::labs(title = "Simulated Data",
-                    color = "EV",
-                    shape = "EV",
+                    color = "Z",
+                    shape = "Z",
                     y = "Count",
                     x = "Time")
   }
