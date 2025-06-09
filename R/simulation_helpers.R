@@ -316,7 +316,7 @@ plot_sim_data <- function(sim, K = 12){
 
   binary_Z <- length(unique(sim$Z)) <= 2
 
-  if (binary_Z == "binary") {
+  if (binary_Z) {
     plot <- sim %>%
       tidyr::pivot_longer(-c(.data$individual,
                              .data$time,
@@ -327,8 +327,7 @@ plot_sim_data <- function(sim, K = 12){
                                   labels = paste0("Response ", 1:K))) %>%
       ggplot2::ggplot(ggplot2::aes(x = time,
                                    y = value,
-                                   color = factor(Z),
-                                   shape = factor(Z))) +
+                                   color = factor(Z))) +
       ggplot2::geom_jitter(size = 1) +
       ggplot2::facet_wrap(~name) +
       ggplot2::labs(title = "Simulated Data",
@@ -344,7 +343,7 @@ plot_sim_data <- function(sim, K = 12){
                              .data$total_n,
                              .data$Z)) %>%
       dplyr::mutate(name = factor(.data$name,
-                                  levels = paste0("Response ", 1:K))) %>%
+                                  labels = paste0("Response ", 1:K))) %>%
       ggplot2::ggplot(ggplot2::aes(x = time,
                                    y = value,
                                    color = Z)) +
