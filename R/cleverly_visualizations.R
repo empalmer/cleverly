@@ -123,7 +123,7 @@ plot_clusters <- function(res,
       dplyr::mutate(clusterZ = ifelse(.data$Z == 0, "Baseline Curve", .data$cluster),
                     response = factor(.data$response, labels = response_names)) %>%
       ggplot2::ggplot(ggplot2::aes(x = time)) +
-      ggplot2::geom_jittter(ggplot2::aes(y = y,
+      ggplot2::geom_jitter(ggplot2::aes(y = y,
                                        color = factor(Z),
                                        shape = cluster),
                           size = 1, alpha = .8) +

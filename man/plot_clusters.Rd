@@ -8,12 +8,11 @@ plot_clusters(
   res,
   response_names,
   order = "response",
-  Z_type = "binary",
   curve_type = "baseline",
   nrow = 3,
   scales = "fixed",
   EV_color = "grey50",
-  Y_counts
+  Y_counts = NULL
 )
 }
 \arguments{
@@ -22,8 +21,6 @@ plot_clusters(
 \item{response_names}{vector of names for each response}
 
 \item{order}{"response" or "cluster" to have original ordering or cluster ordering of responses on the facet plots}
-
-\item{Z_type}{binary or continuous}
 
 \item{curve_type}{= baseline, refit_baseline, or slope}
 
@@ -34,6 +31,8 @@ plot_clusters(
 \item{EV_color}{color for the EV line}
 
 \item{Y_counts}{need if curve_type = "slope}
+
+\item{Z_type}{binary or continuous}
 }
 \value{
 ggplot object

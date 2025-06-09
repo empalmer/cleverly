@@ -8,12 +8,11 @@ plot_one_cluster(
   res,
   response_names,
   cluster_val,
-  Z_type = "binary",
   curve_type = "baseline",
   nrow = 3,
   scales = "fixed",
   EV_color = "grey50",
-  Y_counts
+  Y_counts = NULL
 )
 }
 \arguments{
