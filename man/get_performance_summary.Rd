@@ -4,12 +4,10 @@
 \alias{get_performance_summary}
 \title{get performance summary table}
 \usage{
-get_performance_summary(list, output)
+get_performance_summary(list)
 }
 \arguments{
 \item{list}{simulation list}
-
-\item{output}{output type of "R", "html", or "latex"}
 }
 \description{
 get performance summary table
