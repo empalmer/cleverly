@@ -286,8 +286,7 @@ plot_one_cluster <- function(res,
       ggplot2::geom_jitter(ggplot2::aes(y = y, color = Z),
                            size = 1, alpha = .8) +
       ggplot2::guides(color = ggplot2::guide_legend("Z")) +
-      ggplot2::geom_line(ggplot2::aes(y = yhat,
-                                      color = Z),
+      ggplot2::geom_line(ggplot2::aes(y = yhat),
                          color = "black",
                          linewidth = 1.6) +
       ggplot2::geom_line(ggplot2::aes(y = yhat,
