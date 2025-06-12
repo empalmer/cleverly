@@ -9,7 +9,7 @@
 Cleverly stands for (Cl)ustering with (E)xternal (V)ariabl(e)s in (R)
 with (L)ongitudinal (Y)s.
 
-## Installation
+# Installation
 
 You can install the development version of cleverly from
 [GitHub](https://github.com/) with:
@@ -20,127 +20,224 @@ pak::pak("empalmer/cleverly")
 library(cleverly)
 ```
 
-## Example
+# Example usage:
 
-Simulate data with independence structure, then run cleverly assuming an
-independence structure:
+## Simulate example data (binary)
+
+Simulate compositional count data with longitudinal independence
+structure. This code will simulate 20 samples across 12 responses, using
+a binary external variable. Default arguments to simulate 3 baseline
+clusters with 4 members each.
 
 ``` r
 set.seed(127)
 sim <- simulation_data(n = 20,
-                       range_start = 5000,
-                       range_end = 20000,
-                       nknots = 3,
                        K = 12,
-                       order = 3,
                        user_var = 1000,
-                       cor_str = "IND")
+                       cor_str = "IND", 
+                       Z_type = "binary")
 
-Y <- dplyr::select(sim, -c(
-  "total_n",
-  "Capture.Number",
-  "Z"))
+Y <- sim$Y
 Z <- sim$Z
 
 true_cluster <- rep(1:3, each = 4)
 
+head(Y)
+#>   time individual Response_1 Response_2 Response_3 Response_4 Response_5
+#> 1 0.00          1        293        644        670        347          2
+#> 2 0.05          1        808       1609        834       1352         71
+#> 3 0.10          1        366        363        228        382         14
+#> 4 0.15          1        406        268        297       1221        191
+#> 5 0.20          1        852        651        853        467        503
+#> 6 0.25          1         22        173        377        195       6759
+#>   Response_6 Response_7 Response_8 Response_9 Response_10 Response_11
+#> 1         36         17          0       1025         941         769
+#> 2        252        227          0       2536        3872        1931
+#> 3          0          0        184       1401         832        1130
+#> 4       1090        191        143       4871        3308        5108
+#> 5        661        344        279       2944        2705        3235
+#> 6        172        214        172        666        2355         884
+#>   Response_12
+#> 1        1088
+#> 2        3665
+#> 3        1218
+#> 4        2004
+#> 5        2666
+#> 6        1614
+head(Z)
+#> [1] 0 0 0 0 0 1
+```
+
+$Y$ is a data frame of 12 counts with a column of time and a column of
+individual. Z is a vector of binary external variables.
+
+## Run algorithm:
+
+We now run the ‘cleverly’ algorithm, specifying the commonly needed
+arguments. Here, we specify subject_ids = individual, as individual is
+the id column in Y. We could have alternately given a vector of IDs.
+Similarly for time. needs to select the ideal tuning parameter psi - so
+we give a range of psi_min to psi_max, and a number to test (6).
+
+We set to 0 because we want to cluster on the baseline values, ie when
+$Z = 0$. If we want to cluster on the slope value, ie the effect of $Z$,
+we would set cluster_index to 1.
+
+``` r
 res <- cleverly(Y = Y,
                 Z = Z,
                 subject_ids = individual,
-                lp = 0,
                 time = time,
+                cluster_index = 0,
                 cor_str = "IND",
-                theta = 300,
-                parralel = F,
                 psi_min = 10,
-                psi_max = 1400,
-                npsi = 3,
-                gammas = c(1, 1)) %>%
-  get_cluster_diagnostics(true_cluster)
-#> [1] "Initializing beta values for psi = 10"
-#> [1] "Outer loop iteration: 1"
-#>  [1]  1  2  3  4  5  6  7  8  9 10 11 12
-#> [1] "Outer loop iteration: 2"
-#>  [1]  1  2  3  4  5  6  7  8  9 10 11 12
-#> [1] "Outer loop iteration: 3"
+                psi_max = 5000,
+                npsi = 3) 
+#> [1] "Initializing for psi = 10"
+#> [1] "Iteration: 1"
+#> [1] "Iteration: 2"
+#> [1] "Iteration: 3"
+#> [1] "Cluster membership: "
 #>  [1]  1  2  3  4  5  6  7  8  9 10 11 12
 #> [1] "Clusters not changing, exiting"
-#> [1] "Initializing beta values for psi = 705"
-#> [1] "Outer loop iteration: 1"
-#>  [1] 1 1 1 1 2 2 2 2 3 3 3 3
-#> [1] "Outer loop iteration: 2"
-#>  [1] 1 1 1 1 2 2 2 2 3 3 3 3
-#> [1] "Outer loop iteration: 3"
-#>  [1] 1 1 1 1 2 2 2 2 3 3 3 3
-#> [1] "Clusters not changing, exiting"
-#> [1] "Initializing beta values for psi = 1400"
-#> [1] "Outer loop iteration: 1"
-#>  [1] 1 1 1 1 2 2 2 2 3 3 3 3
-#> [1] "Outer loop iteration: 2"
-#>  [1] 1 1 1 1 2 2 2 2 3 3 3 3
-#> [1] "Outer loop iteration: 3"
+#> [1] "Initializing for psi = 2505"
+#> [1] "Iteration: 1"
+#> [1] "Iteration: 2"
+#> [1] "Iteration: 3"
+#> [1] "Cluster membership: "
 #>  [1] 1 1 1 1 2 2 2 2 3 3 3 3
 #> [1] "Clusters not changing, exiting"
-#> [1] "psi:10, cluster:list(membership = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), csize = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1), no = 12)"
-#> [2] "psi:705, cluster:list(membership = c(1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3), csize = c(4, 4, 4), no = 3)"                              
-#> [3] "psi:1400, cluster:list(membership = c(1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3), csize = c(4, 4, 4), no = 3)"                             
-#> [1] "chosen psi: 705, clusterc(1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3)"
-#> [2] "chosen psi: 705, clusterc(4, 4, 4)"                           
-#> [3] "chosen psi: 705, cluster3"
+#> [1] "Initializing for psi = 5000"
+#> [1] "Iteration: 1"
+#> [1] "Iteration: 2"
+#> [1] "Iteration: 3"
+#> [1] "Cluster membership: "
+#>  [1] 1 1 1 1 1 1 1 1 1 1 1 1
+#> [1] "Clusters not changing, exiting"
+#> [1] "Chosen psi (via BIC): 2505"
 ```
 
-# Diagnostics:
+## Results
+
+``` r
+names(res)
+#>  [1] "clusters"          "y_hat"             "y_hat_init"       
+#>  [4] "y_hat_baseline"    "y_hat_refit"       "B"                
+#>  [7] "Z"                 "BIC"               "BIC_ra_group"     
+#> [10] "error"             "rho"               "phi"              
+#> [13] "psi"               "v"                 "beta"             
+#> [16] "possible_clusters" "s"
+```
+
+## Diagnostics:
 
 Since we know the true clusters:
 
 ``` r
-res$cluster_diagnostics
+get_cluster_diagnostics(res, true_cluster)$cluster_diagnostics
 #>   rand adj_rand jaccard CER nclust
 #> 1    1        1       1   0      3
 ```
 
 We selected the exact right clusters!
 
+## Visualizations
+
 Visualize the data + clusters
 
 ``` r
-plot_clusters(res,
-              Z = rep(Z, 12),
-              response_names = 1:12, 
-              Z_type = "binary")
+plot_clusters(res)
+```
+
+<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
+
+Alternatively, if we want to examine a single cluster:
+
+``` r
+plot_one_cluster(res, cluster_val = 1)
 ```
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
-Look at BIC values for the different hyper parameter values tested:
+## Simulate example data (continuous, slope)
+
+## Troubleshooting:
+
+### Poorly fit data
 
 ``` r
-plot_BIC(res, BIC_type = "BIC", psis = seq(600, 1400, length.out = 1))
+res <- cleverly(Y = Y,
+                Z = Z,
+                subject_ids = individual,
+                time = time,
+                cluster_index = 0,
+                cor_str = "IND",
+                gammas = c(1e4, 1e4),
+                psi_min = 500,
+                npsi = 1) 
+#> [1] "Initializing for psi = 500"
+#> [1] "Iteration: 1"
+#> [1] "Iteration: 2"
+#> [1] "Iteration: 3"
+#> [1] "Cluster membership: "
+#>  [1] 1 1 1 1 1 1 1 1 2 2 2 2
+#> [1] "Clusters not changing, exiting"
+#> [1] "Chosen psi (via BIC): 500"
+#> Warning in cleverly(Y = Y, Z = Z, subject_ids = individual, time = time, :
+#> Fewer than 2 unique clusters found. This may indicate that the algorithm was
+#> run with too small a npsi or too small a range between psi_min and psi_max.
+#> There should be a large enough grid of hyperparameters (psi) to ensure the
+#> chosen cluster membership is accurate.
+
+plot_clusters(res)
 ```
 
 <img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
 
-<!--
-This is a basic example which shows you how to solve a common problem:
-&#10;
+The tuning parameter `gammas` can be specified, but it is usually fine
+to leave it at the default. If you see the overall fit seems bad (in
+this case underfit, because gamma is too large), it can be changed.
+
+### Too small hyper parameter range
+
 ``` r
-library(cleverly)
-## basic example code
+res <- cleverly(Y = Y,
+                Z = Z,
+                subject_ids = individual,
+                time = time,
+                cluster_index = 0,
+                cor_str = "IND",
+                psi_min = 10,
+                psi_max = 11,
+                npsi = 3) 
+#> [1] "Initializing for psi = 10"
+#> [1] "Iteration: 1"
+#> [1] "Iteration: 2"
+#> [1] "Iteration: 3"
+#> [1] "Cluster membership: "
+#>  [1]  1  2  3  4  5  6  7  8  9 10 11 12
+#> [1] "Clusters not changing, exiting"
+#> [1] "Initializing for psi = 10.5"
+#> [1] "Iteration: 1"
+#> [1] "Iteration: 2"
+#> [1] "Iteration: 3"
+#> [1] "Cluster membership: "
+#>  [1]  1  2  3  4  5  6  7  8  9 10 11 12
+#> [1] "Clusters not changing, exiting"
+#> [1] "Initializing for psi = 11"
+#> [1] "Iteration: 1"
+#> [1] "Iteration: 2"
+#> [1] "Iteration: 3"
+#> [1] "Cluster membership: "
+#>  [1]  1  2  3  4  5  6  7  8  9 10 11 12
+#> [1] "Clusters not changing, exiting"
+#> [1] "Chosen psi (via BIC): 10"
+#> Warning in cleverly(Y = Y, Z = Z, subject_ids = individual, time = time, :
+#> Fewer than 2 unique clusters found. This may indicate that the algorithm was
+#> run with too small a npsi or too small a range between psi_min and psi_max.
+#> There should be a large enough grid of hyperparameters (psi) to ensure the
+#> chosen cluster membership is accurate.
 ```
-&#10;What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
-&#10;
-``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
-```
-&#10;You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this.
-&#10;You can also embed plots, for example:
-&#10;<img src="man/figures/README-pressure-1.png" width="100%" />
-&#10;In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
--->
+
+We get a warning, increase the range between psi_min and psi_max, or
+increase npsi. \# Algorithm details

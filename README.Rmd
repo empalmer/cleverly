@@ -31,11 +31,12 @@ pak::pak("empalmer/cleverly")
 library(cleverly)
 ```
 
-# Simulate example data (binary)
+# Example usage: 
+## Simulate example data (binary)
 
 Simulate compositional count data with longitudinal independence structure. This code will simulate 20 samples across 12 responses, using a binary external variable. Default arguments to \code{simulation_data} simulate 3 baseline clusters with 4 members each. 
 
-```{r sim_data, cache = T}
+```{r sim_data}
 set.seed(127)
 sim <- simulation_data(n = 20,
                        K = 12,
@@ -55,7 +56,7 @@ head(Z)
 $Y$ is a data frame of 12 counts with a column of time and a column of individual. Z is a vector of binary external variables. 
 
 
-# Run algorithm: 
+## Run algorithm: 
 
 We now run the 'cleverly' algorithm, specifying the commonly needed arguments. Here, we specify subject_ids = individual, as individual is the id column in Y. We could have alternately given a vector of IDs. Similarly for time. \code{cleverly} needs to select the ideal tuning parameter psi - so we give a range of psi_min to psi_max, and a number to test (6). 
 
@@ -73,7 +74,7 @@ res <- cleverly(Y = Y,
                 npsi = 3) 
 ```
 
-# Results
+## Results
 
 ```{r}
 names(res)
@@ -81,7 +82,7 @@ names(res)
 
 
 
-# Diagnostics: 
+## Diagnostics: 
 
 Since we know the true clusters: 
 
@@ -92,7 +93,7 @@ get_cluster_diagnostics(res, true_cluster)$cluster_diagnostics
 
 We selected the exact right clusters!
 
-# Visualizations
+## Visualizations
 
 Visualize the data + clusters 
 
@@ -107,12 +108,12 @@ plot_one_cluster(res, cluster_val = 1)
 ```
 
 
-# Simulate example data (continuous, slope)
+## Simulate example data (continuous, slope)
 
 
-# Troubleshooting: 
+## Troubleshooting: 
 
-## Poorly fit data
+### Poorly fit data
 
 ```{r, cache = T}
 res <- cleverly(Y = Y,
@@ -121,14 +122,16 @@ res <- cleverly(Y = Y,
                 time = time,
                 cluster_index = 0,
                 cor_str = "IND",
-                gammas = c(1e-6, 1e-6),
-                psi_min = 10,
-                psi_max = 5000,
-                npsi = 3) 
+                gammas = c(1e4, 1e4),
+                psi_min = 500,
+                npsi = 1) 
+
+plot_clusters(res)
 ```
 
+The tuning parameter `gammas` can be specified, but it is usually fine to leave it at the default. If you see the overall fit seems bad (in this case underfit, because gamma is too large), it can be changed.
 
-## Too small hyper parameter range
+### Too small hyper parameter range
 
 ```{r}
 res <- cleverly(Y = Y,
@@ -142,4 +145,5 @@ res <- cleverly(Y = Y,
                 npsi = 3) 
 ```
 
-We get a warning, increase the range between psi_min and psi_max, or incrase npsi. 
+We get a warning, increase the range between psi_min and psi_max, or increase npsi. 
+# Algorithm details
