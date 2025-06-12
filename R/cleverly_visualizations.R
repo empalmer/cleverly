@@ -226,7 +226,7 @@ plot_clusters <- function(res,
 #' @param scales "fixed" or "free_y"
 #' @param Y_counts needed if curve_type = "slope" and continuous Z
 #'
-#' @returns
+#' @returns ggplot object for one cluster
 #' @export
 plot_one_cluster <- function(res,
                              response_names,
@@ -470,30 +470,78 @@ plot_BIC <- function(res, BIC_type = "BIC", psis){
 #' plot_initial_fit
 #'
 #' @param res Cleverly model object
-#' @param K Number of responses
+#' @param response_names Vector of response names.
 #'
 #' @returns ggplot object
 #' @export
-plot_initial_fit <- function(res, K){
+plot_initial_fit <- function(res, response_names, Z_col){
+  K <- length(res$clusters$membership)
   # Initial fit:
   y_hat_init <- res$y_hat_init
+  Z_sym <- rlang::sym(Z_col)
+
+  if (!Z_col %in% colnames(y_hat_init)) {
+    stop("Invalid Z_col. Please provide a valid column name for Z.")
+  }
+
+  binary_Z <- length(as.numeric(unique(y_hat_init[[Z_col]]))) <= 2
+
+  if (binary_Z) {
+    y_hat_init <- y_hat_init %>%
+      dplyr::mutate(Z = factor(!!Z_sym))
+  }
+
   # plot clusters
   plot <- y_hat_init %>%
-    dplyr::mutate(response = factor(.data$response, levels = 1:K)) %>%
+    dplyr::mutate(response = factor(.data$response,
+                                    levels = 1:K,
+                                    labels = response_names)) %>%
     ggplot2::ggplot(ggplot2::aes(x = time)) +
-    ggplot2::geom_point(ggplot2::aes(y = y,
-                                     color = factor(Z),
-                                     shape = factor(Z)),
+    ggplot2::geom_point(ggplot2::aes(y = .data$y,
+                                     color = Z),
                         size = .6, alpha = .8) +
-    ggplot2::geom_line(ggplot2::aes(y = yhat,
-                                    color = factor(Z),
-                                    group = factor(Z)),
+    ggplot2::geom_line(ggplot2::aes(y = .data$yhat,
+                                    color = Z,
+                                    group = Z),
                        linewidth = 1) +
-    ggplot2::facet_wrap(~response)
+    ggplot2::facet_wrap(~response) +
+    ggplot2::labs(x = "Time", y = "Abundance", color = "Z")
 
   return(plot)
 }
 
+
+#' Plot an alluvial plot to compare two cluster results
+#'
+#' @param res1 cluster result 1
+#' @param res2 cluster result 2
+#' @param response_names vector of response names
+#' @param res_names vector of length two to name the cluster results
+#'
+#' @returns ggplot object
+#' @export
+plot_cluster_differences <- function(res1, res2,
+                                     response_names,
+                                     res_names = c("A", "B")) {
+  # compare baseline clusters for high nutrition and body condition
+  df <- data.frame(
+    id = seq_along(res1$clusters$membership),
+    response_names = response_names,
+    res1 = as.factor(res1$clusters$membership),
+    res2 = as.factor(res2$clusters$membership)
+  )
+
+  ggplot2::ggplot(df, ggplot2::aes(axis1 = res1, axis2 = res2, y = 1)) +
+    ggalluvial::geom_alluvium(ggplot2::aes(fill = res1),
+                              width = 1/12, alpha = 0.6) +
+    ggalluvial::geom_stratum(width = 1/12, fill = "grey80", color = "black") +
+    ggplot2::geom_text(ggplot2::aes(label = response_names),
+              stat = "alluvium", size = 2) +
+    ggplot2::scale_x_discrete(limits = res_names, expand = c(.05, .05)) +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(axis.text.y = ggplot2::element_blank(),
+                   axis.ticks.y = ggplot2::element_blank())
+}
 
 
 

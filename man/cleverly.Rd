@@ -12,7 +12,7 @@ cleverly(
   cluster_index = 0,
   response_type = "counts",
   cor_str = "IND",
-  gammas,
+  gammas = NULL,
   psi_min = 500,
   psi_max = 1500,
   npsi = 10,
@@ -44,13 +44,13 @@ cleverly(
 
 \item{time}{A numeric vector of time points (length \eqn{M}) or a column name/index if \code{Y} is a data frame.}
 
-\item{cluster_index}{index for which external variable to cluster on. Usually 0 (baseline) or 1 (slope), but can be >1 if there are multiple external variables.}
+\item{cluster_index}{index for which external variable to cluster on. Usually 0 (baseline) or 1 (slope), but can be >1 if there are multiple external variables, or the external variable is categorical with more than 2 categories. Note: cleverly uses \code{model.matrix} on Z, so if you want to cluster on a categorical variable, you need to make sure the cluster index matches the corresponding category}
 
 \item{response_type}{Type of response variable. Should be either \code{"Counts"} or \code{"Continuous"}.}
 
 \item{cor_str}{Correlation structure to use. One of \code{"IND"}, \code{"CON"}, \code{"AR1"}, \code{"CON-d"}, or \code{"AR1-d"}.}
 
-\item{gammas}{A numeric vector of length \eqn{L + 1} specifying penalties applied to the D matrix.}
+\item{gammas}{A numeric vector of length \eqn{L + 1} (number of columns in \code{Z} plus one for the intercept). These control the smoothness of the B-splines. Defaults to 1 for all variables.}
 
 \item{psi_min}{Minimum \eqn{\psi} value (or the only value, if \code{npsi = 1}).}
 

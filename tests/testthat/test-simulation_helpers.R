@@ -3,15 +3,16 @@ test_that("Simulation Z", {
   # Generate simulation data
   set.seed(127)
   sim <- simulation_data(n = 20,
-                          range_start = 5000,
-                          range_end = 20000,
-                          nknots = 3,
-                          K = 12,
-                          order = 3,
-                          user_var = 1000000,
-                          cor_str = "CON-d",
-                          rho = 0.95,
-                          prob1 = .5,
+                         range_start = 5000,
+                         range_end = 20000,
+                         nknots = 3,
+                         K = 12,
+                         order = 3,
+                         user_var = 10000,
+                         cor_str = "CON-d",
+                         rho = 0.5,
+                         prob1 = .5,
+                         Z_type = "binary",
                          baseline_fxns = list(
                            function(t) cos(2 * pi * t),
                            function(t) cos(2 * pi * t),
@@ -26,20 +27,20 @@ test_that("Simulation Z", {
                            function(t) 2 - 2 * t,
                            function(t) 2 - 2 * t
                          ),
-                          # Slope functions
-                          slope_fxns = list(
-                            function(t) 2 - t,
-                            function(t) 2 * sin(pi * t),
-                            function(t) .5,
-                            function(t) t^2,
-                            function(t)  -.5 ,
-                            function(t) 2 * t - 2,
-                            function(t) t,
-                            function(t) 2 - t,
-                            function(t) 1,
-                            function(t) -.75,
-                            function(t) .75,
-                            function(t) 2 * t))
+                         # Slope functions
+                         slope_fxns = list(
+                           function(t) 2 - t,
+                           function(t) 2 * sin(pi * t),
+                           function(t) .5,
+                           function(t) t^2,
+                           function(t)  -.5 ,
+                           function(t) 2 * t - 2,
+                           function(t) t,
+                           function(t) 2 - t,
+                           function(t) 1,
+                           function(t) -.75,
+                           function(t) .75,
+                           function(t) 2 * t))
 
   # This is the one where it did not work in simulation
   # Setting 1: binary baseline
@@ -52,7 +53,7 @@ test_that("Simulation Z", {
   sim <- readr::read_rds("~/Desktop/Research/buffalo-sciris/cleverly_simulation/simulation_data_results/sim_data/Z_cont_slope/sim_data_27.rds")
 
   # Visualize simulated data
-  plot_sim_data(sim, Z_type = "binary")
+  plot_sim_data(sim)
 
   true_cluster <- rep(1:3, each = 4)
 
@@ -60,31 +61,34 @@ test_that("Simulation Z", {
     "total_n",
     "Capture.Number",
     "Z"))
-  Z <- sim$Z
+  Z1 <- sim$Z
+
+  Z <- cbind(Z1, rnorm(nrow(Y), mean = 0, sd = 1)) # Add a random covariate
+  colnames(Z) <- c("Z1", "Z2")
 
   res <- cleverly(Y = Y,
                   Z = Z,
                   subject_ids = individual,
                   time = time,
-                  cluster_index = 1,
+                  cluster_index = 2,
                   cor_str = "IND",
-                  # Hyperparameters
-                  gammas = c(1,1),
                   theta = 500,
                   parralel = F,
                   psi_min = 500,
-                  psi_max = 2200,
+                  psi_max = 501,
                   npsi = 1,
                   # Iterations max
-                  run_min = 3,
-                  max_admm_iter = 100,
-                  max_outer_iter = 3,
-                  max_2_iter = 100,
+                  max_admm_iter = 50,
+                  max_2_iter = 50,
   ) %>%
     get_cluster_diagnostics(true_cluster)
 
 
   res$y_hat_baseline
+
+  plot_initial_fit(res,
+                   response_names = LETTERS[1:12],
+                   Z_col = "Z2")
 
 
   plot_clusters(res,

@@ -345,7 +345,6 @@ algorithm1 <- function(Y,
                              P = P,
                              M = M)
 
-
 # y-hat -------------------------------------------------------------------
 
 
@@ -649,6 +648,7 @@ estimate_y <- function(beta, B, Z, K, Y, time, baseline = F){
 
 
 
+
   # Check if Z is used, otherwise don't add
   if (identical(Z_true, matrix(1, nrow = nrow(Z_true), ncol = 1))) {
     Ys <- data.frame(time = time,
@@ -660,14 +660,15 @@ estimate_y <- function(beta, B, Z, K, Y, time, baseline = F){
 
   } else {
     Ys <- data.frame(time = time,
-                     Z = Z_true[, -1],
+                     Z_true[, -1],
                      yhat_ra,
                      y_ra)
     colnames(Ys) <- c("time",
-                      "Z",
+                      colnames(Z_true[,-1]),
                       paste0("yhat_", 1:K),
                       paste0("y_", 1:K))
   }
+
 
   Ys <- Ys %>%
     tidyr::pivot_longer(

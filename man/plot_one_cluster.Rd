@@ -29,6 +29,9 @@ plot_one_cluster(
 
 \item{Y_counts}{needed if curve_type = "slope" and continuous Z}
 }
+\value{
+ggplot object for one cluster
+}
 \description{
 Plot fits and data for a single cluster
 }

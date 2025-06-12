@@ -109,7 +109,6 @@ simulation_data <- function(n = 20,
     }
     names(alpha) <- paste0("a", 1:K)
 
-
     # Get the error matrix representing the longitudinal correlation
     longitudinal_cor_error <- t(MASS::mvrnorm(n = K,
                                               mu = rep(0, length(time)),

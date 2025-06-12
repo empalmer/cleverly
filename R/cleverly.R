@@ -8,7 +8,7 @@
 #' @param time A numeric vector of time points (length \eqn{M}) or a column name/index if \code{Y} is a data frame.
 #' @param response_type Type of response variable. Should be either \code{"Counts"} or \code{"Continuous"}.
 #' @param cor_str Correlation structure to use. One of \code{"IND"}, \code{"CON"}, \code{"AR1"}, \code{"CON-d"}, or \code{"AR1-d"}.
-#' @param gammas A numeric vector of length \eqn{L + 1} specifying penalties applied to the D matrix.
+#' @param gammas A numeric vector of length \eqn{L + 1} (number of columns in \code{Z} plus one for the intercept). These control the smoothness of the B-splines. Defaults to 1 for all variables.
 #' @param psi_min Minimum \eqn{\psi} value (or the only value, if \code{npsi = 1}).
 #' @param psi_max Maximum \eqn{\psi} value (ignored if \code{npsi = 1}).
 #' @param npsi Number of \eqn{\psi} values to evaluate. If greater than 1, an equally spaced sequence from \code{psi_min} to \code{psi_max} is generated and the optimal value is selected via BIC.
@@ -29,7 +29,7 @@
 #' @param max_2_iter Maximum number of iterations for Algorithm 2 (per outer iteration).
 #' @param max_admm_iter Maximum number of iterations for the ADMM clustering step (Algorithm 3).
 #' @param BIC_type Choose the "best" psi using unrefit or refit betas
-#' @param cluster_index index for which external variable to cluster on. Usually 0 (baseline) or 1 (slope), but can be >1 if there are multiple external variables.
+#' @param cluster_index index for which external variable to cluster on. Usually 0 (baseline) or 1 (slope), but can be >1 if there are multiple external variables, or the external variable is categorical with more than 2 categories. Note: cleverly uses \code{model.matrix} on Z, so if you want to cluster on a categorical variable, you need to make sure the cluster index matches the corresponding category
 #'
 #' @return A list with the following components:
 #' \describe{
@@ -49,15 +49,12 @@
 #'   Z = my_covariates,
 #'   subject_ids = my_data$subject_id,
 #'   time = my_data$time,
-#'   lp = 1,
-#'   response_type = "Counts",
+#'   cluster_index = 1,
 #'   cor_str = "AR1",
 #'   gammas = rep(1, ncol(my_covariates) + 1),
-#'   psi_min = 0.1,
-#'   psi_max = 1,
+#'   psi_min = 100,
+#'   psi_max = 1000,
 #'   npsi = 5,
-#'   parralel = TRUE,
-#'   nworkers = 4
 #' )
 #' }
 
@@ -68,7 +65,7 @@ cleverly <- function(Y,
                      cluster_index = 0,
                      response_type = "counts",
                      cor_str = "IND",
-                     gammas,
+                     gammas = NULL,
                      # optimize psi by BIC
                      psi_min = 500,
                      psi_max = 1500,
@@ -137,6 +134,9 @@ cleverly <- function(Y,
       Y <- dplyr::select(Y, -!!time_quo) # Remove the column
     } else if (length(rlang::eval_tidy(time_quo)) == nrow(Y)) {
       time <- rlang::eval_tidy(time_quo) # Assume it's an external vector
+      if (!is.numeric(time)) {
+        stop("Time must be a numeric vector or a column in Y")
+      }
     } else {
       stop("Invalid time: must be a column name in Y or a vector of length nrow(Y)")
     }
@@ -153,7 +153,7 @@ cleverly <- function(Y,
 
 
 
-# Format Z, mi ------------------------------------------------------------
+# Format Z, mi, gamma ------------------------------------------------------------
   # Y_list <- get_Y_wrapper(Y = Y_user,
   #                         subject_ids = subject_ids,
   #                         time = time)
@@ -170,20 +170,23 @@ cleverly <- function(Y,
 
   # Format Z
   if (!missing(Z)) {
-    Z_user <- Z
-    Z <- format_Z(Z_user)
+    #Z <- format_Z(Z)
+    # Model matrix adds an intercept term and handles categories
+    Z <- model.matrix(~. , data = as.data.frame(Z))
   } else {
     Z <- matrix(1, nrow = nrow(Y))
   }
 
-  # Format l_p
-  if (cluster_index != 0) {
-    cluster_index <- format_lp(lp = cluster_index, Z = Z)
-  }
-  # Check gamma vector is of correct dimension
-  if (length(gammas) != ncol(Z)) {
+  # Format gammas + check
+  if (is.null(gammas)) {
+    gammas <- rep(1, ncol(Z)) # Default to 1 for all variables
+  } else if (length(gammas) != ncol(Z)) {
     stop("Length of gammas must be equal to the number of columns in Z + 1")
   }
+
+
+
+
 
 # Run algorithm 1 ---------------------------------------------------------
   # Run algorithm 1 using correct formatting
@@ -271,6 +274,10 @@ cleverly <- function(Y,
     stop("Invalid response type or type not yet implemented.")
   }
 
+  unique_clusters <- length(unique(purrr::map_dbl(clusters, "no")))
+  if ( unique_clusters < 2) {
+    warning("Fewer than 2 unique clusters found. This may indicate that the algorithm was run with too small a npsi or too small a range between psi_min and psi_max.")
+  }
 
 # Returns -----------------------------------------------------------------
 
@@ -279,8 +286,9 @@ cleverly <- function(Y,
               y_hat = result$y_hat,
               y_hat_init = result$y_hat_init,
               y_hat_baseline = result$y_hat_baseline,
-              y_hat_lp_group = result$y_hat_lp_group,
+              y_hat_refit = result$y_hat_lp_group,
               B = result$B,
+              Z = Z,
               BIC = BIC_list,
               BIC_ra_group = BIC_ra_group,
               error = result$error,
@@ -312,6 +320,9 @@ cleverly <- function(Y,
 #' @returns A matrix with a column of 1s representing L = 0, and values for the other external variables
 #' @export
 format_Z <- function(Z) {
+
+
+  browser()
   if (is.data.frame(Z) | is.matrix(Z)) {
     M <- nrow(Z)
     if (!identical(Z[, 1], rep(1, M))) {
@@ -326,16 +337,4 @@ format_Z <- function(Z) {
   return(Z)
 }
 
-
-
-#' Title
-#'
-#' @param lp either a numeric index of which external variable to cluster on, or the name of the column of Z that contains the clustering variable. Specify numeric 0 to cluster via baseline.
-#' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
-#'
-#' @returns lp index
-#' @export
-format_lp <- function(lp, Z) {
-  return(lp)
-}
 

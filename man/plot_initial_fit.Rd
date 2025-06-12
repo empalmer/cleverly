@@ -4,12 +4,12 @@
 \alias{plot_initial_fit}
 \title{plot_initial_fit}
 \usage{
-plot_initial_fit(res, K)
+plot_initial_fit(res, response_names, Z_col)
 }
 \arguments{
 \item{res}{Cleverly model object}
 
-\item{K}{Number of responses}
+\item{response_names}{Vector of response names.}
 }
 \value{
 ggplot object
