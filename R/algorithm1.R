@@ -6,7 +6,7 @@
 #' @param Z An \eqn{M \times (L + 1)} matrix of covariates. The first column must be a vector of 1s (intercept). If there are no external variables, \code{Z} should be a single column of 1s.
 #' @param time A numeric vector of length \eqn{M} representing the time points associated with each row of \code{Y}.
 #' @param mi_vec A vector of length \eqn{n} specifying the number of timepoints for each subject.
-#' @param lp Clustering index. An integer between 0 and \eqn{L}, indicating which covariate to use for clustering. Use 0 for baseline clustering.
+#' @param lp Clustering index. An integer between 0 and \eqn{L}, indicating which covariate to use for clustering. Use 0 for baseline clustering. Matches \eqn{l'} in the paper.
 #' @param gammas A numeric vector of length \eqn{L + 1} for penalizing components of the difference matrix \code{D}.
 #' @param psi Clustering penalty hyperparameter. Larger values encourage more pairwise similarities (i.e., more shrinkage toward common clusters).
 #' @param tau MCP (minimax concave penalty) hyperparameter.
@@ -69,8 +69,6 @@ algorithm1 <- function(Y,
   K <- ncol(Y)
   M <- nrow(Y)
 
-
-
   # Get indices for the non-cluster responses
   lp_minus <- setdiff(0:L , lp)
 
@@ -108,7 +106,6 @@ algorithm1 <- function(Y,
     j1_j2_list <- NULL
   }
 
-
   # Define a list with blocks for each i what the correlation matrix structure is
   # We set rho = 1 just to give the 0/1 matrix of zero/nonzero elements of the
   # correlation matrix depending on the chosen strucutre.
@@ -119,15 +116,14 @@ algorithm1 <- function(Y,
                                                mi = .x,
                                                K = K,
                                                rho = 1))
-
   }
 
   # Initialize phi to be 1
   #Dirichlet Multinomial over dispersion parameter.
   phi <- 1
 
-  # Initialize using Algorithm 2 for ALL responses
-  print(paste0("Initializing beta values for psi = ", round(psi, 2)))
+  # Initialize beta using Algorithm 2 for ALL responses
+  print(paste0("Initializing for psi = ", round(psi, 2)))
   zeros_beta <- matrix(0, nrow = K * P, ncol = L + 1)
   beta_init <- algorithm2(Y = Y,
                           Y0 = Y0,
@@ -160,16 +156,15 @@ algorithm1 <- function(Y,
   error <- NULL
   cluster_list <- list()
   rs <- list()
-
   diff <- Inf
   s <- 1
   rs[[1]] <- beta_init$r
 
 
   for (s in 1:max_outer_iter) {
-    print(paste0("Outer loop iteration: ", s))
+    print(paste0("Iteration: ", s))
     beta_old <- beta
-    # Go straight to ADMM code if there is no external variables
+    # Go straight to ADMM code if there are no external variables
     if (L > 0) {
       # Solution for l_p minus, with l_p fixed
       alg2 <- tryCatch({
@@ -299,7 +294,7 @@ algorithm1 <- function(Y,
       break
     }
 
-    print(alg3$cluster_list[[length(alg3$cluster_list)]]$membership)
+    # print(alg3$cluster_list[[length(alg3$cluster_list)]]$membership)
     cluster_list[[s]] <- alg3$cluster_list[[length(alg3$cluster_list)]]
     # Exit if constant cluster results for the past 3 iterations
     if (s >= run_min) {
@@ -309,6 +304,8 @@ algorithm1 <- function(Y,
 
       if (identical(current, past1) && identical(current, past2)) {
         # If the clusters are the same as the last two iterations, break
+        print("Cluster membership: ")
+        print(current)
         print("Clusters not changing, exiting")
         break
       }
@@ -346,7 +343,6 @@ algorithm1 <- function(Y,
                              M = M)
 
 # y-hat -------------------------------------------------------------------
-
 
   # This is in relative abundance
   y_hat <- estimate_y(beta = beta,
@@ -648,7 +644,6 @@ estimate_y <- function(beta, B, Z, K, Y, time, baseline = F){
 
 
 
-
   # Check if Z is used, otherwise don't add
   if (identical(Z_true, matrix(1, nrow = nrow(Z_true), ncol = 1))) {
     Ys <- data.frame(time = time,
@@ -660,11 +655,11 @@ estimate_y <- function(beta, B, Z, K, Y, time, baseline = F){
 
   } else {
     Ys <- data.frame(time = time,
-                     Z_true[, -1],
+                     Z_true[, -1, drop = F],
                      yhat_ra,
                      y_ra)
     colnames(Ys) <- c("time",
-                      colnames(Z_true[,-1]),
+                      colnames(Z_true[,-1, drop = F]),
                       paste0("yhat_", 1:K),
                       paste0("y_", 1:K))
   }

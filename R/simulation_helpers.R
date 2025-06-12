@@ -18,21 +18,21 @@
 #' @param miss_p proportion of missing samples
 #' @param prob1 Equivalent to p if Z ~ Binomial(p = prob1)
 #' @param Z_type Type of external variable (binary or continuous)
-#' @param maxt maximum number of times
+#' @param maxt Time scale goes from 0 to maxt
 #' @param baseline_fxns list of functions to use for the baseline
 #' @param slope_fxns list of functions to use for the slope
 #'
 #' @returns data Matrix with columns time, individual, capture number, totaln, counts
 #' @export
 simulation_data <- function(n = 20,
+                            K = 12,
                             range_start = 5000,
                             range_end = 20000,
-                            nknots = 3,
-                            K = 12,
-                            order = 3,
+                            Z_type = "binary",
                             user_var = 1000,
                             cor_str,
-                            Z_type = "binary",
+                            nknots = 3,
+                            order = 3,
                             rho = 0.4,
                             miss_p = 0.6,
                             prob1 = 0.4,
@@ -89,6 +89,8 @@ simulation_data <- function(n = 20,
   for (i in 1:n) {
     sim_data <- NULL
 
+
+    # Simulate external variable Z
     if (Z_type == "binary") {
       Z <- stats::rbinom(n = length(time),
                          size = 1,
@@ -105,7 +107,6 @@ simulation_data <- function(n = 20,
       baseline_value <- baseline_fxns[[k]](time)
       slope_value  <- slope_fxns[[k]](time)
       alpha[,k] <- exp(baseline_value + Z * slope_value)
-
     }
     names(alpha) <- paste0("a", 1:K)
 
@@ -136,10 +137,10 @@ simulation_data <- function(n = 20,
       dm_witherror[dm_witherror < 0] <- 0
 
       # Define the total sum
-      total_n <- rowSums(dm_witherror)
+      #total_n <- rowSums(dm_witherror)
 
       # Return data with the total n and id.
-      dm_new <- c(dm_witherror, total_n, i, Z[j])
+      dm_new <- c(i, Z[j], dm_witherror)
       sim_data <- rbind(sim_data, dm_new)
     }
 
@@ -155,15 +156,17 @@ simulation_data <- function(n = 20,
   # Organize data.
   data <- dplyr::bind_rows(sim_data_missing)
   names(data) <- c("time",
-                   paste0("Response_", 1:K),
-                   "total_n",
                    "individual",
-                   "Z")
+                   "Z",
+                   paste0("Response_", 1:K))
 
-  data$Capture.Number <- data$time * (length(unique(data$time)) - 1) + 1
+  #data$Capture.Number <- data$time * (length(unique(data$time)) - 1) + 1
   data$individual <- as.factor(data$individual)
 
-  return(data)
+  Y <- dplyr::select(data, -c(.data$Z))
+  Z <- data$Z
+  return(list(Y = Y,
+              Z = Z))
 }
 
 

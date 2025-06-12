@@ -10,7 +10,6 @@ cleverly(
   subject_ids,
   time,
   cluster_index = 0,
-  response_type = "counts",
   cor_str = "IND",
   gammas = NULL,
   psi_min = 500,
@@ -32,25 +31,24 @@ cleverly(
   max_outer_iter = 30,
   max_admm_iter = 100,
   max_2_iter = 100,
-  BIC_type = "refit"
+  BIC_type = "refit",
+  response_type = "counts"
 )
 }
 \arguments{
-\item{Y}{A data frame or matrix of count response variables. Each column should represent a response variable, and each row a subject-time observation. Must be ordered by time. Total number of rows is \eqn{M}. Make sure Y counts are not transformed to RA or rarified.}
+\item{Y}{A data frame or matrix of count response variables. Each column should represent a response variable, and each row a subject-time observation. Must be ordered by time. Total number of rows is \eqn{M}. Make sure Y values are counts and are not transformed to RA or rarified.}
 
-\item{Z}{A data frame or matrix containing external variables. Must have \eqn{M} rows and \eqn{L} columns.}
+\item{Z}{A vector, data frame, or matrix containing external variables. These external variables must be measured on every subject at every time point. We recommend using no more than 2-3 external variables to ensure clustering is meaningful. Must have \eqn{M} rows and \eqn{L} columns. If \code{Z} is missing, the algorithm will default to the COMPARING approach (clustering without an external variable).}
 
-\item{subject_ids}{A vector of subject identifiers (length \eqn{M}) or a column name/index if \code{Y} is a data frame.}
+\item{subject_ids}{A vector of subject identifiers (length \eqn{M}) or optionally column name/index if \code{Y} is a data frame.}
 
-\item{time}{A numeric vector of time points (length \eqn{M}) or a column name/index if \code{Y} is a data frame.}
+\item{time}{A numeric vector of time points (length \eqn{M}) or optionally a column name/index if \code{Y} is a data frame.}
 
-\item{cluster_index}{index for which external variable to cluster on. Usually 0 (baseline) or 1 (slope), but can be >1 if there are multiple external variables, or the external variable is categorical with more than 2 categories. Note: cleverly uses \code{model.matrix} on Z, so if you want to cluster on a categorical variable, you need to make sure the cluster index matches the corresponding category}
+\item{cluster_index}{index of \eqn{Z} for which external variable to cluster on. Usually 0 (baseline) or 1 (slope), but can be >1 if there are multiple external variables, or the external variable is categorical with more than 2 categories. Note: cleverly uses \code{model.matrix} on Z, so if you want to cluster on a categorical variable, you need to make sure the cluster index matches the corresponding category.}
 
-\item{response_type}{Type of response variable. Should be either \code{"Counts"} or \code{"Continuous"}.}
+\item{cor_str}{Correlation structure to use. One of \code{"IND"}, \code{"CON"}, \code{"AR1"}, \code{"CON-d"}, or \code{"AR1-d"}. Unless large covariance is expected, \code{"IND"} is likely sufficient (and the fastest option).}
 
-\item{cor_str}{Correlation structure to use. One of \code{"IND"}, \code{"CON"}, \code{"AR1"}, \code{"CON-d"}, or \code{"AR1-d"}.}
-
-\item{gammas}{A numeric vector of length \eqn{L + 1} (number of columns in \code{Z} plus one for the intercept). These control the smoothness of the B-splines. Defaults to 1 for all variables.}
+\item{gammas}{A numeric vector of length \eqn{L + 1} (number of columns in \code{Z} plus one for the intercept). These control the smoothness of the B-splines. Defaults to 1 for all variables. Modify if there appears to be large over-fitting or under-fitting of the final curves.}
 
 \item{psi_min}{Minimum \eqn{\psi} value (or the only value, if \code{npsi = 1}).}
 
@@ -62,9 +60,9 @@ cleverly(
 
 \item{nworkers}{Number of workers to use if \code{parralel = TRUE}.}
 
-\item{tau}{MCP hyperparameter. Default is \code{8/100}.}
+\item{tau}{MCP parameter. Default is \code{0.005}.}
 
-\item{theta}{ADMM hyperparameter. Default is \code{300}.}
+\item{theta}{ADMM parameter. Default is \code{500}.}
 
 \item{C}{Constant controlling the Hessian update threshold. Default is \code{100}.}
 
@@ -82,7 +80,7 @@ cleverly(
 
 \item{epsilon_2}{Tolerance for convergence of Algorithm 2.}
 
-\item{run_min}{Minimum number of runs for stability.}
+\item{run_min}{Minimum number of runs. By default, cleverly will exit if there are three iterations where the cluster membership does not change. Increase run_min to force cleverly to run for a certain number of iterations before exiting.}
 
 \item{max_outer_iter}{Maximum number of iterations for the outer loop (Algorithm 1).}
 
@@ -90,16 +88,20 @@ cleverly(
 
 \item{max_2_iter}{Maximum number of iterations for Algorithm 2 (per outer iteration).}
 
-\item{BIC_type}{Choose the "best" psi using unrefit or refit betas}
+\item{BIC_type}{Choose the "best" psi using unrefit or refit betas. Options are \code{"refit"} or \code{"unrefit"}. Defaults to \code{"refit"}, which simulations show gives the best performance.}
+
+\item{response_type}{Type of response variable. Currently only \code{"Counts"} is valid.}
 }
 \value{
 A list with the following components:
 \describe{
-\item{clusters}{Final cluster assignments.}
+\item{clusters}{List of Final cluster assignments, which contatins "no" - number of clusters, "csize" - size of each cluster, and "membership" the cluster assignemnt for each response}
 \item{possible_clusters}{Cluster assignments for all tested \eqn{\psi} values.}
 \item{chosen_psi}{Optimal \eqn{\psi} value selected via BIC.}
-\item{y_hat_init}{Initial fitted values.}
-\item{y_hat}{Final fitted values.}
+\item{y_hat_init}{Data frame with columns time, Z, response, y_hat, and y (relative response), where yhat is the initial fitted values before penalization}
+\item{y_hat}{Data frame with columns time, Z, response, y_hat, and y (relative response), where yhat is the final fitted values.}
+\item{y_hat_baseline}{Data frame with columns time, Z, response, y_hat, and y (relative response), where yhat is the fit for Z = 0}
+\item{y_hat_refit}{Data frame with columns time, Z, response, y_hat, and y (relative response), where yhat is the log linear fit for the entire cluster group}
 }
 }
 \description{
@@ -108,19 +110,16 @@ Runs the Cleverly algorithm over a range of \eqn{\psi} values and selects the op
 \examples{
 \dontrun{
 result <- cleverly(
-  Y = my_data[, c("response1", "response2")],
-  Z = my_covariates,
-  subject_ids = my_data$subject_id,
-  time = my_data$time,
-  lp = 1,
-  response_type = "Counts",
-  cor_str = "AR1",
+  Y = Y,
+  Z = Z,
+  subject_ids = subject_ids,
+  time = time,
+  cluster_index = 1, # Cluster on slope
+  cor_str = "AR1", # Use AR1 correlation structure
   gammas = rep(1, ncol(my_covariates) + 1),
-  psi_min = 0.1,
-  psi_max = 1,
+  psi_min = 100,
+  psi_max = 1000,
   npsi = 5,
-  parralel = TRUE,
-  nworkers = 4
 )
 }
 }

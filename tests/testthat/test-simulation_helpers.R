@@ -57,20 +57,17 @@ test_that("Simulation Z", {
 
   true_cluster <- rep(1:3, each = 4)
 
-  Y <- dplyr::select(sim, -c(
-    "total_n",
-    "Capture.Number",
-    "Z"))
-  Z1 <- sim$Z
+  Y <- sim$Y
+  Z <- sim$Z
 
-  Z <- cbind(Z1, rnorm(nrow(Y), mean = 0, sd = 1)) # Add a random covariate
-  colnames(Z) <- c("Z1", "Z2")
+  # Z <- cbind(Z1, rnorm(nrow(Y), mean = 0, sd = 1)) # Add a random covariate
+  # colnames(Z) <- c("Z1", "Z2")
 
-  res <- cleverly(Y = Y,
+  res1 <- cleverly(Y = Y,
                   Z = Z,
                   subject_ids = individual,
                   time = time,
-                  cluster_index = 2,
+                  cluster_index = 0,
                   cor_str = "IND",
                   theta = 500,
                   parralel = F,
@@ -79,8 +76,7 @@ test_that("Simulation Z", {
                   npsi = 1,
                   # Iterations max
                   max_admm_iter = 50,
-                  max_2_iter = 50,
-  ) %>%
+                  max_2_iter = 50) %>%
     get_cluster_diagnostics(true_cluster)
 
 
@@ -88,13 +84,17 @@ test_that("Simulation Z", {
 
   plot_initial_fit(res,
                    response_names = LETTERS[1:12],
-                   Z_col = "Z2")
+                   Z_col = "Z")
 
 
   plot_clusters(res,
-                response_names = 1:12,
+                response_names = LETTERS[1:12],
                 curve_type = "slope",
                 Y_counts = dplyr::select(Y, -c(time, individual)))
+
+
+  plot_cluster_differences(res, res1)
+
 
   plot_one_cluster(res,
                    cluster_val = 1,

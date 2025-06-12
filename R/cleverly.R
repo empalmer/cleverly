@@ -2,20 +2,20 @@
 #'
 #' Runs the Cleverly algorithm over a range of \eqn{\psi} values and selects the optimal one based on BIC.
 #'
-#' @param Y A data frame or matrix of count response variables. Each column should represent a response variable, and each row a subject-time observation. Must be ordered by time. Total number of rows is \eqn{M}. Make sure Y counts are not transformed to RA or rarified.
-#' @param Z A data frame or matrix containing external variables. Must have \eqn{M} rows and \eqn{L} columns.
-#' @param subject_ids A vector of subject identifiers (length \eqn{M}) or a column name/index if \code{Y} is a data frame.
-#' @param time A numeric vector of time points (length \eqn{M}) or a column name/index if \code{Y} is a data frame.
-#' @param response_type Type of response variable. Should be either \code{"Counts"} or \code{"Continuous"}.
-#' @param cor_str Correlation structure to use. One of \code{"IND"}, \code{"CON"}, \code{"AR1"}, \code{"CON-d"}, or \code{"AR1-d"}.
-#' @param gammas A numeric vector of length \eqn{L + 1} (number of columns in \code{Z} plus one for the intercept). These control the smoothness of the B-splines. Defaults to 1 for all variables.
+#' @param Y A data frame or matrix of count response variables. Each column should represent a response variable, and each row a subject-time observation. Must be ordered by time. Total number of rows is \eqn{M}. Make sure Y values are counts and are not transformed to RA or rarified. We recommend running \code{cleverly} using less than 50 response variables (columns), otherwise computational time is an issue.
+#' @param Z A vector, data frame, or matrix containing external variables. These external variables must be measured on every subject at every time point. We recommend using no more than 2-3 external variables to ensure clustering is meaningful. Must have \eqn{M} rows and \eqn{L} columns. If \code{Z} is missing, the algorithm will default to the COMPARING approach (clustering without an external variable).
+#' @param subject_ids A vector of subject identifiers (length \eqn{M}) or optionally column name/index if \code{Y} is a data frame.
+#' @param time A numeric vector of time points (length \eqn{M}) or optionally a column name/index if \code{Y} is a data frame.
+#' @param cluster_index index of \eqn{Z} for which external variable to cluster on. Usually 0 (baseline) or 1 (slope), but can be >1 if there are multiple external variables, or the external variable is categorical with more than 2 categories. Note: cleverly uses \code{model.matrix} on Z, so if you want to cluster on a categorical variable, you need to make sure the cluster index matches the corresponding category.
+#' @param cor_str Correlation structure to use. One of \code{"IND"}, \code{"CON"}, \code{"AR1"}, \code{"CON-d"}, or \code{"AR1-d"}. Unless large covariance is expected, \code{"IND"} is likely sufficient (and the fastest option).
+#' @param gammas A numeric vector of length \eqn{L + 1} (number of columns in \code{Z} plus one for the intercept). These control the smoothness of the B-splines. Defaults to 1 for all variables. Modify if there appears to be large over-fitting or under-fitting of the final curves.
 #' @param psi_min Minimum \eqn{\psi} value (or the only value, if \code{npsi = 1}).
 #' @param psi_max Maximum \eqn{\psi} value (ignored if \code{npsi = 1}).
 #' @param npsi Number of \eqn{\psi} values to evaluate. If greater than 1, an equally spaced sequence from \code{psi_min} to \code{psi_max} is generated and the optimal value is selected via BIC.
 #' @param parralel Logical; whether to use parallelization. Defaults to \code{FALSE}. If \code{TRUE}, uses \code{future::plan(future::multisession)}.
 #' @param nworkers Number of workers to use if \code{parralel = TRUE}.
-#' @param tau MCP hyperparameter. Default is \code{8/100}.
-#' @param theta ADMM hyperparameter. Default is \code{300}.
+#' @param tau MCP parameter. Default is \code{0.005}.
+#' @param theta ADMM parameter. Default is \code{500}.
 #' @param C Constant controlling the Hessian update threshold. Default is \code{100}.
 #' @param d Order of the finite difference matrix.
 #' @param nknots Number of knots in the B-spline basis.
@@ -24,20 +24,23 @@
 #' @param epsilon_r Tolerance for ADMM convergence (residual).
 #' @param epsilon_d Tolerance for ADMM convergence (dual).
 #' @param epsilon_2 Tolerance for convergence of Algorithm 2.
-#' @param run_min Minimum number of runs for stability.
+#' @param run_min Minimum number of runs. By default, cleverly will exit if there are three iterations where the cluster membership does not change. Increase run_min to force cleverly to run for a certain number of iterations before exiting.
 #' @param max_outer_iter Maximum number of iterations for the outer loop (Algorithm 1).
 #' @param max_2_iter Maximum number of iterations for Algorithm 2 (per outer iteration).
 #' @param max_admm_iter Maximum number of iterations for the ADMM clustering step (Algorithm 3).
-#' @param BIC_type Choose the "best" psi using unrefit or refit betas
-#' @param cluster_index index for which external variable to cluster on. Usually 0 (baseline) or 1 (slope), but can be >1 if there are multiple external variables, or the external variable is categorical with more than 2 categories. Note: cleverly uses \code{model.matrix} on Z, so if you want to cluster on a categorical variable, you need to make sure the cluster index matches the corresponding category
+#' @param BIC_type Choose the "best" psi using unrefit or refit betas. Options are \code{"refit"} or \code{"unrefit"}. Defaults to \code{"refit"}, which simulations show gives the best performance.
+#' @param response_type Type of response variable. Currently only \code{"Counts"} is valid.
+
 #'
 #' @return A list with the following components:
 #' \describe{
-#'   \item{clusters}{Final cluster assignments.}
+#'   \item{clusters}{List of Final cluster assignments, which contatins "no" - number of clusters, "csize" - size of each cluster, and "membership" the cluster assignemnt for each response}
 #'   \item{possible_clusters}{Cluster assignments for all tested \eqn{\psi} values.}
 #'   \item{chosen_psi}{Optimal \eqn{\psi} value selected via BIC.}
-#'   \item{y_hat_init}{Initial fitted values.}
-#'   \item{y_hat}{Final fitted values.}
+#'   \item{y_hat_init}{Data frame with columns time, Z, response, y_hat, and y (relative response), where yhat is the initial fitted values before penalization}
+#'   \item{y_hat}{Data frame with columns time, Z, response, y_hat, and y (relative response), where yhat is the final fitted values.}
+#'   \item{y_hat_baseline}{Data frame with columns time, Z, response, y_hat, and y (relative response), where yhat is the fit for Z = 0}
+#'   \item{y_hat_refit}{Data frame with columns time, Z, response, y_hat, and y (relative response), where yhat is the log linear fit for the entire cluster group}
 #' }
 #'
 #' @export
@@ -45,31 +48,30 @@
 #' @examples
 #' \dontrun{
 #' result <- cleverly(
-#'   Y = my_data[, c("response1", "response2")],
-#'   Z = my_covariates,
-#'   subject_ids = my_data$subject_id,
-#'   time = my_data$time,
-#'   cluster_index = 1,
-#'   cor_str = "AR1",
+#'   Y = Y,
+#'   Z = Z,
+#'   subject_ids = subject_ids,
+#'   time = time,
+#'   cluster_index = 1, # Cluster on slope
+#'   cor_str = "AR1", # Use AR1 correlation structure
 #'   gammas = rep(1, ncol(my_covariates) + 1),
 #'   psi_min = 100,
 #'   psi_max = 1000,
 #'   npsi = 5,
 #' )
 #' }
-
 cleverly <- function(Y,
                      Z,
                      subject_ids,
                      time,
                      cluster_index = 0,
-                     response_type = "counts",
                      cor_str = "IND",
                      gammas = NULL,
                      # optimize psi by BIC
                      psi_min = 500,
                      psi_max = 1500,
                      npsi = 10,
+                     status_bar = F,
                      # parrallelilization options:
                      parralel = FALSE,
                      nworkers = 2,
@@ -90,7 +92,8 @@ cleverly <- function(Y,
                      max_outer_iter = 30,
                      max_admm_iter = 100,
                      max_2_iter = 100,
-                     BIC_type = "refit") {
+                     BIC_type = "refit",
+                     response_type = "counts") {
 
 
 # Hyperparameter checks ---------------------------------------------------
@@ -267,8 +270,9 @@ cleverly <- function(Y,
 
     # What was the chosen cluster?
     clusters <- purrr::map(res_list, ~.x$clusters)
-    print(paste0("psi:", psis,", cluster:", clusters))
-    print(paste0("chosen psi: ", psis[best], ", cluster", clusters[[best]]))
+    #print(paste0("psi:", psis,", cluster:", clusters))
+    #print(paste0("chosen psi: ", psis[best], ", cluster", clusters[[best]]))
+    print(paste0("Chosen psi (via BIC): ", psis[best]))
 
   } else {
     stop("Invalid response type or type not yet implemented.")
@@ -276,7 +280,7 @@ cleverly <- function(Y,
 
   unique_clusters <- length(unique(purrr::map_dbl(clusters, "no")))
   if ( unique_clusters < 2) {
-    warning("Fewer than 2 unique clusters found. This may indicate that the algorithm was run with too small a npsi or too small a range between psi_min and psi_max.")
+    warning("Fewer than 2 unique clusters found. This may indicate that the algorithm was run with too small a npsi or too small a range between psi_min and psi_max. There should be a large enough grid of hyperparameters (psi) to ensure the chosen cluster membership is accurate. ")
   }
 
 # Returns -----------------------------------------------------------------

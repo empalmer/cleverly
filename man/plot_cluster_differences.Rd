@@ -4,7 +4,12 @@
 \alias{plot_cluster_differences}
 \title{Plot an alluvial plot to compare two cluster results}
 \usage{
-plot_cluster_differences(res1, res2, response_names, res_names = c("A", "B"))
+plot_cluster_differences(
+  res1,
+  res2,
+  response_names = NULL,
+  res_names = c("A", "B")
+)
 }
 \arguments{
 \item{res1}{cluster result 1}

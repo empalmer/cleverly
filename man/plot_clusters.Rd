@@ -6,7 +6,7 @@
 \usage{
 plot_clusters(
   res,
-  response_names,
+  response_names = NULL,
   order = "response",
   curve_type = "baseline",
   nrow = 3,

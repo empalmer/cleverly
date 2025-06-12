@@ -18,7 +18,7 @@
 #' @returns ggplot object
 #' @export
 plot_clusters <- function(res,
-                          response_names,
+                          response_names = NULL,
                           order = "response",
                           curve_type = "baseline",
                           nrow = 3,
@@ -26,6 +26,9 @@ plot_clusters <- function(res,
                           EV_color = "grey50",
                           Y_counts = NULL){
 
+  if (is.null(response_names)) {
+    response_names <- paste0("Response ", 1:length(res$clusters$membership))
+  }
 
   if (curve_type == "baseline") {
     Y <- res$y_hat_baseline
@@ -56,7 +59,9 @@ plot_clusters <- function(res,
     dplyr::left_join(cluster_key, by = c("response" = "response_names")) %>%
     dplyr::mutate(response = factor(.data$response, labels = response_names))
 
-  response_names <- paste0("Cluster ", cluster_key$cluster, " - ", cluster_key$response_names)
+  response_names <- paste0("Cluster ", cluster_key$cluster, " - ", response_names)
+
+
 # baseline ----------------------------------------------------------------
 
 
@@ -105,23 +110,25 @@ plot_clusters <- function(res,
 
 # slope, binary ------------------------------------------------------------
   else if (binary_Z ) {
-    if (order == "response") {
-      values <- c(viridis::viridis(length(unique(cluster_key$cluster))), EV_color)
-    } else if (order == "cluster") {
-      values <-  c(sample(viridis::viridis(length(unique(cluster_key$cluster)))), EV_color)
-    } else {
-      stop("order must be either 'response' or 'cluster'")
-      # values = c(RColorBrewer::brewer.pal(n = length(unique(cluster_df$cluster)),
-      #                       name = "Set1"),
-      #            "grey30"),
-      #values = c(rcartocolor::carto_pal(length(unique(cluster_df$cluster)),
-      #                                  "Safe"),
-      #           "grey50"),
-    }
+    # if (order == "response") {
+    #   values <- c(viridis::viridis(length(unique(cluster_key$cluster))), EV_color)
+    # } else if (order == "cluster") {
+    #   values <-  c(sample(viridis::viridis(length(unique(cluster_key$cluster)))), EV_color)
+    # } else {
+    #   stop("order must be either 'response' or 'cluster'")
+    #   # values = c(RColorBrewer::brewer.pal(n = length(unique(cluster_df$cluster)),
+    #   #                       name = "Set1"),
+    #   #            "grey30"),
+    #   #values = c(rcartocolor::carto_pal(length(unique(cluster_df$cluster)),
+    #   #                                  "Safe"),
+    #   #           "grey50"),
+    # }
     # plot clusters
+
     plot <- Y %>%
       dplyr::mutate(clusterZ = ifelse(.data$Z == 0, "Baseline Curve", .data$cluster),
-                    response = factor(.data$response, labels = response_names)) %>%
+                    response = factor(.data$response,
+                                      labels = response_names)) %>%
       ggplot2::ggplot(ggplot2::aes(x = time)) +
       ggplot2::geom_jitter(ggplot2::aes(y = y,
                                        color = factor(Z),
@@ -229,13 +236,16 @@ plot_clusters <- function(res,
 #' @returns ggplot object for one cluster
 #' @export
 plot_one_cluster <- function(res,
-                             response_names,
                              cluster_val,
+                             response_names = NULL,
                              curve_type = "baseline",
                              nrow = 3,
                              scales = "fixed",
                              Y_counts = NULL){
 
+  if (is.null(response_names)) {
+    response_names <- paste0("Response ", 1:length(res$clusters$membership))
+  }
 
   if (curve_type == "baseline") {
     Y <- res$y_hat_baseline
@@ -474,7 +484,14 @@ plot_BIC <- function(res, BIC_type = "BIC", psis){
 #'
 #' @returns ggplot object
 #' @export
-plot_initial_fit <- function(res, response_names, Z_col){
+plot_initial_fit <- function(res,
+                             response_names = NULL,
+                             Z_col){
+
+  if (is.null(response_names)) {
+    response_names <- paste0("Response ", 1:length(res$clusters$membership))
+  }
+
   K <- length(res$clusters$membership)
   # Initial fit:
   y_hat_init <- res$y_hat_init
@@ -497,7 +514,7 @@ plot_initial_fit <- function(res, response_names, Z_col){
                                     levels = 1:K,
                                     labels = response_names)) %>%
     ggplot2::ggplot(ggplot2::aes(x = time)) +
-    ggplot2::geom_point(ggplot2::aes(y = .data$y,
+    ggplot2::geom_jitter(ggplot2::aes(y = .data$y,
                                      color = Z),
                         size = .6, alpha = .8) +
     ggplot2::geom_line(ggplot2::aes(y = .data$yhat,
@@ -521,8 +538,12 @@ plot_initial_fit <- function(res, response_names, Z_col){
 #' @returns ggplot object
 #' @export
 plot_cluster_differences <- function(res1, res2,
-                                     response_names,
+                                     response_names = NULL,
                                      res_names = c("A", "B")) {
+
+  if (is.null(response_names)) {
+    response_names <- paste0("Response ", 1:length(res1$clusters$membership))
+  }
   # compare baseline clusters for high nutrition and body condition
   df <- data.frame(
     id = seq_along(res1$clusters$membership),
@@ -536,11 +557,13 @@ plot_cluster_differences <- function(res1, res2,
                               width = 1/12, alpha = 0.6) +
     ggalluvial::geom_stratum(width = 1/12, fill = "grey80", color = "black") +
     ggplot2::geom_text(ggplot2::aes(label = response_names),
-              stat = "alluvium", size = 2) +
+                       stat = ggalluvial::StatAlluvium, size = 2) +
     ggplot2::scale_x_discrete(limits = res_names, expand = c(.05, .05)) +
     ggplot2::theme_minimal() +
     ggplot2::theme(axis.text.y = ggplot2::element_blank(),
-                   axis.ticks.y = ggplot2::element_blank())
+                   axis.ticks.y = ggplot2::element_blank(),
+                   axis.title.y = ggplot2::element_blank(),
+                   legend.position = "none")
 }
 
 

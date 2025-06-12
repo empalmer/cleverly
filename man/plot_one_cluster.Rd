@@ -6,8 +6,8 @@
 \usage{
 plot_one_cluster(
   res,
-  response_names,
   cluster_val,
+  response_names = NULL,
   curve_type = "baseline",
   nrow = 3,
   scales = "fixed",
@@ -17,9 +17,9 @@ plot_one_cluster(
 \arguments{
 \item{res}{cleverly result}
 
-\item{response_names}{vector of response naes}
-
 \item{cluster_val}{numeric which cluster to plot}
+
+\item{response_names}{vector of response naes}
 
 \item{curve_type}{"baseline" "refit" or "slope"}
 

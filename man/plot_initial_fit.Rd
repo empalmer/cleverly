@@ -4,7 +4,7 @@
 \alias{plot_initial_fit}
 \title{plot_initial_fit}
 \usage{
-plot_initial_fit(res, response_names, Z_col)
+plot_initial_fit(res, response_names = NULL, Z_col)
 }
 \arguments{
 \item{res}{Cleverly model object}

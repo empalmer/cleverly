@@ -170,8 +170,6 @@ algorithm3 <- function(Y,
                                 A = A,
                                 theta = theta)
 
-
-
     # Keep track of loop
     phi_track[t] <- phi
     beta_admm_track[[t]] <- beta_new
@@ -183,12 +181,11 @@ algorithm3 <- function(Y,
     # Check for convergence
     diff_admm[t] <- sum(abs(beta_new - beta))
 
-    r_norm <- get_r_norm(
-      beta = beta_new,
-      v = v_new$v,
-      Kappa = Kappa,
-      P = P,
-      lp = lp)
+    r_norm <- get_r_norm(beta = beta_new,
+                         v = v_new$v,
+                         Kappa = Kappa,
+                         P = P,
+                         lp = lp)
 
     d_norm <- get_d_norm(v_new = v_new$v,
                          v = v,
@@ -204,7 +201,6 @@ algorithm3 <- function(Y,
       # exit the loop
       break
     }
-
 
     # Prepare for next iteration
     v <- v_new$v
@@ -269,7 +265,7 @@ update_v <- function(beta,
     beta_k2 <- beta[(P * (k2 - 1) + 1):(P * k2), lp + 1]
     # Get corresponding lambdas
     lambda_kappa <- lambda[(P * (kappa - 1) + 1):(P * kappa)]
-    # BIG CHANGE HERE! ITS PLUS NOT MINUS TO MATCH SIGN
+    # BIG CHANGE HERE (compared to COMPARING paper)! ITS PLUS NOT MINUS TO MATCH SIGN
     u <- beta_k1 - beta_k2 + lambda_kappa/theta
 
     norm_u <- sum(u^2) # or norm(u, type = "2")
