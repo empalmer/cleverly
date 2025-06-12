@@ -11,7 +11,7 @@ with (L)ongitudinal (Y)s.
 
 # Installation
 
-You can install the development version of cleverly from
+You can install the development version of `cleverly` from
 [GitHub](https://github.com/) with:
 
 ``` r
@@ -26,8 +26,8 @@ library(cleverly)
 
 Simulate compositional count data with longitudinal independence
 structure. This code will simulate 20 samples across 12 responses, using
-a binary external variable. Default arguments to simulate 3 baseline
-clusters with 4 members each.
+a binary external variable. Default arguments to `simulation_data`
+simulate 3 baseline clusters with 4 members each.
 
 ``` r
 set.seed(127)
@@ -73,15 +73,16 @@ individual. Z is a vector of binary external variables.
 
 ## Run algorithm:
 
-We now run the ‘cleverly’ algorithm, specifying the commonly needed
+We now run the `cleverly` algorithm, specifying the commonly needed
 arguments. Here, we specify subject_ids = individual, as individual is
 the id column in Y. We could have alternately given a vector of IDs.
-Similarly for time. needs to select the ideal tuning parameter psi - so
-we give a range of psi_min to psi_max, and a number to test (6).
+Similarly for time. `cleverly` needs to select the ideal tuning
+parameter `psi` - so we give a range of `psi_min` to `psi_max`, and a
+number (`npsi`) to test (6).
 
-We set to 0 because we want to cluster on the baseline values, ie when
-$Z = 0$. If we want to cluster on the slope value, ie the effect of $Z$,
-we would set cluster_index to 1.
+We set `cluster_index` to 0 because we want to cluster on the baseline
+values, i.e. when $Z = 0$. If we want to cluster on the slope value,
+i.e. the effect of $Z$, we would set `cluster_index` to 1.
 
 ``` r
 res <- cleverly(Y = Y,
@@ -131,7 +132,9 @@ names(res)
 
 ## Diagnostics:
 
-Since we know the true clusters:
+Since we know the true clusters, we can look at the Rand index, adjusted
+rand index, jaccard index, classification error rate, and number of
+clusters:
 
 ``` r
 get_cluster_diagnostics(res, true_cluster)$cluster_diagnostics
@@ -160,6 +163,12 @@ plot_one_cluster(res, cluster_val = 1)
 <img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
 ## Simulate example data (continuous, slope)
+
+`cleverly` also works with continuous random variables, and can
+additionally cluster on the slope response:
+
+We first simulation data with a continuous external variable, stored in
+`rsim_cont`, and then run the algorithm.
 
 ## Troubleshooting:
 
@@ -192,7 +201,7 @@ res <- cleverly(Y = Y,
 plot_clusters(res)
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
 
 The tuning parameter `gammas` can be specified, but it is usually fine
 to leave it at the default. If you see the overall fit seems bad (in

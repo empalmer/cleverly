@@ -9,7 +9,9 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "100%"
+  out.width = "100%", 
+  dpi = 300,
+  fig.retina = 2
 )
 ```
 
@@ -23,7 +25,7 @@ Cleverly stands for (Cl)ustering with (E)xternal (V)ariabl(e)s in (R) with (L)on
 
 # Installation
 
-You can install the development version of cleverly from [GitHub](https://github.com/) with:
+You can install the development version of `cleverly` from [GitHub](https://github.com/) with:
 
 ```{r load package, echo = T, results = 'hide', message = F, warning = F}
 # install.packages("pak")
@@ -34,7 +36,7 @@ library(cleverly)
 # Example usage: 
 ## Simulate example data (binary)
 
-Simulate compositional count data with longitudinal independence structure. This code will simulate 20 samples across 12 responses, using a binary external variable. Default arguments to \code{simulation_data} simulate 3 baseline clusters with 4 members each. 
+Simulate compositional count data with longitudinal independence structure. This code will simulate 20 samples across 12 responses, using a binary external variable. Default arguments to `simulation_data` simulate 3 baseline clusters with 4 members each. 
 
 ```{r sim_data}
 set.seed(127)
@@ -58,9 +60,9 @@ $Y$ is a data frame of 12 counts with a column of time and a column of individua
 
 ## Run algorithm: 
 
-We now run the 'cleverly' algorithm, specifying the commonly needed arguments. Here, we specify subject_ids = individual, as individual is the id column in Y. We could have alternately given a vector of IDs. Similarly for time. \code{cleverly} needs to select the ideal tuning parameter psi - so we give a range of psi_min to psi_max, and a number to test (6). 
+We now run the `cleverly` algorithm, specifying the commonly needed arguments. Here, we specify subject_ids = individual, as individual is the id column in Y. We could have alternately given a vector of IDs. Similarly for time. `cleverly` needs to select the ideal tuning parameter `psi` - so we give a range of `psi_min` to `psi_max`, and a number (`npsi`) to test (6). 
 
-We set \code{cluster_index} to 0 because we want to cluster on the baseline values, ie when $Z = 0$. If we want to cluster on the slope value, ie the effect of $Z$, we would set cluster_index to 1. 
+We set `cluster_index` to 0 because we want to cluster on the baseline values, i.e. when $Z = 0$. If we want to cluster on the slope value, i.e. the effect of $Z$, we would set `cluster_index` to 1. 
 
 ```{r run algorithm, cache = T}
 res <- cleverly(Y = Y,
@@ -84,7 +86,7 @@ names(res)
 
 ## Diagnostics: 
 
-Since we know the true clusters: 
+Since we know the true clusters, we can look at the Rand index, adjusted rand index, jaccard index, classification error rate, and number of clusters:
 
 
 ```{r}
@@ -109,6 +111,57 @@ plot_one_cluster(res, cluster_val = 1)
 
 
 ## Simulate example data (continuous, slope)
+
+`cleverly` also works with continuous random variables, and can additionally cluster on the slope response: 
+
+We first simulation data with a continuous external variable, stored in `rsim_cont`, and then run the algorithm.
+
+```{r, echo = F}
+sim_cont <- simulation_data(n = 20,
+                        range_start = 5000,
+                        range_end = 20000,
+                        nknots = 3,
+                        K = 12,
+                        order = 3,
+                        user_var = 1000,
+                        cor_str = "CON-d",
+                        Z_type = "continuous",
+                        rho = 0.4,
+                        prob1 = .5,
+                        slope_fxns = list(
+                          function(t) cos(2 * pi * t),
+                          function(t) cos(2 * pi * t),
+                          function(t) cos(2 * pi * t),
+                          function(t) cos(2 * pi * t),
+                          function(t) 2 * sin(pi * t) - 1,
+                          function(t) 2 * sin(pi * t) - 1,
+                          function(t) 2 * sin(pi * t) - 1,
+                          function(t) 2 * sin(pi * t) - 1,
+                          function(t) 2 - 2 * t,
+                          function(t) 2 - 2 * t,
+                          function(t) 2 - 2 * t,
+                          function(t) 2 - 2 * t
+                        ),
+                        # Slope functions
+                        baseline_fxns = list(
+                          function(t) 2 - t,
+                          function(t) 2 * sin(pi * t),
+                          function(t) .5,
+                          function(t) t^2,
+                          function(t)  -.5 ,
+                          function(t) 2 * t - 2,
+                          function(t) t,
+                          function(t) 2 - t,
+                          function(t) 1,
+                          function(t) -.75,
+                          function(t) .75,
+                          function(t) 2 * t))
+```
+
+
+```{r}
+
+```
 
 
 ## Troubleshooting: 
