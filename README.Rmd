@@ -115,11 +115,11 @@ plot_one_cluster(res, cluster_val = 1)
 
 ## Simulate example data (continuous, slope)
 
-`cleverly` also works with continuous random variables, and can additionally cluster on the slope response: 
+`cleverly` also works with continuous external variables, and can additionally cluster on the slope response: 
 
 We first simulation data with a continuous external variable, stored in `sim_cont`, and then run the algorithm.
 
-```{r sim_cont}
+```{r sim_cont, echo = F}
 sim_cont <- simulation_data(n = 20,
                         range_start = 5000,
                         range_end = 20000,
@@ -182,11 +182,12 @@ res_cont <- cleverly(Y = Y_cont,
 
 We change `cluster_index` to 1 to indicate that we will cluster based on the slope. 
 
-To plot a slope cluster, we specify `curve_type = "slope"` in the plotting function. We can additionally pass along the response names, as it defaults to 1:nresponses as titles. 
+To plot a slope cluster, we specify `curve_type = "slope"` in the plotting function. We can additionally pass along the response names, as it defaults to 1:nresponses as titles. In the case of a continuous external variable and slope clustering, we also have to pass along the original counts, which are stored in `Y_counts`.
 
 ```{r slope plot}
 # plot_clusters(res_cont,
 #               curve_type = "slope",
+#               response_names = paste0("Response ", 1:12),
 #               Y_counts = Y_cont[,3:14])
 ```
 
@@ -282,7 +283,7 @@ plot_df <- bind_rows(baseline_df, slope_df) %>%
 
 # Plot
 baseline_plot <- ggplot(plot_df, aes(x = t, y = value, color = type, linetype = type)) +
-  geom_line(size = 1.5) +
+  geom_line(linewidth = 1.5) +
   ggh4x::facet_wrap2(
     ~ function_name,
     strip = strip_themed(
@@ -311,7 +312,7 @@ slope_plot <- plot_df %>%
   ) %>% 
   mutate(diff = `(Z = 1)` - `(Z = 0) - Baseline`) %>%
   ggplot(aes(x = t, y = diff, color = "Slope")) + 
-  geom_line(size = 1) + 
+  geom_line(linewidth = 1) + 
   facet_wrap2(
     ~ slope_cluster,
     strip = strip_themed(

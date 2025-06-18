@@ -161,53 +161,11 @@ plot_one_cluster(res, cluster_val = 1)
 
 ## Simulate example data (continuous, slope)
 
-`cleverly` also works with continuous random variables, and can
+`cleverly` also works with continuous external variables, and can
 additionally cluster on the slope response:
 
 We first simulation data with a continuous external variable, stored in
 `sim_cont`, and then run the algorithm.
-
-``` r
-sim_cont <- simulation_data(n = 20,
-                        range_start = 5000,
-                        range_end = 20000,
-                        nknots = 3,
-                        K = 12,
-                        order = 3,
-                        user_var = 1000,
-                        cor_str = "CON-d",
-                        Z_type = "continuous",
-                        rho = 0.4,
-                        prob1 = .5,
-                        slope_fxns = list(
-                          function(t) cos(2 * pi * t),
-                          function(t) cos(2 * pi * t),
-                          function(t) cos(2 * pi * t),
-                          function(t) cos(2 * pi * t),
-                          function(t) 2 * sin(pi * t) - 1,
-                          function(t) 2 * sin(pi * t) - 1,
-                          function(t) 2 * sin(pi * t) - 1,
-                          function(t) 2 * sin(pi * t) - 1,
-                          function(t) 2 - 2 * t,
-                          function(t) 2 - 2 * t,
-                          function(t) 2 - 2 * t,
-                          function(t) 2 - 2 * t
-                        ),
-                        # Slope functions
-                        baseline_fxns = list(
-                          function(t) 2 - t,
-                          function(t) 2 * sin(pi * t),
-                          function(t) .5,
-                          function(t) t^2,
-                          function(t)  -.5 ,
-                          function(t) 2 * t - 2,
-                          function(t) t,
-                          function(t) 2 - t,
-                          function(t) 1,
-                          function(t) -.75,
-                          function(t) .75,
-                          function(t) 2 * t))
-```
 
 ``` r
 Y_cont <- sim_cont$Y
@@ -256,11 +214,14 @@ the slope.
 
 To plot a slope cluster, we specify `curve_type = "slope"` in the
 plotting function. We can additionally pass along the response names, as
-it defaults to 1:nresponses as titles.
+it defaults to 1:nresponses as titles. In the case of a continuous
+external variable and slope clustering, we also have to pass along the
+original counts, which are stored in `Y_counts`.
 
 ``` r
 # plot_clusters(res_cont,
 #               curve_type = "slope",
+#               response_names = paste0("Response ", 1:12),
 #               Y_counts = Y_cont[,3:14])
 ```
 
@@ -349,11 +310,6 @@ this case under fit, because gamma is too large), it can be changed.
 
 ## Toy example clusters:
 
-    #> Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
-    #> ℹ Please use `linewidth` instead.
-    #> This warning is displayed once every 8 hours.
-    #> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-    #> generated.
     #> Warning: The `size` argument of `element_rect()` is deprecated as of ggplot2 3.4.0.
     #> ℹ Please use the `linewidth` argument instead.
     #> This warning is displayed once every 8 hours.
