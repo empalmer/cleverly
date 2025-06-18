@@ -3,9 +3,6 @@
 
 # cleverly
 
-<!-- badges: start -->
-<!-- badges: end -->
-
 Cleverly stands for (Cl)ustering with (E)xternal (V)ariabl(e)s in (R)
 with (L)ongitudinal (Y)s.
 
@@ -152,7 +149,7 @@ Visualize the data + clusters
 plot_clusters(res)
 ```
 
-<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
+<img src="man/figures/README-all plots-1.png" width="100%" />
 
 Alternatively, if we want to examine a single cluster:
 
@@ -160,7 +157,7 @@ Alternatively, if we want to examine a single cluster:
 plot_one_cluster(res, cluster_val = 1)
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
+<img src="man/figures/README-one plot-1.png" width="100%" />
 
 ## Simulate example data (continuous, slope)
 
@@ -168,44 +165,106 @@ plot_one_cluster(res, cluster_val = 1)
 additionally cluster on the slope response:
 
 We first simulation data with a continuous external variable, stored in
-`rsim_cont`, and then run the algorithm.
-
-## Troubleshooting:
-
-### Poorly fit data
+`sim_cont`, and then run the algorithm.
 
 ``` r
-res <- cleverly(Y = Y,
-                Z = Z,
-                subject_ids = individual,
-                time = time,
-                cluster_index = 0,
-                cor_str = "IND",
-                gammas = c(1e4, 1e4),
-                psi_min = 500,
-                npsi = 1) 
-#> [1] "Initializing for psi = 500"
+sim_cont <- simulation_data(n = 20,
+                        range_start = 5000,
+                        range_end = 20000,
+                        nknots = 3,
+                        K = 12,
+                        order = 3,
+                        user_var = 1000,
+                        cor_str = "CON-d",
+                        Z_type = "continuous",
+                        rho = 0.4,
+                        prob1 = .5,
+                        slope_fxns = list(
+                          function(t) cos(2 * pi * t),
+                          function(t) cos(2 * pi * t),
+                          function(t) cos(2 * pi * t),
+                          function(t) cos(2 * pi * t),
+                          function(t) 2 * sin(pi * t) - 1,
+                          function(t) 2 * sin(pi * t) - 1,
+                          function(t) 2 * sin(pi * t) - 1,
+                          function(t) 2 * sin(pi * t) - 1,
+                          function(t) 2 - 2 * t,
+                          function(t) 2 - 2 * t,
+                          function(t) 2 - 2 * t,
+                          function(t) 2 - 2 * t
+                        ),
+                        # Slope functions
+                        baseline_fxns = list(
+                          function(t) 2 - t,
+                          function(t) 2 * sin(pi * t),
+                          function(t) .5,
+                          function(t) t^2,
+                          function(t)  -.5 ,
+                          function(t) 2 * t - 2,
+                          function(t) t,
+                          function(t) 2 - t,
+                          function(t) 1,
+                          function(t) -.75,
+                          function(t) .75,
+                          function(t) 2 * t))
+```
+
+``` r
+Y_cont <- sim_cont$Y
+Z_cont <- sim_cont$Z
+
+head(Z_cont)
+#> [1] 1.493462 1.169092 2.298965 2.261202 0.015840 2.704212
+
+res_cont <- cleverly(Y = Y_cont,
+                     Z = Z_cont,
+                     subject_ids = individual,
+                     time = time,
+                     cluster_index = 1,
+                     cor_str = "IND",
+                     psi_min = 10,
+                     psi_max = 5000,
+                     npsi = 3) 
+#> [1] "Initializing for psi = 10"
+#> [1] "Iteration: 1"
+#> [1] "Iteration: 2"
+#> [1] "Iteration: 3"
+#> [1] "Iteration: 4"
+#> [1] "Iteration: 5"
+#> [1] "Cluster membership: "
+#>  [1]  1  2  3  4  5  6  7  8  9 10 11  9
+#> [1] "Clusters not changing, exiting"
+#> [1] "Initializing for psi = 2505"
 #> [1] "Iteration: 1"
 #> [1] "Iteration: 2"
 #> [1] "Iteration: 3"
 #> [1] "Cluster membership: "
-#>  [1] 1 1 1 1 1 1 1 1 2 2 2 2
+#>  [1] 1 1 1 1 1 1 1 1 1 1 1 1
 #> [1] "Clusters not changing, exiting"
-#> [1] "Chosen psi (via BIC): 500"
-#> Warning in cleverly(Y = Y, Z = Z, subject_ids = individual, time = time, :
-#> Fewer than 2 unique clusters found. This may indicate that the algorithm was
-#> run with too small a npsi or too small a range between psi_min and psi_max.
-#> There should be a large enough grid of hyperparameters (psi) to ensure the
-#> chosen cluster membership is accurate.
-
-plot_clusters(res)
+#> [1] "Initializing for psi = 5000"
+#> [1] "Iteration: 1"
+#> [1] "Iteration: 2"
+#> [1] "Iteration: 3"
+#> [1] "Cluster membership: "
+#>  [1] 1 1 1 1 1 1 1 1 1 1 1 1
+#> [1] "Clusters not changing, exiting"
+#> [1] "Chosen psi (via BIC): 2505"
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
+We change `cluster_index` to 1 to indicate that we will cluster based on
+the slope.
 
-The tuning parameter `gammas` can be specified, but it is usually fine
-to leave it at the default. If you see the overall fit seems bad (in
-this case underfit, because gamma is too large), it can be changed.
+To plot a slope cluster, we specify `curve_type = "slope"` in the
+plotting function. We can additionally pass along the response names, as
+it defaults to 1:nresponses as titles.
+
+``` r
+# plot_clusters(res_cont,
+#               curve_type = "slope",
+#               Y_counts = Y_cont[,3:14])
+```
+
+## Troubleshooting:
 
 ### Too small hyper parameter range
 
@@ -248,5 +307,57 @@ res <- cleverly(Y = Y,
 #> chosen cluster membership is accurate.
 ```
 
-We get a warning, increase the range between psi_min and psi_max, or
-increase npsi. \# Algorithm details
+We get a warning, increase the range between `psi_min` and `psi_max`, or
+increase `npsi`.
+
+### Poorly fit data
+
+``` r
+res <- cleverly(Y = Y,
+                Z = Z,
+                subject_ids = individual,
+                time = time,
+                cluster_index = 0,
+                cor_str = "IND",
+                gammas = c(1e4, 1e4),
+                psi_min = 500,
+                npsi = 1) 
+#> [1] "Initializing for psi = 500"
+#> [1] "Iteration: 1"
+#> [1] "Iteration: 2"
+#> [1] "Iteration: 3"
+#> [1] "Cluster membership: "
+#>  [1] 1 1 1 1 1 1 1 1 2 2 2 2
+#> [1] "Clusters not changing, exiting"
+#> [1] "Chosen psi (via BIC): 500"
+#> Warning in cleverly(Y = Y, Z = Z, subject_ids = individual, time = time, :
+#> Fewer than 2 unique clusters found. This may indicate that the algorithm was
+#> run with too small a npsi or too small a range between psi_min and psi_max.
+#> There should be a large enough grid of hyperparameters (psi) to ensure the
+#> chosen cluster membership is accurate.
+
+plot_clusters(res)
+```
+
+<img src="man/figures/README-poorly_fit-1.png" width="100%" />
+
+The tuning parameter `gammas` can be specified, but it is usually fine
+to leave it at the default. If you see the overall fit seems bad (in
+this case under fit, because gamma is too large), it can be changed.
+
+# Algorithm details
+
+## Toy example clusters:
+
+    #> Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+    #> ℹ Please use `linewidth` instead.
+    #> This warning is displayed once every 8 hours.
+    #> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+    #> generated.
+    #> Warning: The `size` argument of `element_rect()` is deprecated as of ggplot2 3.4.0.
+    #> ℹ Please use the `linewidth` argument instead.
+    #> This warning is displayed once every 8 hours.
+    #> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+    #> generated.
+
+<img src="man/figures/README-toy example-1.png" width="100%" />

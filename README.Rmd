@@ -13,12 +13,15 @@ knitr::opts_chunk$set(
   dpi = 300,
   fig.retina = 2
 )
+library(tidyverse)
+library(ggplot2)
+library(ggh4x)
+library(purrr)
+library(patchwork)
 ```
 
 # cleverly
 
-<!-- badges: start -->
-<!-- badges: end -->
 
 Cleverly stands for (Cl)ustering with (E)xternal (V)ariabl(e)s in (R) with (L)ongitudinal (Y)s. 
 
@@ -78,7 +81,7 @@ res <- cleverly(Y = Y,
 
 ## Results
 
-```{r}
+```{r results}
 names(res)
 ```
 
@@ -89,7 +92,7 @@ names(res)
 Since we know the true clusters, we can look at the Rand index, adjusted rand index, jaccard index, classification error rate, and number of clusters:
 
 
-```{r}
+```{r cluster diag}
 get_cluster_diagnostics(res, true_cluster)$cluster_diagnostics
 ```
 
@@ -99,13 +102,13 @@ We selected the exact right clusters!
 
 Visualize the data + clusters 
 
-```{r}
+```{r all plots}
 plot_clusters(res)
 ```
 
 Alternatively, if we want to examine a single cluster: 
 
-```{r}
+```{r one plot}
 plot_one_cluster(res, cluster_val = 1)
 ```
 
@@ -114,9 +117,9 @@ plot_one_cluster(res, cluster_val = 1)
 
 `cleverly` also works with continuous random variables, and can additionally cluster on the slope response: 
 
-We first simulation data with a continuous external variable, stored in `rsim_cont`, and then run the algorithm.
+We first simulation data with a continuous external variable, stored in `sim_cont`, and then run the algorithm.
 
-```{r, echo = F}
+```{r sim_cont}
 sim_cont <- simulation_data(n = 20,
                         range_start = 5000,
                         range_end = 20000,
@@ -159,16 +162,58 @@ sim_cont <- simulation_data(n = 20,
 ```
 
 
-```{r}
 
+```{r run_algorithm_cont, cache = T}
+Y_cont <- sim_cont$Y
+Z_cont <- sim_cont$Z
+
+head(Z_cont)
+
+res_cont <- cleverly(Y = Y_cont,
+                     Z = Z_cont,
+                     subject_ids = individual,
+                     time = time,
+                     cluster_index = 1,
+                     cor_str = "IND",
+                     psi_min = 10,
+                     psi_max = 5000,
+                     npsi = 3) 
 ```
+
+We change `cluster_index` to 1 to indicate that we will cluster based on the slope. 
+
+To plot a slope cluster, we specify `curve_type = "slope"` in the plotting function. We can additionally pass along the response names, as it defaults to 1:nresponses as titles. 
+
+```{r slope plot}
+# plot_clusters(res_cont,
+#               curve_type = "slope",
+#               Y_counts = Y_cont[,3:14])
+```
+
 
 
 ## Troubleshooting: 
 
+### Too small hyper parameter range
+
+```{r too_small_psi, cache = T}
+res <- cleverly(Y = Y,
+                Z = Z,
+                subject_ids = individual,
+                time = time,
+                cluster_index = 0,
+                cor_str = "IND",
+                psi_min = 10,
+                psi_max = 11,
+                npsi = 3) 
+```
+
+We get a warning, increase the range between `psi_min` and `psi_max`, or increase `npsi`. 
+
+
 ### Poorly fit data
 
-```{r, cache = T}
+```{r poorly_fit, cache = T}
 res <- cleverly(Y = Y,
                 Z = Z,
                 subject_ids = individual,
@@ -182,21 +227,117 @@ res <- cleverly(Y = Y,
 plot_clusters(res)
 ```
 
-The tuning parameter `gammas` can be specified, but it is usually fine to leave it at the default. If you see the overall fit seems bad (in this case underfit, because gamma is too large), it can be changed.
+The tuning parameter `gammas` can be specified, but it is usually fine to leave it at the default. If you see the overall fit seems bad (in this case under fit, because gamma is too large), it can be changed.
 
-### Too small hyper parameter range
 
-```{r}
-res <- cleverly(Y = Y,
-                Z = Z,
-                subject_ids = individual,
-                time = time,
-                cluster_index = 0,
-                cor_str = "IND",
-                psi_min = 10,
-                psi_max = 11,
-                npsi = 3) 
+# Algorithm details
+
+## Toy example clusters:
+
+```{r toy example, echo = F}
+baseline_fxns <- list(
+  `Taxon 1 - Baseline Cluster A` = function(t) sin(pi * t),
+  `Taxon 2 - Baseline Cluster A` = function(t) sin(pi * t),
+  `Taxon 3 - Baseline Cluster B` = function(t) cos(2 * pi * t),
+  `Taxon 4 - Baseline Cluster B` = function(t) cos(2 * pi * t)
+)
+
+slope_fxns <- list(
+  function(t) sin(pi * t) + 3 * t,
+  function(t) sin(pi * t) + 1,
+  function(t) cos(2 * pi * t) + 3 * t,
+  function(t) cos(2 * pi * t) + 1
+)
+
+# Create data
+t_vals <- seq(0, 1, length.out = 100)
+
+baseline_df <- map_dfr(names(baseline_fxns), function(name) {
+  tibble(
+    t = t_vals,
+    value = baseline_fxns[[name]](t_vals),
+    function_name = name,
+    type = "(Z = 0) - Baseline"
+  )
+})
+
+slope_df <- map2_dfr(names(baseline_fxns), slope_fxns, function(name, fxn) {
+  tibble(
+    t = t_vals,
+    value = fxn(t_vals),
+    function_name = name,
+    type = "(Z = 1)"
+  )
+})
+
+plot_df <- bind_rows(baseline_df, slope_df) %>% 
+  mutate(slope_cluster = 
+           case_when(
+             function_name == "Taxon 1 - Baseline Cluster A" ~ "Taxon 1 - Slope Cluster 1", 
+             function_name == "Taxon 2 - Baseline Cluster A" ~ "Taxon 2 - Slope Cluster 2",
+             function_name == "Taxon 3 - Baseline Cluster B" ~ "Taxon 3 - Slope Cluster 1",
+             function_name == "Taxon 4 - Baseline Cluster B" ~ "Taxon 4 - Slope Cluster 2"
+           ))
+
+
+# Plot
+baseline_plot <- ggplot(plot_df, aes(x = t, y = value, color = type, linetype = type)) +
+  geom_line(size = 1.5) +
+  ggh4x::facet_wrap2(
+    ~ function_name,
+    strip = strip_themed(
+      background_x = elem_list_rect(
+        fill = c("#AED9E0","#AED9E0","#90D743",  "#90D743"), 
+        color = NA
+      ),
+      text_x = elem_list_text(
+        color = "black"
+      )
+    )
+  ) +
+  labs(x = "t", y = "Value", color = "Z", linetype = "Z",
+       title = "Cluter on Baseline (solid line)") +
+  scale_color_manual(values = c(`(Z = 0) - Baseline` = "#440154",
+                                "(Z = 1)" = "#D64F5C")) + 
+  theme(
+    plot.background = element_rect(color = "black", fill = NA, size = 1)
+  )
+
+
+slope_plot <- plot_df %>% 
+  pivot_wider(
+    names_from = c(type),
+    values_from = value
+  ) %>% 
+  mutate(diff = `(Z = 1)` - `(Z = 0) - Baseline`) %>%
+  ggplot(aes(x = t, y = diff, color = "Slope")) + 
+  geom_line(size = 1) + 
+  facet_wrap2(
+    ~ slope_cluster,
+    strip = strip_themed(
+      background_x = elem_list_rect(
+        fill = c("#D64F5C","#FBB03B", "#D64F5C", "#FBB03B"), 
+        color = NA
+      ),
+      text_x = elem_list_text(
+        color = "black"
+      )
+    )
+  ) +
+  labs(y = "Difference (Z = 1) - (Z = 0)",
+       x = "t", 
+       title = "Cluster on slope (differences between lines)" ) + 
+  scale_color_manual(name = "",
+                     values = c("Slope" = "black")) + 
+  theme(
+    plot.background = element_rect(color = "black", fill = NA, size = 1)
+  )
+
+
+
+baseline_plot / slope_plot + 
+  plot_annotation(title = "Clustering Taxa using Baseline vs Slope")
+
+
 ```
 
-We get a warning, increase the range between psi_min and psi_max, or increase npsi. 
-# Algorithm details
