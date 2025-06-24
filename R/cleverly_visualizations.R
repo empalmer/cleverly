@@ -135,7 +135,7 @@ plot_clusters <- function(res,
                                        shape = cluster),
                           size = 1, alpha = .8) +
       ggplot2::guides(color = ggplot2::guide_legend("Z"),
-                      shape = ggplot2::guide_legend("Z")) +
+                      shape = ggplot2::guide_legend("Cluster")) +
       # ggnewscale::new_scale_color() +
       ggplot2::geom_line(ggplot2::aes(y = yhat, color = factor(Z), group = Z),
                          linewidth = 1.5) +
@@ -149,6 +149,7 @@ plot_clusters <- function(res,
       )
 # slope, continuous ------------------------------------------------------------
   } else if (!binary_Z ) {
+
 
     response_val <- res$y_hat$response[1]
     Z_orig <- res$y_hat$Z
@@ -204,10 +205,10 @@ plot_clusters <- function(res,
                           alpha = .6) +
       ggplot2::labs(color = "Z") +
       #ggplot2::guides(color = ggplot2::guide_legend("Z")) +
-      ggnewscale::new_scale_color() +
+      #ggnewscale::new_scale_color() +
       ggplot2::geom_line(ggplot2::aes(y = yhat,
-                                      color = Z,
-                                      group = factor(Z)),
+                                      color = Z_mid,
+                                      group = factor(Z_mid)),
                          linewidth = 1) +
       ggplot2::guides(color = "none") +
       ggplot2::labs(shape = "Cluster") +
@@ -278,7 +279,7 @@ plot_one_cluster <- function(res,
   response_names <- paste0("Cluster ",
                            cluster_key$cluster,
                            " - ",
-                           cluster_key$response_names)
+                           response_names)
   # baseline ----------------------------------------------------------------
 
 
@@ -390,6 +391,7 @@ plot_one_cluster <- function(res,
 
 
 
+
     plot <- y_hat %>%
       dplyr::mutate(response = factor(.data$response, labels = response_names),
                     Z_orig = Z_orig,
@@ -401,8 +403,8 @@ plot_one_cluster <- function(res,
                            alpha = .6) +
       ggplot2::labs(color = "Z") +
       ggplot2::geom_line(ggplot2::aes(y = yhat,
-                                      color = Z,
-                                      group = factor(Z)),
+                                      color = Z_mid,
+                                      group = factor(Z_mid)),
                          linewidth = 1) +
       ggplot2::labs(shape = "Cluster") +
       ggplot2::facet_wrap(~response,
@@ -588,18 +590,19 @@ plot_cluster_differences <- function(res1,
                        ggplot2::aes(label = as.character(response_names)),
                        size = 2.5,
                        hjust = 0,
-                       nudge_x = -0.12) +  # ← adjust label position if needed
+                       nudge_x = -0.12) +
     ggplot2::theme_void() +
     ggplot2::scale_x_discrete(
-      limits = c("Low nutrition slope", "High nutrition slope"),
+      limits = res_names,
       expand = c(.05, .05),
-      position = "top"  # ← this moves x-axis to the top
+      position = "top"
     ) +
-    ggplot2::theme_void() +  # start from blank
+    ggplot2::theme_void() +
     ggplot2::theme(
-      axis.text.x = ggplot2::element_text(margin = ggplot2::margin(b = 2)),      # show x-axis labels
-      axis.title.x = ggplot2::element_text(),     # show x-axis title (optional)
-      plot.title = ggplot2::element_text(hjust = 0.5)  # center the plot title
+      axis.text.x = ggplot2::element_text(margin = ggplot2::margin(b = 2)),
+      axis.title.x = ggplot2::element_text(),
+      plot.title = ggplot2::element_text(hjust = 0.5),
+      legend.position = "none"
     )
 
   return(plot)

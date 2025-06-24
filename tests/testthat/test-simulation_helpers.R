@@ -12,8 +12,8 @@ test_that("Simulation Z", {
                          cor_str = "CON-d",
                          rho = 0.5,
                          prob1 = .5,
-                         Z_type = "binary",
-                         baseline_fxns = list(
+                         Z_type = "continuous",
+                         slope_fxns = list(
                            function(t) cos(2 * pi * t),
                            function(t) cos(2 * pi * t),
                            function(t) cos(2 * pi * t),
@@ -28,7 +28,7 @@ test_that("Simulation Z", {
                            function(t) 2 - 2 * t
                          ),
                          # Slope functions
-                         slope_fxns = list(
+                         baseline_fxns = list(
                            function(t) 2 - t,
                            function(t) 2 * sin(pi * t),
                            function(t) .5,
@@ -63,11 +63,11 @@ test_that("Simulation Z", {
   # Z <- cbind(Z1, rnorm(nrow(Y), mean = 0, sd = 1)) # Add a random covariate
   # colnames(Z) <- c("Z1", "Z2")
 
-  res1 <- cleverly(Y = Y,
+  res <- cleverly(Y = Y,
                   Z = Z,
                   subject_ids = individual,
                   time = time,
-                  cluster_index = 0,
+                  cluster_index = 1,
                   cor_str = "IND",
                   theta = 500,
                   parralel = F,
@@ -78,6 +78,8 @@ test_that("Simulation Z", {
                   max_admm_iter = 50,
                   max_2_iter = 50) %>%
     get_cluster_diagnostics(true_cluster)
+
+  res$clusters
 
 
   res$y_hat_baseline
@@ -93,12 +95,12 @@ test_that("Simulation Z", {
                 Y_counts = dplyr::select(Y, -c(time, individual)))
 
 
-  plot_cluster_differences(res, res1)
+  plot_cluster_differences(res, res)
 
 
   plot_one_cluster(res,
                    cluster_val = 1,
-                   response_names = 1:12,
+                   response_names = LETTERS[1:12],
                    curve_type = "slope",
                    Y_counts = dplyr::select(Y, -c(time, individual)))
 
