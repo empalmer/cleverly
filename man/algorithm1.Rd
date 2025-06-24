@@ -38,7 +38,7 @@ algorithm1(
 
 \item{mi_vec}{A vector of length \eqn{n} specifying the number of timepoints for each subject.}
 
-\item{lp}{Clustering index. An integer between 0 and \eqn{L}, indicating which covariate to use for clustering. Use 0 for baseline clustering.}
+\item{lp}{Clustering index. An integer between 0 and \eqn{L}, indicating which covariate to use for clustering. Use 0 for baseline clustering. Matches \eqn{l'} in the paper.}
 
 \item{cor_str}{Correlation structure for the working covariance model. One of \code{"IND"}, \code{"CON"}, or \code{"AR1"}.}
 

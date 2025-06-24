@@ -15,6 +15,7 @@ cleverly(
   psi_min = 500,
   psi_max = 1500,
   npsi = 10,
+  status_bar = F,
   parralel = FALSE,
   nworkers = 2,
   tau = 0.005,
@@ -36,7 +37,7 @@ cleverly(
 )
 }
 \arguments{
-\item{Y}{A data frame or matrix of count response variables. Each column should represent a response variable, and each row a subject-time observation. Must be ordered by time. Total number of rows is \eqn{M}. Make sure Y values are counts and are not transformed to RA or rarified.}
+\item{Y}{A data frame or matrix of count response variables. Each column should represent a response variable, and each row a subject-time observation. Must be ordered by time. Total number of rows is \eqn{M}. Make sure Y values are counts and are not transformed to RA or rarified. We recommend running \code{cleverly} using less than 50 response variables (columns), otherwise computational time is an issue.}
 
 \item{Z}{A vector, data frame, or matrix containing external variables. These external variables must be measured on every subject at every time point. We recommend using no more than 2-3 external variables to ensure clustering is meaningful. Must have \eqn{M} rows and \eqn{L} columns. If \code{Z} is missing, the algorithm will default to the COMPARING approach (clustering without an external variable).}
 

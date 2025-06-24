@@ -537,7 +537,8 @@ plot_initial_fit <- function(res,
 #'
 #' @returns ggplot object
 #' @export
-plot_cluster_differences <- function(res1, res2,
+plot_cluster_differences <- function(res1,
+                                     res2,
                                      response_names = NULL,
                                      res_names = c("A", "B")) {
 
@@ -551,19 +552,58 @@ plot_cluster_differences <- function(res1, res2,
     res1 = as.factor(res1$clusters$membership),
     res2 = as.factor(res2$clusters$membership)
   )
+  #
+  #   ggplot2::ggplot(df, ggplot2::aes(axis1 = res1, axis2 = res2, y = 1)) +
+  #     ggalluvial::geom_alluvium(ggplot2::aes(fill = res1),
+  #                               width = 1/12, alpha = 0.6) +
+  #     ggalluvial::geom_stratum(width = 1/12, fill = "grey80", color = "black") +
+  #     ggplot2::geom_text(ggplot2::aes(label = response_names),
+  #                        stat = ggalluvial::StatAlluvium, size = 2) +
+  #     ggplot2::scale_x_discrete(limits = res_names, expand = c(.05, .05)) +
+  #     ggplot2::theme_minimal() +
+  #     ggplot2::theme(axis.text.y = ggplot2::element_blank(),
+  #                    axis.ticks.y = ggplot2::element_blank(),
+  #                    axis.title.y = ggplot2::element_blank(),
+  #                    legend.position = "none")
 
-  ggplot2::ggplot(df, ggplot2::aes(axis1 = res1, axis2 = res2, y = 1)) +
+  df <- df[order(df$res1, df$res2, df$response_names), ]
+  df$flow_id <- factor(df$response_names, levels = unique(df$response_names))
+
+  df$response_names <- factor(df$response_names,
+                              levels = sort(unique(df$response_names)))
+
+
+  plot <- ggplot2::ggplot(df, ggplot2::aes(axis1 = res1,
+                                           axis2 = res2,
+                                           y = 1,
+                                           group = response_names)) +
     ggalluvial::geom_alluvium(ggplot2::aes(fill = res1),
-                              width = 1/12, alpha = 0.6) +
-    ggalluvial::geom_stratum(width = 1/12, fill = "grey80", color = "black") +
-    ggplot2::geom_text(ggplot2::aes(label = response_names),
-                       stat = ggalluvial::StatAlluvium, size = 2) +
-    ggplot2::scale_x_discrete(limits = res_names, expand = c(.05, .05)) +
-    ggplot2::theme_minimal() +
-    ggplot2::theme(axis.text.y = ggplot2::element_blank(),
-                   axis.ticks.y = ggplot2::element_blank(),
-                   axis.title.y = ggplot2::element_blank(),
-                   legend.position = "none")
+                              width = 1/2,
+                              alpha = 0.9) +
+    ggalluvial::geom_stratum(width = 1/4,
+                             fill = "grey90",
+                             color = "black",
+                             size = 1) +
+    ggplot2::geom_text(stat = "alluvium",
+                       ggplot2::aes(label = as.character(response_names)),
+                       size = 2.5,
+                       hjust = 0,
+                       nudge_x = -0.12) +  # ← adjust label position if needed
+    ggplot2::theme_void() +
+    ggplot2::scale_x_discrete(
+      limits = c("Low nutrition slope", "High nutrition slope"),
+      expand = c(.05, .05),
+      position = "top"  # ← this moves x-axis to the top
+    ) +
+    ggplot2::theme_void() +  # start from blank
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(margin = ggplot2::margin(b = 2)),      # show x-axis labels
+      axis.title.x = ggplot2::element_text(),     # show x-axis title (optional)
+      plot.title = ggplot2::element_text(hjust = 0.5)  # center the plot title
+    )
+
+  return(plot)
+
 }
 
 

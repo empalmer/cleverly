@@ -6,14 +6,14 @@
 \usage{
 simulation_data(
   n = 20,
+  K = 12,
   range_start = 5000,
   range_end = 20000,
-  nknots = 3,
-  K = 12,
-  order = 3,
+  Z_type = "binary",
   user_var = 1000,
   cor_str,
-  Z_type = "binary",
+  nknots = 3,
+  order = 3,
   rho = 0.4,
   miss_p = 0.6,
   prob1 = 0.4,
@@ -32,21 +32,21 @@ simulation_data(
 \arguments{
 \item{n}{Number of subjects}
 
+\item{K}{Number of responses}
+
 \item{range_start}{Starting count range for the Dirichlet multinomial}
 
 \item{range_end}{Ending count range for the Dirichlet multinomial}
 
-\item{nknots}{Number of knots}
-
-\item{K}{Number of responses}
-
-\item{order}{Order of the B-spline basis}
+\item{Z_type}{Type of external variable (binary or continuous)}
 
 \item{user_var}{User supplied variance}
 
 \item{cor_str}{Type of correlation structure (IND, CON, AR1)}
 
-\item{Z_type}{Type of external variable (binary or continuous)}
+\item{nknots}{Number of knots}
+
+\item{order}{Order of the B-spline basis}
 
 \item{rho}{Correlation parameter}
 
@@ -54,7 +54,7 @@ simulation_data(
 
 \item{prob1}{Equivalent to p if Z ~ Binomial(p = prob1)}
 
-\item{maxt}{maximum number of times}
+\item{maxt}{Time scale goes from 0 to maxt}
 
 \item{baseline_fxns}{list of functions to use for the baseline}
 
