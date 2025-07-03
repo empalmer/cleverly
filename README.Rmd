@@ -30,13 +30,13 @@ Cleverly stands for (Cl)ustering with (E)xternal (V)ariabl(e)s in (R) with (L)on
 
 You can install the development version of `cleverly` from [GitHub](https://github.com/) with:
 
-```{r load package, echo = T, results = 'hide', message = F, warning = F}
+```{r load_package, echo = T, results = 'hide', message = F, warning = F}
 # install.packages("pak")
 pak::pak("empalmer/cleverly")
 library(cleverly)
 ```
 
-NOTE! This package is still in development, so be sure to make sure you have the most up-to-date version. 
+> **_NOTE:_**  This package is still in development, so be sure to make sure you have the most up-to-date version. 
 
 Check what version you have installed with:
 
@@ -52,7 +52,11 @@ pak::pkg_install("empalmer/cleverly")
 
 With package updates, the names and format of the output may change, so be sure to check the documentation and examples. Clustering results should not change, but the format of the output may. 
 
-# Example usage: 
+# Usage: 
+
+> **_NOTE:_** This is a computationally intensive algorithm. Do not be surprised if run time exceeds 10 minutes. Run time can be adjusted by modifying parameters such as `npsi`, `max_admm_iter`, `max_2_iter`.
+
+
 ## Simulate example data 
 
 Simulate compositional count data with longitudinal independence structure. This code will simulate 20 samples across 12 responses, using a binary external variable $Z$. Default arguments to `simulation_data` simulate 3 baseline clusters with 4 members each. 
@@ -83,7 +87,7 @@ We now run the `cleverly` algorithm, specifying the commonly needed arguments. H
 
 We set `cluster_index` to 0 because we want to cluster on the baseline values, i.e. when $Z = 0$. If we want to cluster on the slope value, i.e. the effect of $Z$, we would set `cluster_index` to 1. 
 
-```{r run_algorithm}
+```{r run_algorithm, cache = T}
 res <- cleverly(Y = Y,
                 Z = Z,
                 subject_ids = individual,
@@ -213,7 +217,7 @@ To plot a slope cluster, we specify `curve_type = "slope"` in the plotting funct
 
 ### Too small hyper parameter range
 
-```{r too_small_psi}
+```{r too_small_psi, cache = T}
 res <- cleverly(Y = Y,
                 Z = Z,
                 subject_ids = individual,
@@ -230,7 +234,7 @@ We get a warning, increase the range between `psi_min` and `psi_max`, or increas
 
 ### Poorly fit data
 
-```{r poorly_fit}
+```{r poorly_fit, cache = T}
 res <- cleverly(Y = Y,
                 Z = Z,
                 subject_ids = individual,
@@ -251,7 +255,7 @@ The tuning parameter `gammas` can be specified, but it is usually fine to leave 
 
 ## Toy example clusters:
 
-```{r toy_example, echo = F}
+```{r toy_example, echo = F, results = 'hide', message = F, warning = F}
 baseline_fxns <- list(
   `Taxon 1 - Baseline Cluster A` = function(t) sin(pi * t),
   `Taxon 2 - Baseline Cluster A` = function(t) sin(pi * t),

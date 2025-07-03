@@ -1,7 +1,7 @@
 
 # Plots for cleverly ------------------------------------------------------
 
-#' Plot clusters
+#' Plot clusters - old version
 #'
 #' For binary EV
 #'
@@ -17,7 +17,7 @@
 #'
 #' @returns ggplot object
 #' @export
-plot_clusters <- function(res,
+plot_clusters_old <- function(res,
                           response_names = NULL,
                           order = "response",
                           curve_type = "baseline",
@@ -236,7 +236,7 @@ plot_clusters <- function(res,
 #'
 #' @returns ggplot object for one cluster
 #' @export
-plot_one_cluster <- function(res,
+plot_one_cluster_old <- function(res,
                              cluster_val,
                              response_names = NULL,
                              curve_type = "baseline",

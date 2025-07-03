@@ -36,7 +36,6 @@
 #' @param j1_j2_list used for AR1 and AR1 d correlations
 #'
 #' @returns List with the updated betas, updated vs, and lists tracking the betas, vs, and lambdas for each iteration
-#' @export
 algorithm3 <- function(Y,
                        Y0,
                        Z,
@@ -240,7 +239,6 @@ algorithm3 <- function(Y,
 #' @param P Number of B-spline coefficients (order + nknots)
 #'
 #' @returns Vector of updated vs for ADMM step
-#' @export
 update_v <- function(beta,
                      lp,
                      lambda,
@@ -317,7 +315,6 @@ update_v <- function(beta,
 #' @param rho_cor value of rho
 #'
 #' @returns matrix of updated betas
-#' @export
 update_beta_admm <- function(Y,
                              Y0,
                              beta,
@@ -457,7 +454,6 @@ update_beta_admm <- function(Y,
 
 #'
 #' @returns vector of updated lambdas for the ADMM step
-#' @export
 update_lambda <- function(beta_lp, v, lambda, A, theta){
   #lambda_new <- lambda + theta * (A %*% beta_lp - v)
   lambda_new <- lambda + theta * (fast_mat_mult2(A, matrix(beta_lp)) - v)
@@ -485,7 +481,6 @@ update_lambda <- function(beta_lp, v, lambda, A, theta){
 #' @param lp clustering index (integer between 0 and L)
 #'
 #' @returns L2 norm of the difference between beta_k1 and beta_k2
-#' @export
 get_r_norm <- function(beta, v, Kappa, P, lp){
   r_kappa <- c()
   for (kappa in 1:nrow(Kappa)) {
@@ -515,7 +510,6 @@ get_r_norm <- function(beta, v, Kappa, P, lp){
 #' @param P Number of B-spline coefficients (order + nknots)
 #'
 #' @returns difference between v_new and v
-#' @export
 get_d_norm <- function(v_new, v, theta, Kappa, K, P){
   v_diff <- v_new - v
   diff_mat <- matrix(v_diff, nrow = P)

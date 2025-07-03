@@ -17,8 +17,8 @@ pak::pak("empalmer/cleverly")
 library(cleverly)
 ```
 
-NOTE! This package is still in development, so be sure to make sure you
-have the most up-to-date version.
+> ***NOTE:*** This package is still in development, so be sure to make
+> sure you have the most up-to-date version.
 
 Check what version you have installed with:
 
@@ -36,7 +36,11 @@ With package updates, the names and format of the output may change, so
 be sure to check the documentation and examples. Clustering results
 should not change, but the format of the output may.
 
-# Example usage:
+# Usage:
+
+> ***NOTE:*** This is a computationally intensive algorithm. Do not be
+> surprised if run time exceeds 10 minutes. Run time can be adjusted by
+> modifying parameters such as `npsi`, `max_admm_iter`, `max_2_iter`.
 
 ## Simulate example data
 
@@ -328,11 +332,5 @@ this case under fit, because gamma is too large), it can be changed.
 # Algorithm details
 
 ## Toy example clusters:
-
-    #> Warning: The `size` argument of `element_rect()` is deprecated as of ggplot2 3.4.0.
-    #> ℹ Please use the `linewidth` argument instead.
-    #> This warning is displayed once every 8 hours.
-    #> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-    #> generated.
 
 <img src="man/figures/README-toy_example-1.png" width="100%" />

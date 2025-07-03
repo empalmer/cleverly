@@ -9,7 +9,6 @@
 #' @param P Number of bspline basis parameters (order + nknots)
 #'
 #' @returns scalar phi
-#' @export
 get_phi <- function(pearson_residuals, K, M, L, P){
 
   phi <- sum(unlist(pearson_residuals)^2) / (K * M - ((L + 1) * P))
@@ -38,7 +37,6 @@ get_phi <- function(pearson_residuals, K, M, L, P){
 #' @param M Number of samples times timepoints for each sample
 #'
 #' @returns List of Pearson residuals for all i, j, k, indexed by i
-#' @export
 get_pearson_residuals <- function(Y,
                                   Y0,
                                   beta,
@@ -80,7 +78,6 @@ get_pearson_residuals <- function(Y,
 #' @param i_index starting index of the ith subject in the data
 #'
 #' @returns pearson residual vector for each i
-#' @export
 get_pearson_residual_i <- function(Y,
                                    Y0,
                                    i,

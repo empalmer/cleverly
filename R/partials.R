@@ -14,8 +14,7 @@
 #' @param alpha_ij Vector of DM parameters for i, j
 #'
 #' @returns Matrix of dimension PK x K
-#' @export
-#'
+
 get_partials_ijl <- function(i,
                              j,
                              l,
@@ -63,8 +62,7 @@ get_partials_ijl <- function(i,
 #' @param K Number of responses
 #'
 #' @returns Matrix of dimension KP x Kmi
-#' @export
-#'
+
 get_partials_il <- function(i,
                             l,
                             Y0,
@@ -113,7 +111,7 @@ get_partials_il <- function(i,
 #' @param K Number of responses
 #'
 #' @returns list
-#' @export
+
 get_partials_l_list <- function(Y0,
                                 l,
                                 mi_vec,

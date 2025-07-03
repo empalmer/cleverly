@@ -15,7 +15,7 @@
 #' @param L Number of external variables
 #'
 #' @returns A single numeric value representing the modified BIC for the fitted model.
-#' @export
+
 BIC_cluster <- function(y_ra_df,
                         K,
                         L,
@@ -48,7 +48,7 @@ BIC_cluster <- function(y_ra_df,
 #' @param order Order of the B-spline basis
 #'
 #' @returns List of BIC, first term, and second term
-#' @export
+
 BIC_cluster_group <- function(y_hat_counts,
                               y_counts,
                               beta_group,

@@ -19,8 +19,7 @@
 #' @param K Number of responses
 #'
 #' @returns Vector of length PK
-#' @export
-#'
+
 get_gradient_il <- function(i,
                             l,
                             Y,
@@ -71,8 +70,6 @@ get_gradient_il <- function(i,
 #' @param P Number of B-spline coefficients (order + nknots)
 #'
 #' @returns vector of length PK x 1
-#' @export
-#'
 get_gradient_l <- function(Y,
                            Y0,
                            mi_vec,

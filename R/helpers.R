@@ -6,7 +6,6 @@
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #'
 #' @returns indeces for each ith subject repeated mi times
-#' @export
 get_indeces <- function(i, mi_vec) {
   start <- c(0, cumsum(mi_vec))[i] + 1
   end <- cumsum(mi_vec)[i]
@@ -23,7 +22,6 @@ get_indeces <- function(i, mi_vec) {
 #' @param time_ids either a vector of length(Y) or a column reference if Y is a data frame. Must be numeric
 #'
 #' @returns data frame of mi and subject id
-#' @export
 get_mi_vec <- function(Y, subject_ids, time_ids) {
   Y_wrapper <- get_Y_wrapper(Y, subject_ids, time_ids)
 
@@ -44,7 +42,6 @@ get_mi_vec <- function(Y, subject_ids, time_ids) {
 #' @param Z Matrix that starts with a column of 1s. Of dimension M x (L + 1) that contains the external variable values for each subject/time and is 1 for l = 0. In the case that there are no external variables this is a matrix with one column of 1s.
 #'
 #' @returns Scalar for the l-th external variable for subject i at time j
-#' @export
 get_Z_ijl <- function(i, j, l, Z, i_index) {
   if (l == 0) {
     return(1)
@@ -67,7 +64,6 @@ get_Z_ijl <- function(i, j, l, Z, i_index) {
 #' @param P Number of B-spline coefficients (order + nknots)
 #'
 #' @returns Vector of length P
-#' @export
 get_beta_kl <- function(k, l, beta, P) {
   beta_kl <- beta[((k - 1) * P + 1):(k * P), (l + 1)]
   return(beta_kl)
@@ -87,8 +83,6 @@ get_beta_kl <- function(k, l, beta, P) {
 #' @param j time index
 #'
 #' @returns Scalar of the total sum constraint for a given i, j
-#' @export
-#'
 get_Y_ij0 <- function(i, j, Y0, i_index) {
   i_start <- i_index[i] + 1
   Y_ij0 <- Y0[i_start + j - 1]
@@ -110,7 +104,6 @@ get_Y_ij0 <- function(i, j, Y0, i_index) {
 #' @param time_ids either a vector of length(Y) or a column reference if Y is a data frame
 #'
 #' @returns Matrix of dimension mi x K
-#' @export
 get_Y_wrapper <- function(Y,
                           subject_ids,
                           time_ids) {
@@ -171,7 +164,6 @@ get_Y_wrapper <- function(Y,
 #' @param mi_vec vector of the number of timepoints for each sample. Of length n
 #'
 #' @returns Matrix of dimension mi x K
-#' @export
 get_Y_i_mat <- function(i, mi_vec, Y) {
   indeces <- get_indeces(i, mi_vec)
   Y_i <- Y[indeces, ]
@@ -196,7 +188,6 @@ get_Y_i_mat <- function(i, mi_vec, Y) {
 #' @param Y_mat (optional) pre-calculated Yi-matrix from Y
 #'
 #' @returns Vector of length K * mi
-#' @export
 get_Y_i_vec <- function(i, mi_vec, Y, Y_mat) {
   if (missing(Y_mat)) {
     Y_i_mat <- get_Y_i_mat(
@@ -224,7 +215,6 @@ get_Y_i_vec <- function(i, mi_vec, Y, Y_mat) {
 #' @param alpha_ij Vector of DM parameters for i, j
 #'
 #' @returns Vector of length K
-#' @export
 get_mu_ij <- function(Y_ij0, alpha_ij) {
     mu_ij <- Y_ij0 / sum(alpha_ij) * alpha_ij
     return(mu_ij)
@@ -241,7 +231,6 @@ get_mu_ij <- function(Y_ij0, alpha_ij) {
 #' @param K Number of responses
 #'
 #' @returns Vector of length K*mi with each K first
-#' @export
 get_mu_i <- function(i, alpha, mi_vec, i_index, Y0, K) {
   mi <- mi_vec[i]
   mu_i <- numeric(mi*K)
@@ -271,8 +260,6 @@ get_mu_i <- function(i, alpha, mi_vec, i_index, Y0, K) {
 #' @param K Number of responses
 #'
 #' @returns Vector of length Kmi
-#' @export
-#'
 get_Yi_minus_mui <- function(i,
                              Y,
                              Y0,
@@ -305,7 +292,6 @@ get_Yi_minus_mui <- function(i,
 #' @param B B spline basis matrix of dimension (N x P)
 #'
 #' @returns A vector of length P
-#' @export
 get_B_ij <- function(i, j, B, i_index) {
   i_start <- i_index[i] + 1
   i_start + j - 1
@@ -316,7 +302,7 @@ get_B_ij <- function(i, j, B, i_index) {
 }
 
 
-#' Title
+#' Create B spline basis matrix
 #'
 #' @param time vector of time values for each subject/time
 #' @param order Order of the B-spline basis
@@ -347,7 +333,6 @@ get_B <- function(time, order, nknots) {
 #' @param L Number of external variables
 #'
 #' @returns Numeric (1x1)
-#' @export
 get_alpha_ijk <- function(i, j, k, beta_ks, Z_ij, B_ij, i_index, P, L) {
   # Extract all beta_lk at once for efficiency
   beta_k <- beta_ks[[k]]
@@ -374,7 +359,6 @@ get_alpha_ijk <- function(i, j, k, beta_ks, Z_ij, B_ij, i_index, P, L) {
 #' @param beta_ks list of beta for each k
 #'
 #' @returns Vector of length K
-#' @export
 get_alpha_ij <- function(i, j, beta_ks, Z, B, K, i_index, L, P) {
   B_ij <- get_B_ij(i = i,
                    j = j,
@@ -419,7 +403,6 @@ get_alpha_ij <- function(i, j, beta_ks, Z, B, K, i_index, L, P) {
 #' @param beta_ks list of beta for each k
 #'
 #' @returns list of alphas for each j in 1:mi
-#' @export
 get_alpha_i <- function(i, beta_ks, Z, B, K, i_index, mi_vec, L, P){
   # L <- ncol(Z) - 1
   # P <- length(B_ij)
@@ -449,7 +432,6 @@ get_alpha_i <- function(i, beta_ks, Z, B, K, i_index, mi_vec, L, P){
 #' @param P Number of B-spline coefficients (order + nknots)
 #'
 #' @returns list
-#' @export
 get_alpha_list <- function(beta, Z, B, K, i_index, mi_vec, L, P){
   n <- length(mi_vec)
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/helpers.R
 \name{get_B}
 \alias{get_B}
-\title{Title}
+\title{Create B spline basis matrix}
 \usage{
 get_B(time, order, nknots)
 }
@@ -17,5 +17,5 @@ get_B(time, order, nknots)
 B spline basic matrix of dimension (M x P)
 }
 \description{
-Title
+Create B spline basis matrix
 }

@@ -5,7 +5,6 @@
 #' @param alpha_ij Vector of DM parameters for i, j
 #'
 #' @returns U ij part of partials/variance matrix
-#' @export
 get_U_ij <- function(alpha_ij) {
   alpha_ij0 <- sum(alpha_ij)
   if (any(alpha_ij == alpha_ij0)) {
@@ -25,7 +24,6 @@ get_U_ij <- function(alpha_ij) {
 #' @param alpha_ij Vector of DM parameters for i, j
 #'
 #' @returns matrix of dimension K x K for a single j
-#' @export
 get_V_ijj <- function(Y_ij0,
                       phi,
                       alpha_ij) {
@@ -64,7 +62,6 @@ get_V_ijj <- function(Y_ij0,
 #' @param rho_cor value of rho (correlation parameter)
 #'
 #' @returns V inverse list
-#' @export
 get_V_inv <- function(Y,
                       Y0,
                       alpha,
@@ -116,8 +113,7 @@ get_V_inv <- function(Y,
 #' @param rho_cor Current value of rho
 #'
 #' @returns Matrix of dimension Kmi x Kmi
-#' @export
-#'
+
 get_Vi_inv <- function(i,
                        Y,
                        Y0,
@@ -233,6 +229,15 @@ get_Vi_inv <- function(i,
 
 # Correlation structures --------------------------------------------------
 
+#' Title
+#'
+#' @param cor_str
+#' @param mi
+#' @param K
+#' @param rho
+#'
+#' @returns
+
 get_corR <- function(cor_str, mi, K, rho) {
   if (cor_str == "IND") {
     return(list())
@@ -283,7 +288,6 @@ get_corR <- function(cor_str, mi, K, rho) {
 #' @param j1_j2_list Used for Ar1 calculations j1-j2
 #'
 #' @returns Numeric estimate of rho
-#' @export
 get_rho <- function(pearson_residuals,
                     phi,
                     K,

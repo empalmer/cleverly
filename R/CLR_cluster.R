@@ -14,7 +14,6 @@
 #' @param cluster_method One of kmeans, hclust, pam
 #'
 #' @returns
-#' @export
 CLR_cluster <- function(Y,
                         Z,
                         time,

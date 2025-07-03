@@ -21,8 +21,6 @@
 #' @param P Number of B-spline coefficients (order + nknots)
 #'
 #' @returns Matrix of dimension KP times KP
-#' @export
-#'
 get_Hessian_il <- function(i,
                             l,
                             Y0,
@@ -67,8 +65,6 @@ get_Hessian_il <- function(i,
 #' @param K Number of responses
 #'
 #' @returns Matrix of dimension KP times KP
-#' @export
-#'
 get_Hessian_l <- function(l,
                           Y0,
                           mi_vec,
@@ -137,8 +133,6 @@ get_Hessian_l <- function(l,
 #' @param P Number of B-spline coefficients (order + nknots)
 #'
 #' @returns Matrix of dimension KP times KP
-#' @export
-#'
 get_dHessian_il <- function(i,
                             l,
                             Y0,
@@ -197,8 +191,6 @@ get_dHessian_il <- function(i,
 #' @param K Number of responses
 #'
 #' @returns Matrix of dimension KP times KP
-#' @export
-#'
 get_DHessian_l <- function(l,
                            Y0,
                            mi_vec,

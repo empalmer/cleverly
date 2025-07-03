@@ -255,10 +255,11 @@ cleverly <- function(Y,
 
     # Calculate both unrefit (BIC) and refit (BIC_ra_group)
     BIC_list <- purrr::map(res_list, ~.x$BIC)
-    BIC_ra_group <- purrr::map(res_list, ~.x$BIC_ra_group)
+    #BIC_ra_group <- purrr::map(res_list, ~.x$BIC_ra_group)
 
     # But just use the one specified
     if (BIC_type == "refit") {
+      BIC_ra_group <- purrr::map(res_list, ~.x$BIC_ra_group)
       BICs <- purrr::map_dbl(res_list, ~.x$BIC_ra_group$BIC)
     } else {
       BICs <- purrr::map_dbl(res_list, ~.x$BIC$BIC)

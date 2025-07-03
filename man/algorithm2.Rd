@@ -77,9 +77,6 @@ algorithm2(
 
 \item{j1_j2_list}{pre-calculated j1_j2 list if AR1.}
 }
-\value{
-Vector of length PK x L
-}
 \description{
 Algorithm 2: Updating Non-Clustering coefficients
 }

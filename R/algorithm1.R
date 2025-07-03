@@ -37,8 +37,6 @@
 #'   \item{loop_list_diff}{List of beta differences between iterations (for diagnostics).}
 #'   \item{phis_list}{List of phi estimates across iterations.}
 #' }
-#'
-#' @export
 
 algorithm1 <- function(Y,
                        Z,
@@ -473,8 +471,7 @@ algorithm1 <- function(Y,
 #' @param m The number of internal knots to include.
 #'
 #' @return A numeric vector of knot positions, including boundary and internal knots, suitable for use in B-spline basis construction.
-#'
-#' @export
+
 
 get_knots <- function(t, k, m) {
   # external knots are on boundary
@@ -496,8 +493,7 @@ get_knots <- function(t, k, m) {
 #' @param nknots The number of internal knots used in the B-spline basis.
 #'
 #' @return A matrix \code{D} representing the second-order difference operator applied across response curves.
-#'
-#' @export
+
 get_D <- function(K, d, order, nknots) {
   # P <- order + nknots
   C <- matrix(0, nrow = nknots + order - d, ncol = nknots + order)
@@ -526,8 +522,7 @@ get_D <- function(K, d, order, nknots) {
 #' @param P The number of B-spline coefficients (typically \code{order + nknots}).
 #'
 #' @return Matrix \code{A} that maps pairwise differences between responses in the model formulation.
-#'
-#' @export
+
 get_A <- function(Kappa, K, P) {
   I <- diag(P)
   A <- matrix(ncol = K * P, nrow = P * nrow(Kappa))
@@ -607,7 +602,6 @@ get_clusters <- function(v, K, P) {
 #'
 #' @return A numeric vector of fitted values (\eqn{\hat{y}}) of length \eqn{M \cdot K}, representing the estimated responses.
 #'
-#' @export
 #' @importFrom rlang .data
 
 estimate_y <- function(beta, B, Z, K, Y, time, baseline = F){
@@ -685,8 +679,6 @@ estimate_y <- function(beta, B, Z, K, Y, time, baseline = F){
 #' @param time A numeric vector of time values (length \eqn{M}) or a column reference if \code{Y} is a data frame.
 #'
 #' @return A numeric vector of fitted values (\eqn{\hat{y}}) of length \eqn{M \cdot K}, representing the estimated responses.
-#'
-#' @export
 
 estimate_y_counts <- function(beta, B, Z, K, Y, time){
   P <- ncol(B)
@@ -729,7 +721,6 @@ estimate_y_counts <- function(beta, B, Z, K, Y, time){
 #' @param M total rows, timepoints times subjects
 #'
 #' @returns beta matrix where betas are equal in each cluster
-#' @export
 beta_cluster <- function(y, Z, beta, lp,  lp_minus, B, clusters, K, P, M) {
 
   L <- ncol(Z) - 1
