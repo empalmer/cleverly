@@ -9,6 +9,9 @@ get_performance_summary(list)
 \arguments{
 \item{list}{simulation list}
 }
+\value{
+Returns the object with the performance summary table
+}
 \description{
 get performance summary table
 }

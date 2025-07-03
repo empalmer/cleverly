@@ -25,6 +25,9 @@ CLR_cluster(Y, Z, time, B, cluster_index, cluster_method = "kmeans", K, P, M)
 
 \item{M}{Number of samples times time points for each sample}
 }
+\value{
+res <- list(clusters = clusters,y = y_clr,y_hat = y_hat_df,y_hat_baseline = y_hat_baseline_df,beta0 = beta0,beta1 = beta1)
+}
 \description{
 Note: only implemented for the case of 1 external variable.
 }

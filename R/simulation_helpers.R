@@ -273,7 +273,7 @@ get_cluster_diagnostics <- function(res, true_cluster){
 #' @param res cleverly object
 #' @param true_cluster true cluster membership
 #'
-#' @returns
+#' @returns Proportion of simulation runs the correct cluster was an option
 #' @export
 correct_cluster_option <- function(res, true_cluster = rep(1:3, each = 4)){
   val <- purrr::map(res, "possible_clusters") %>%
@@ -289,7 +289,7 @@ correct_cluster_option <- function(res, true_cluster = rep(1:3, each = 4)){
 #'
 #' @param list simulation list
 #'
-#' @returns
+#' @returns Returns the object with the performance summary table
 #' @export
 get_performance_summary <- function(list){
 
@@ -312,8 +312,7 @@ get_performance_summary <- function(list){
 #'
 #' @returns ggplot object with the simulated data for each response
 #' @export
-#'
-#' @examples
+
 plot_sim_data <- function(sim, K = 12){
 
   binary_Z <- length(unique(sim$Z)) <= 2

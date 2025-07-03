@@ -229,15 +229,14 @@ get_Vi_inv <- function(i,
 
 # Correlation structures --------------------------------------------------
 
-#' Title
+#' Get correlation structure
 #'
-#' @param cor_str
-#' @param mi
-#' @param K
-#' @param rho
+#' @param cor_str String of correaltion structure, of type "IND", "CON", "AR1", "CON-d", or "AR1-d"
+#' @param mi Number of time points for each sample
+#' @param K Number of responses
+#' @param rho Correlation parameter, a numeric value between -1 and 1
 #'
-#' @returns
-
+#' @returns Correlation matrix corR
 get_corR <- function(cor_str, mi, K, rho) {
   if (cor_str == "IND") {
     return(list())

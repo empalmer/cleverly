@@ -32,7 +32,7 @@ cleverly(
   max_outer_iter = 30,
   max_admm_iter = 100,
   max_2_iter = 100,
-  BIC_type = "refit",
+  BIC_type = "unrefit",
   response_type = "counts"
 )
 }

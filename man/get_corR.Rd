@@ -2,13 +2,22 @@
 % Please edit documentation in R/V_inverse.R
 \name{get_corR}
 \alias{get_corR}
-\title{Title}
+\title{Get correlation structure}
 \usage{
 get_corR(cor_str, mi, K, rho)
 }
 \arguments{
-\item{rho}{}
+\item{cor_str}{String of correaltion structure, of type "IND", "CON", "AR1", "CON-d", or "AR1-d"}
+
+\item{mi}{Number of time points for each sample}
+
+\item{K}{Number of responses}
+
+\item{rho}{Correlation parameter, a numeric value between -1 and 1}
+}
+\value{
+Correlation matrix corR
 }
 \description{
-Title
+Get correlation structure
 }

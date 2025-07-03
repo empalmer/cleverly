@@ -13,7 +13,7 @@ test_that("cleverly wrapper works", {
                      Z = Z,
                      subject_ids = sid,
                      time = tid,
-                     lp = 1,
+                     cluster_index = 1,
                      gammas = rep(1, 3),
                      psi_min = 1,
                      tau = 8/100,

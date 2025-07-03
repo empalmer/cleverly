@@ -12,7 +12,7 @@ test_that("Simulation Z", {
                          cor_str = "CON-d",
                          rho = 0.5,
                          prob1 = .5,
-                         Z_type = "continuous",
+                         Z_type = "binary",
                          slope_fxns = list(
                            function(t) cos(2 * pi * t),
                            function(t) cos(2 * pi * t),
@@ -68,7 +68,7 @@ test_that("Simulation Z", {
                   Z = Z,
                   subject_ids = individual,
                   time = time,
-                  cluster_index = 1,
+                  cluster_index = 0,
                   cor_str = "IND",
                   theta = 500,
                   parralel = F,

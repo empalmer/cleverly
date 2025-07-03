@@ -13,6 +13,16 @@ plot_one_cluster_old(
   scales = "fixed",
   Y_counts = NULL
 )
+
+plot_one_cluster_old(
+  res,
+  cluster_val,
+  response_names = NULL,
+  curve_type = "baseline",
+  nrow = 3,
+  scales = "fixed",
+  Y_counts = NULL
+)
 }
 \arguments{
 \item{res}{cleverly result}
@@ -31,7 +41,11 @@ plot_one_cluster_old(
 }
 \value{
 ggplot object for one cluster
+
+ggplot object for one cluster
 }
 \description{
+Plot fits and data for a single cluster
+
 Plot fits and data for a single cluster
 }

@@ -24,7 +24,7 @@
 #' @param j1_j2_list pre-calculated j1_j2 list if AR1.
 #' @param cor_str correlation structure
 #'
-#' @returns
+#' @returns list(beta = beta,r = r,beta_diffs = beta_diffs)
 
 algorithm2 <- function(Y,
                        Y0,

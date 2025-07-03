@@ -11,6 +11,9 @@ correct_cluster_option(res, true_cluster = rep(1:3, each = 4))
 
 \item{true_cluster}{true cluster membership}
 }
+\value{
+Proportion of simulation runs the correct cluster was an option
+}
 \description{
 Get proportion correct cluster possible.
 }

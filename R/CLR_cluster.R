@@ -13,7 +13,7 @@
 #' @param time Vector of numeric time values.
 #' @param cluster_method One of kmeans, hclust, pam
 #'
-#' @returns
+#' @returns res <- list(clusters = clusters,y = y_clr,y_hat = y_hat_df,y_hat_baseline = y_hat_baseline_df,beta0 = beta0,beta1 = beta1)
 CLR_cluster <- function(Y,
                         Z,
                         time,
