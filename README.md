@@ -17,13 +17,32 @@ pak::pak("empalmer/cleverly")
 library(cleverly)
 ```
 
+NOTE! This package is still in development, so be sure to make sure you
+have the most up-to-date version.
+
+Check what version you have installed with:
+
+``` r
+packageVersion("cleverly") 
+```
+
+Then update the package if needed:
+
+``` r
+pak::pkg_install("empalmer/cleverly")
+```
+
+With package updates, the names and format of the output may change, so
+be sure to check the documentation and examples. Clustering results
+should not change, but the format of the output may.
+
 # Example usage:
 
-## Simulate example data (binary)
+## Simulate example data
 
 Simulate compositional count data with longitudinal independence
 structure. This code will simulate 20 samples across 12 responses, using
-a binary external variable. Default arguments to `simulation_data`
+a binary external variable $Z$. Default arguments to `simulation_data`
 simulate 3 baseline clusters with 4 members each.
 
 ``` r
@@ -149,7 +168,7 @@ Visualize the data + clusters
 plot_clusters(res)
 ```
 
-<img src="man/figures/README-all plots-1.png" width="100%" />
+<img src="man/figures/README-all_plots-1.png" width="100%" />
 
 Alternatively, if we want to examine a single cluster:
 
@@ -157,7 +176,7 @@ Alternatively, if we want to examine a single cluster:
 plot_one_cluster(res, cluster_val = 1)
 ```
 
-<img src="man/figures/README-one plot-1.png" width="100%" />
+<img src="man/figures/README-one_plot-1.png" width="100%" />
 
 ## Simulate example data (continuous, slope)
 
@@ -316,4 +335,4 @@ this case under fit, because gamma is too large), it can be changed.
     #> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
     #> generated.
 
-<img src="man/figures/README-toy example-1.png" width="100%" />
+<img src="man/figures/README-toy_example-1.png" width="100%" />

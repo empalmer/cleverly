@@ -36,10 +36,26 @@ pak::pak("empalmer/cleverly")
 library(cleverly)
 ```
 
-# Example usage: 
-## Simulate example data (binary)
+NOTE! This package is still in development, so be sure to make sure you have the most up-to-date version. 
 
-Simulate compositional count data with longitudinal independence structure. This code will simulate 20 samples across 12 responses, using a binary external variable. Default arguments to `simulation_data` simulate 3 baseline clusters with 4 members each. 
+Check what version you have installed with:
+
+```{r, echo = T, eval = F}
+packageVersion("cleverly") 
+```
+
+Then update the package if needed: 
+
+```{r, echo = T, eval = F}
+pak::pkg_install("empalmer/cleverly")
+```
+
+With package updates, the names and format of the output may change, so be sure to check the documentation and examples. Clustering results should not change, but the format of the output may. 
+
+# Example usage: 
+## Simulate example data 
+
+Simulate compositional count data with longitudinal independence structure. This code will simulate 20 samples across 12 responses, using a binary external variable $Z$. Default arguments to `simulation_data` simulate 3 baseline clusters with 4 members each. 
 
 ```{r sim_data}
 set.seed(127)
@@ -67,7 +83,7 @@ We now run the `cleverly` algorithm, specifying the commonly needed arguments. H
 
 We set `cluster_index` to 0 because we want to cluster on the baseline values, i.e. when $Z = 0$. If we want to cluster on the slope value, i.e. the effect of $Z$, we would set `cluster_index` to 1. 
 
-```{r run algorithm, cache = T}
+```{r run_algorithm}
 res <- cleverly(Y = Y,
                 Z = Z,
                 subject_ids = individual,
@@ -92,7 +108,7 @@ names(res)
 Since we know the true clusters, we can look at the Rand index, adjusted rand index, jaccard index, classification error rate, and number of clusters:
 
 
-```{r cluster diag}
+```{r cluster_diag}
 get_cluster_diagnostics(res, true_cluster)$cluster_diagnostics
 ```
 
@@ -102,13 +118,13 @@ We selected the exact right clusters!
 
 Visualize the data + clusters 
 
-```{r all plots}
+```{r all_plots}
 plot_clusters(res)
 ```
 
 Alternatively, if we want to examine a single cluster: 
 
-```{r one plot}
+```{r one_plot}
 plot_one_cluster(res, cluster_val = 1)
 ```
 
@@ -184,7 +200,7 @@ We change `cluster_index` to 1 to indicate that we will cluster based on the slo
 
 To plot a slope cluster, we specify `curve_type = "slope"` in the plotting function. We can additionally pass along the response names, as it defaults to 1:nresponses as titles. In the case of a continuous external variable and slope clustering, we also have to pass along the original counts, which are stored in `Y_counts`.
 
-```{r slope plot}
+```{r slope_plot}
 # plot_clusters(res_cont,
 #               curve_type = "slope",
 #               response_names = paste0("Response ", 1:12),
@@ -197,7 +213,7 @@ To plot a slope cluster, we specify `curve_type = "slope"` in the plotting funct
 
 ### Too small hyper parameter range
 
-```{r too_small_psi, cache = T}
+```{r too_small_psi}
 res <- cleverly(Y = Y,
                 Z = Z,
                 subject_ids = individual,
@@ -214,7 +230,7 @@ We get a warning, increase the range between `psi_min` and `psi_max`, or increas
 
 ### Poorly fit data
 
-```{r poorly_fit, cache = T}
+```{r poorly_fit}
 res <- cleverly(Y = Y,
                 Z = Z,
                 subject_ids = individual,
@@ -235,7 +251,7 @@ The tuning parameter `gammas` can be specified, but it is usually fine to leave 
 
 ## Toy example clusters:
 
-```{r toy example, echo = F}
+```{r toy_example, echo = F}
 baseline_fxns <- list(
   `Taxon 1 - Baseline Cluster A` = function(t) sin(pi * t),
   `Taxon 2 - Baseline Cluster A` = function(t) sin(pi * t),

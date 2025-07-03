@@ -60,8 +60,9 @@ test_that("Simulation Z", {
   Y <- sim$Y
   Z <- sim$Z
 
-  # Z <- cbind(Z1, rnorm(nrow(Y), mean = 0, sd = 1)) # Add a random covariate
-  # colnames(Z) <- c("Z1", "Z2")
+  # Test 2 Zs
+  Z <- cbind(Z, rnorm(nrow(Y), mean = 0, sd = 1)) # Add a random covariate
+  colnames(Z) <- c("Z1", "Z2")
 
   res <- cleverly(Y = Y,
                   Z = Z,

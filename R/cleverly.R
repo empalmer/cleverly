@@ -288,23 +288,22 @@ cleverly <- function(Y,
 
   return(list(clusters = result$clusters,
               y_hat = result$y_hat,
-              y_hat_init = result$y_hat_init,
-              y_hat_baseline = result$y_hat_baseline,
-              y_hat_refit = result$y_hat_lp_group,
+              # y_hat = result$y_hat,
+              # y_hat_init = result$y_hat_init,
+              # y_hat_baseline = result$y_hat_baseline,
+              # y_hat_refit = result$y_hat_lp_group,
+              BIC = BIC_list,
+              #BIC_ra_group = BIC_ra_group,
               B = result$B,
               Z = Z,
-              BIC = BIC_list,
-              BIC_ra_group = BIC_ra_group,
-              error = result$error,
               rho = result$rho,
               phi = result$phi,
               psi = psis[best],
               v = result$v,
               beta = result$beta,
               possible_clusters = clusters,
-              s = result$s))
-
-
+              #s = result$s,
+              error = result$error,))
 
 }
 
@@ -325,8 +324,6 @@ cleverly <- function(Y,
 #' @export
 format_Z <- function(Z) {
 
-
-  browser()
   if (is.data.frame(Z) | is.matrix(Z)) {
     M <- nrow(Z)
     if (!identical(Z[, 1], rep(1, M))) {

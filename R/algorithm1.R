@@ -313,7 +313,7 @@ algorithm1 <- function(Y,
   }
 
 
-  # After loop ----------------------------------------------------------------
+# Final v, beta, clusters ----------------------------------------------------------------
 
   # Calculate v for the last time (since v is updated before beta in admm)
   v <- update_v(beta = beta,
@@ -375,6 +375,20 @@ algorithm1 <- function(Y,
                                time = time,
                                baseline = T)
 
+  # Overall y_hat data frame, with cluster info.
+  y_returns <- data.frame(
+    y_hat,
+    y_hat_init = y_hat_init$yhat,
+    y_hat_group = y_hat_lp_group$yhat,
+    y_hat_baseline = y_hat_baseline$yhat
+  )
+
+  cluster_key <- data.frame(
+    response_names = factor(1:K,levels = 1:K),
+    cluster = factor(res$clusters$membership)
+    )
+  y_returns <- y_returns %>%
+    dplyr::left_join(cluster_key, by = c("response" = "response_names"))
 
 # BIC ---------------------------------------------------------------------
   BIC <- BIC_cluster(y_ra_df = y_hat,
@@ -394,25 +408,8 @@ algorithm1 <- function(Y,
                               nknots = nknots,
                               order = order)
 
-  # y_hat_counts_group <- estimate_y_counts(beta = beta_group,
-  #                                         B = B,
-  #                                         Z = Z,
-  #                                         K = K,
-  #                                         Y = Y,
-  #                                         time = time)
-  #
-  # BIC_group <- BIC_cluster_group(y_hat_counts = y_hat_counts_group,
-  #                                y_counts = Y,
-  #                                beta_group = beta_group,
-  #                                clusters = clusters,
-  #                                M = M,
-  #                                K = K,
-  #                                nknots = nknots,
-  #                                order = order)
 
-
-# rho ---------------------------------------------------------------------
-
+# Final phi, alpha, rho ---------------------------------------------------------
   alpha <- get_alpha_list(beta = beta,
                           Z = Z,
                           B = B,
@@ -431,7 +428,6 @@ algorithm1 <- function(Y,
                                              mi_vec = mi_vec,
                                              i_index = i_index,
                                              M = M)
-
   rho <- get_rho(pearson_residuals = pearson_residuals,
                  phi = phi,
                  K = K,
@@ -441,13 +437,14 @@ algorithm1 <- function(Y,
                  cor_blocks = cor_blocks,
                  j1_j2_list = j1_j2_list)
 
-# Return ------------------------------------------------------------------
+# Returns ------------------------------------------------------------------
 
   return(list(clusters = clusters,
-              y_hat = y_hat,
-              y_hat_init = y_hat_init,
-              y_hat_lp_group = y_hat_lp_group,
-              y_hat_baseline = y_hat_baseline,
+              y_hat = y_returns,
+              #y_hat = y_hat,
+              #y_hat_init = y_hat_init,
+              #y_hat_lp_group = y_hat_lp_group,
+              #y_hat_baseline = y_hat_baseline,
               #y_hat_counts_group = y_hat_counts_group,
               beta = beta,
               B = B,
@@ -456,7 +453,7 @@ algorithm1 <- function(Y,
               phi = phi,
               BIC = BIC,
               #BIC_group = BIC_group,
-              BIC_ra_group = BIC_ra_group,
+              #BIC_ra_group = BIC_ra_group,
               s = s,
               error = error))
 }
