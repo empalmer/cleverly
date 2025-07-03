@@ -1,6 +1,6 @@
 Package: cleverly
 Title: (Cl)ustering with (E)xternal (V)ariables in (R) with (L)ongitudinal (Y)s
-Version: 0.0.0.9065
+Version: 0.0.0.9066
 Authors@R: 
     person("Emily", "Palmer", , "palmerem@oregonstate.edu", role = c("aut", "cre"))
 Description: (Cl)ustering with (E)xternal (V)ariables in (R) with (L)ongitudinal (Y)s.
