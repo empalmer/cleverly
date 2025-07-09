@@ -228,7 +228,7 @@ res_cont <- cleverly(Y = Y_cont,
                      cor_str = "IND",
                      psi_min = 10,
                      psi_max = 1000,
-                     npsi = 5) 
+                     npsi = 3) 
 ```
 
 We change `cluster_index` to 1 to indicate that we will cluster based on the slope. 

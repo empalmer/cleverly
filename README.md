@@ -273,7 +273,7 @@ res_cont <- cleverly(Y = Y_cont,
                      cor_str = "IND",
                      psi_min = 10,
                      psi_max = 1000,
-                     npsi = 5) 
+                     npsi = 3) 
 #> [1] "Initializing for psi = 10"
 #> [1] "Iteration: 1"
 #> [1] "Iteration: 2"
@@ -282,21 +282,7 @@ res_cont <- cleverly(Y = Y_cont,
 #> [1] "Cluster membership: "
 #>  [1]  1  2  3  4  5  6  7  8  9  9 10  9
 #> [1] "Clusters not changing, exiting"
-#> [1] "Initializing for psi = 257.5"
-#> [1] "Iteration: 1"
-#> [1] "Iteration: 2"
-#> [1] "Iteration: 3"
-#> [1] "Cluster membership: "
-#>  [1] 1 1 1 1 2 3 2 2 4 4 4 4
-#> [1] "Clusters not changing, exiting"
 #> [1] "Initializing for psi = 505"
-#> [1] "Iteration: 1"
-#> [1] "Iteration: 2"
-#> [1] "Iteration: 3"
-#> [1] "Cluster membership: "
-#>  [1] 1 1 1 1 2 2 2 2 3 3 3 3
-#> [1] "Clusters not changing, exiting"
-#> [1] "Initializing for psi = 752.5"
 #> [1] "Iteration: 1"
 #> [1] "Iteration: 2"
 #> [1] "Iteration: 3"
@@ -310,7 +296,7 @@ res_cont <- cleverly(Y = Y_cont,
 #> [1] "Cluster membership: "
 #>  [1] 1 1 1 1 2 2 2 2 2 2 2 2
 #> [1] "Clusters not changing, exiting"
-#> [1] "Chosen psi (via BIC): 257.5"
+#> [1] "Chosen psi (via BIC): 505"
 ```
 
 We change `cluster_index` to 1 to indicate that we will cluster based on
