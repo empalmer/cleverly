@@ -24,8 +24,9 @@ library(cleverly)
 # cleverly
 
 
-Cleverly stands for (Cl)ustering with (E)xternal (V)ariabl(e)s in (R) with (L)ongitudinal (Y)s. 
+`cleverly` stands for (Cl)ustering with (E)xternal (V)ariabl(e)s in (R) with (L)ongitudinal (Y)s. 
 
+`cleverly` is an R package implementing a clustering method for longitudinal microbiome data that incorporates external variables into the modeling framework. Unlike traditional clustering approaches, which often ignore time structure and external influences, cleverly uses a B-spline smoothing approach combined with Dirichlet-multinomial generalized estimating equations (GEEs) to account for compositional and longitudinal correlation. This enables clustering of microbial taxa based on either baseline behavior or their response to external variables, such as environmental or physiological conditions.
 
 # Installation
 
@@ -271,9 +272,7 @@ plot_clusters(res)
 The tuning parameter `gammas` can be specified, but it is usually fine to leave it at the default. If you see the overall fit seems bad (in this case under fit, because gamma is too large), it can be changed.
 
 
-# Algorithm details
-
-## Example setting
+# Clustering details
 
 This algorithm is intended to identify clusters with external variable information included. The below graphic shows potential patterns and their corresponding clusters with a single binary external variable $Z$. 
 
