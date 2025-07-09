@@ -1,7 +1,6 @@
-#' cleverly: A package for computating the notorious bar statistic.
+#' cleverly:
 #'
-#' The mypackage package provides three categories of important functions:
-#' foo, bar and baz.
+#' cleverly is an R package implementing a novel clustering method for longitudinal microbiome data that incorporates external variables into the modeling framework. Unlike traditional clustering approaches, which often ignore time structure and external influences, cleverly uses a B-spline smoothing approach combined with Dirichlet-multinomial generalized estimating equations (GEEs) to account for compositional and temporal correlation in sequencing data. This enables clustering of microbial taxa based on either baseline behavior or their response to external variables, such as environmental or physiological conditions.
 #'
 #' @section Mypackage functions:
 #' The mypackage functions ...

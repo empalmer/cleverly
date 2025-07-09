@@ -111,7 +111,9 @@ A list with the following components:
 }
 \description{
 Runs the Cleverly algorithm over a range of \eqn{\psi} values and selects the optimal one based on BIC.
-Cleverly is a  clustering framework that incorporates external variables into the analysis of longitudinal count-based microbiome data. Our method accommodates the compositional and time-correlated nature of sequencing data and allows for clustering taxa based either on their baseline behavior or on their responses to external perturbations.
+}
+\details{
+cleverly is an R package implementing a novel clustering method for longitudinal microbiome data that incorporates external variables into the modeling framework. Unlike traditional clustering approaches, which often ignore time structure and external influences, cleverly uses a B-spline smoothing approach combined with Dirichlet-multinomial generalized estimating equations (GEEs) to account for compositional and temporal correlation in sequencing data. This enables clustering of microbial taxa based on either baseline behavior or their response to external variables, such as environmental or physiological conditions.
 }
 \examples{
 \dontrun{

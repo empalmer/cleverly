@@ -89,7 +89,9 @@ head(Z)
 ```
 
 $Y$ is a data frame of 12 counts with a column of time and a column of
-individual. Z is a vector of binary external variables.
+individual. Z is a vector of binary external variables. This is the
+expected format of data input for this algorithm. Make sure your usage
+matches this format.
 
 ## Run algorithm:
 
@@ -103,6 +105,10 @@ number (`npsi`) to test (6).
 We set `cluster_index` to 0 because we want to cluster on the baseline
 values, i.e. when $Z = 0$. If we want to cluster on the slope value,
 i.e. the effect of $Z$, we would set `cluster_index` to 1.
+
+We should see console output about the current iteration the algorithm
+is on, and the current value of `psi` being tested. This output is
+mainly for the user to see the progress of the algorithm.
 
 ``` r
 res <- cleverly(Y = Y,
@@ -166,6 +172,9 @@ names(res)
   for checking if the number and range of psi was sufficient
 - `error`: NULL unless there was an error in the algorithm.
 
+`clusters` and `y_hat` are the most useful outputs for further analysis
+and visualization.
+
 ## Diagnostics:
 
 Since we know the true clusters, we can look at the Rand index, adjusted
@@ -203,7 +212,7 @@ plot_one_cluster(res, cluster_val = 1)
 `cleverly` also works with continuous external variables, and can
 additionally cluster on the slope response:
 
-We first simulation data with a continuous external variable, stored in
+We first simulate data with a continuous external variable, stored in
 `sim_cont`, and then run the algorithm.
 
 ``` r
@@ -348,6 +357,22 @@ this case under fit, because gamma is too large), it can be changed.
 
 # Algorithm details
 
-## Toy example clusters:
+## Example setting
+
+This algorithm is intended to identify clusters with external variable
+information included. The below graphic shows potential patterns and
+their corresponding clusters with a single binary external variable $Z$.
+
+The top plot shows patterns of the curves. Taxon 1 and Taxon 2 display a
+similar pattern in baseline response (solid line), so they should be in
+the same cluster. Similarly Taxon 3 and Taxon 4 have a similar baseline
+response.
+
+If we are interested in similar patterns of the effect of an external
+variable (going from status $Z = 0$ to $Z = 1$), this corresponds to
+clustering on the slope. Taxon 1 and Taxon 3 show the same pattern of
+differences between the two values of the external variable $Z$, even
+though their baseline response was different, shown by the same pattern
+in the bottom graphic.
 
 <img src="man/figures/README-toy_example-1.png" width="100%" />

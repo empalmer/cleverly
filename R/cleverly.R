@@ -1,7 +1,8 @@
 #' Cleverly: Main Function of the Package
 #'
 #' Runs the Cleverly algorithm over a range of \eqn{\psi} values and selects the optimal one based on BIC.
-#' Cleverly is a  clustering framework that incorporates external variables into the analysis of longitudinal count-based microbiome data. Our method accommodates the compositional and time-correlated nature of sequencing data and allows for clustering taxa based either on their baseline behavior or on their responses to external perturbations.
+#'
+#' cleverly is an R package implementing a novel clustering method for longitudinal microbiome data that incorporates external variables into the modeling framework. Unlike traditional clustering approaches, which often ignore time structure and external influences, cleverly uses a B-spline smoothing approach combined with Dirichlet-multinomial generalized estimating equations (GEEs) to account for compositional and temporal correlation in sequencing data. This enables clustering of microbial taxa based on either baseline behavior or their response to external variables, such as environmental or physiological conditions.
 #'
 #' @param Y A data frame or matrix of count response variables. Each column should represent a response variable, and each row a subject-time observation. Must be ordered by time. Total number of rows is \eqn{M}. Make sure Y values are counts and are not transformed to RA or rarified. We recommend running \code{cleverly} using less than 50 response variables (columns), otherwise computational time is an issue.
 #' @param Z A vector, data frame, or matrix containing external variables. These external variables must be measured on every subject at every time point. We recommend using no more than 2-3 external variables to ensure clustering is meaningful. Must have \eqn{M} rows and \eqn{L} columns. If \code{Z} is missing, the algorithm will default to the COMPARING approach (clustering without an external variable).
