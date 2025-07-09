@@ -97,9 +97,7 @@ res <- cleverly(Y = Y,
                 cor_str = "IND",
                 psi_min = 10,
                 psi_max = 5000,
-                npsi = 1) 
-
-res$y_hat
+                npsi = 3) 
 ```
 
 ## Results
