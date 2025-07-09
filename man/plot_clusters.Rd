@@ -12,7 +12,8 @@ plot_clusters(
   nrow = 3,
   scales = "fixed",
   EV_color = "grey50",
-  Y_counts = NULL
+  Y_counts = NULL,
+  Z_name = "Z"
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ plot_clusters(
 \item{EV_color}{color for the EV line}
 
 \item{Y_counts}{need if curve_type = "slope}
+
+\item{Z_name}{Character string of column name for Z. Only needed when there are more than one Z columns in the data.}
 }
 \value{
 ggplot object

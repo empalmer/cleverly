@@ -315,47 +315,29 @@ get_performance_summary <- function(list){
 
 plot_sim_data <- function(sim, K = 12){
 
-  binary_Z <- length(unique(sim$Z)) <= 2
-
+  Z <- sim$Z
+  binary_Z <- length(unique(Z)) <= 2
   if (binary_Z) {
-    plot <- sim %>%
-      tidyr::pivot_longer(-c(.data$individual,
-                             .data$time,
-                             .data$Capture.Number,
-                             .data$total_n,
-                             .data$Z)) %>%
-      dplyr::mutate(name = factor(.data$name,
-                                  labels = paste0("Response ", 1:K))) %>%
-      ggplot2::ggplot(ggplot2::aes(x = time,
-                                   y = value,
-                                   color = factor(Z))) +
-      ggplot2::geom_jitter(size = 1) +
-      ggplot2::facet_wrap(~name) +
-      ggplot2::labs(title = "Simulated Data",
-                    color = "Z",
-                    shape = "Z",
-                    y = "Count",
-                    x = "Time")
-  } else {
-    plot <- sim %>%
-      tidyr::pivot_longer(-c(.data$individual,
-                             .data$time,
-                             .data$Capture.Number,
-                             .data$total_n,
-                             .data$Z)) %>%
-      dplyr::mutate(name = factor(.data$name,
-                                  labels = paste0("Response ", 1:K))) %>%
-      ggplot2::ggplot(ggplot2::aes(x = time,
-                                   y = value,
-                                   color = Z)) +
-      ggplot2::geom_jitter(size = 1) +
-      ggplot2::facet_wrap(~name) +
-      ggplot2::labs(title = "Simulated Data",
-                    color = "Z",
-                    shape = "Z",
-                    y = "Count",
-                    x = "Time")
+    Z <- factor(Z)
   }
+
+  plot <- sim$Y %>%
+    dplyr::mutate(Z = Z) %>%
+    tidyr::pivot_longer(-c(.data$individual,
+                           .data$time,
+                           .data$Z)) %>%
+    dplyr::mutate(name = factor(.data$name,
+                                labels = paste0("Response ", 1:K))) %>%
+    ggplot2::ggplot(ggplot2::aes(x = time,
+                                 y = value,
+                                 color = Z)) +
+    ggplot2::geom_jitter(size = 1) +
+    ggplot2::facet_wrap(~name) +
+    ggplot2::labs(title = "Simulated Data",
+                  color = "Z",
+                  shape = "Z",
+                  y = "Count",
+                  x = "Time")
 
   return(plot)
 }

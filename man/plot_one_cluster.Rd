@@ -11,7 +11,8 @@ plot_one_cluster(
   curve_type = "baseline",
   nrow = 3,
   scales = "fixed",
-  Y_counts = NULL
+  Y_counts = NULL,
+  Z_name = "Z"
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ plot_one_cluster(
 \item{scales}{"fixed" or "free_y"}
 
 \item{Y_counts}{needed if curve_type = "slope" and continuous Z}
+
+\item{Z_name}{Character string of column name for Z. Only needed when there are more than one Z columns in the data.}
 }
 \value{
 ggplot object for one cluster

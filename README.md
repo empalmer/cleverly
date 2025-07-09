@@ -99,9 +99,10 @@ head(Z)
 ```
 
 $Y$ is a data frame of 12 counts with a column of time and a column of
-individual. Z is a vector of binary external variables. This is the
-expected format of data input for this algorithm. Make sure your usage
-matches this format.
+individual. In this example, $Z$ is a vector of binary external
+variables, although in general it can be categorical, binary, or
+continuous, and can be a matrix. This is the expected format of data
+input for this algorithm. Make sure your usage matches this format.
 
 ## Run algorithm:
 
@@ -110,7 +111,7 @@ arguments. Here, we specify subject_ids = individual, as individual is
 the id column in Y. We could have alternately given a vector of IDs.
 Similarly for time. `cleverly` needs to select the ideal tuning
 parameter `psi` - so we give a range of `psi_min` to `psi_max`, and a
-number (`npsi`) to test (6).
+number (`npsi`) to test (5).
 
 We set `cluster_index` to 0 because we want to cluster on the baseline
 values, i.e. when $Z = 0$. If we want to cluster on the slope value,
@@ -119,6 +120,8 @@ i.e. the effect of $Z$, we would set `cluster_index` to 1.
 We should see console output about the current iteration the algorithm
 is on, and the current value of `psi` being tested. This output is
 mainly for the user to see the progress of the algorithm.
+
+For more information about the available arguments, run `?cleverly()`.
 
 ``` r
 res <- cleverly(Y = Y,
@@ -129,7 +132,7 @@ res <- cleverly(Y = Y,
                 cor_str = "IND",
                 psi_min = 10,
                 psi_max = 5000,
-                npsi = 3) 
+                npsi = 5) 
 #> [1] "Initializing for psi = 10"
 #> [1] "Iteration: 1"
 #> [1] "Iteration: 2"
@@ -137,7 +140,21 @@ res <- cleverly(Y = Y,
 #> [1] "Cluster membership: "
 #>  [1]  1  2  3  4  5  6  7  8  9 10 11 12
 #> [1] "Clusters not changing, exiting"
+#> [1] "Initializing for psi = 1257.5"
+#> [1] "Iteration: 1"
+#> [1] "Iteration: 2"
+#> [1] "Iteration: 3"
+#> [1] "Cluster membership: "
+#>  [1] 1 1 1 1 2 2 2 2 3 3 3 3
+#> [1] "Clusters not changing, exiting"
 #> [1] "Initializing for psi = 2505"
+#> [1] "Iteration: 1"
+#> [1] "Iteration: 2"
+#> [1] "Iteration: 3"
+#> [1] "Cluster membership: "
+#>  [1] 1 1 1 1 2 2 2 2 3 3 3 3
+#> [1] "Clusters not changing, exiting"
+#> [1] "Initializing for psi = 3752.5"
 #> [1] "Iteration: 1"
 #> [1] "Iteration: 2"
 #> [1] "Iteration: 3"
@@ -151,7 +168,7 @@ res <- cleverly(Y = Y,
 #> [1] "Cluster membership: "
 #>  [1] 1 1 1 1 1 1 1 1 1 1 1 1
 #> [1] "Clusters not changing, exiting"
-#> [1] "Chosen psi (via BIC): 2505"
+#> [1] "Chosen psi (via BIC): 1257.5"
 ```
 
 ## Results
@@ -184,6 +201,22 @@ names(res)
 
 `clusters` and `y_hat` are the most useful outputs for further analysis
 and visualization.
+
+## Clusters:
+
+``` r
+res$clusters
+#> $membership
+#>  [1] 1 1 1 1 2 2 2 2 3 3 3 3
+#> 
+#> $csize
+#> [1] 4 4 4
+#> 
+#> $no
+#> [1] 3
+```
+
+We identified the correct clusters!
 
 ## Diagnostics:
 
@@ -240,7 +273,7 @@ res_cont <- cleverly(Y = Y_cont,
                      cor_str = "IND",
                      psi_min = 10,
                      psi_max = 1000,
-                     npsi = 3) 
+                     npsi = 5) 
 #> [1] "Initializing for psi = 10"
 #> [1] "Iteration: 1"
 #> [1] "Iteration: 2"
@@ -249,7 +282,21 @@ res_cont <- cleverly(Y = Y_cont,
 #> [1] "Cluster membership: "
 #>  [1]  1  2  3  4  5  6  7  8  9  9 10  9
 #> [1] "Clusters not changing, exiting"
+#> [1] "Initializing for psi = 257.5"
+#> [1] "Iteration: 1"
+#> [1] "Iteration: 2"
+#> [1] "Iteration: 3"
+#> [1] "Cluster membership: "
+#>  [1] 1 1 1 1 2 3 2 2 4 4 4 4
+#> [1] "Clusters not changing, exiting"
 #> [1] "Initializing for psi = 505"
+#> [1] "Iteration: 1"
+#> [1] "Iteration: 2"
+#> [1] "Iteration: 3"
+#> [1] "Cluster membership: "
+#>  [1] 1 1 1 1 2 2 2 2 3 3 3 3
+#> [1] "Clusters not changing, exiting"
+#> [1] "Initializing for psi = 752.5"
 #> [1] "Iteration: 1"
 #> [1] "Iteration: 2"
 #> [1] "Iteration: 3"
@@ -263,7 +310,7 @@ res_cont <- cleverly(Y = Y_cont,
 #> [1] "Cluster membership: "
 #>  [1] 1 1 1 1 2 2 2 2 2 2 2 2
 #> [1] "Clusters not changing, exiting"
-#> [1] "Chosen psi (via BIC): 505"
+#> [1] "Chosen psi (via BIC): 257.5"
 ```
 
 We change `cluster_index` to 1 to indicate that we will cluster based on
