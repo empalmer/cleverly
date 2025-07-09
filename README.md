@@ -148,18 +148,23 @@ names(res)
 #> [10] "beta"              "possible_clusters" "error"
 ```
 
-`cleverly` outputs include - `clusters`: A list object that contains the
-cluster membership, number of clusters, and number of responses per
-cluster - `y_hat`: A data frame that includes the fit values, useful for
-plots and visualizations of the results - `BIC`: A list of the BIC
-values for each psi tested - `B`: The B spline basis matrix used for
-spline fits - `Z`: Copy of the external variable inputted - `rho`:
-Estimated correlation parameter - `phi`: Estimated overdispersion
-parameter - `psi`: Chosen hyperparameter - `v`: Copy of the pairwise
-differences - `beta`: Estimated coefficients - `possible_clusters`: List
-of clusters identified for every psi - good for checking if the number
-and range of psi was sufficient - `error`: NULL unless there was an
-error in the algorithm.
+`cleverly` outputs include
+
+- `clusters`: A list object that contains the cluster membership, number
+  of clusters, and number of responses per cluster
+- `y_hat`: A data frame that includes the fit values, useful for plots
+  and visualizations of the results
+- `BIC`: A list of the BIC values for each psi tested
+- `B`: The B spline basis matrix used for spline fits
+- `Z`: Copy of the external variable inputted
+- `rho`: Estimated correlation parameter
+- `phi`: Estimated overdispersion parameter
+- `psi`: Chosen hyperparameter
+- `v`: Copy of the pairwise differences
+- `beta`: Estimated coefficients
+- `possible_clusters`: List of clusters identified for every psi - good
+  for checking if the number and range of psi was sufficient
+- `error`: NULL unless there was an error in the algorithm.
 
 ## Diagnostics:
 
