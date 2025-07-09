@@ -18,6 +18,7 @@ library(ggplot2)
 library(ggh4x)
 library(purrr)
 library(patchwork)
+library(cleverly)
 ```
 
 # cleverly
@@ -96,7 +97,9 @@ res <- cleverly(Y = Y,
                 cor_str = "IND",
                 psi_min = 10,
                 psi_max = 5000,
-                npsi = 3) 
+                npsi = 1) 
+
+res$y_hat
 ```
 
 ## Results
