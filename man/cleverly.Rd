@@ -15,7 +15,6 @@ cleverly(
   psi_min = 500,
   psi_max = 1500,
   npsi = 10,
-  status_bar = F,
   parralel = FALSE,
   nworkers = 2,
   tau = 0.005,
@@ -96,17 +95,23 @@ cleverly(
 \value{
 A list with the following components:
 \describe{
-\item{clusters}{List of Final cluster assignments, which contatins "no" - number of clusters, "csize" - size of each cluster, and "membership" the cluster assignemnt for each response}
-\item{possible_clusters}{Cluster assignments for all tested \eqn{\psi} values.}
-\item{chosen_psi}{Optimal \eqn{\psi} value selected via BIC.}
-\item{y_hat_init}{Data frame with columns time, Z, response, y_hat, and y (relative response), where yhat is the initial fitted values before penalization}
-\item{y_hat}{Data frame with columns time, Z, response, y_hat, and y (relative response), where yhat is the final fitted values.}
-\item{y_hat_baseline}{Data frame with columns time, Z, response, y_hat, and y (relative response), where yhat is the fit for Z = 0}
-\item{y_hat_refit}{Data frame with columns time, Z, response, y_hat, and y (relative response), where yhat is the log linear fit for the entire cluster group}
+\item{clusters}{A list with final cluster results, including \code{no} (number of clusters), \code{csize} (number of responses per cluster), and \code{membership} (cluster assignment for each response).}
+\item{y_hat}{A data frame with columns \code{time}, \code{Z}, \code{response}, \code{cluster}, \code{yhat}, \code{y} (relative abundances), \code{y_hat_baseline} (estimated relative abundances at baseline) containing the final fitted values. Useful for plots and visualizations.}
+\item{BIC}{A list of BIC values corresponding to each tested \eqn{\psi} value.}
+\item{B}{The B-spline basis matrix used in the spline fits.}
+\item{Z}{A copy of the external variable matrix inputted by the user.}
+\item{rho}{Estimated correlation parameter from the model.}
+\item{phi}{Estimated overdispersion parameter from the model.}
+\item{psi}{Optimal \eqn{\psi} value selected via BIC.}
+\item{possible_clusters}{A list of cluster assignments corresponding to all tested \eqn{\psi} values, useful for checking sufficiency of the \eqn{\psi} grid.}
+\item{v}{Matrix of pairwise differences used in the penalization step.}
+\item{beta}{Estimated coefficients for the spline-based model.}
+\item{error}{NULL unless an error occurred during algorithm execution.}
 }
 }
 \description{
 Runs the Cleverly algorithm over a range of \eqn{\psi} values and selects the optimal one based on BIC.
+Cleverly is a  clustering framework that incorporates external variables into the analysis of longitudinal count-based microbiome data. Our method accommodates the compositional and time-correlated nature of sequencing data and allows for clustering taxa based either on their baseline behavior or on their responses to external perturbations.
 }
 \examples{
 \dontrun{

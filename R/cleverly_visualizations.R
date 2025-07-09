@@ -11,7 +11,6 @@
 #' @param nrow number of rows for the facet plot
 #' @param EV_color color for the EV line
 #' @param curve_type = baseline, refit_baseline, or slope
-#' @param Z_type binary or continuous
 #' @param Y_counts need if curve_type = "slope
 #'
 #' @returns ggplot object
@@ -221,10 +220,186 @@ plot_clusters <- function(res,
 
 }
 
+
 #' Plot fits and data for a single cluster
 #'
+#'
 #' @param res cleverly result
-#' @param response_names vector of response naes
+#' @param response_names vector of response naems
+#' @param cluster_val numeric which cluster to plot
+#' @param curve_type "baseline" "refit" or "slope"
+#' @param nrow number of rows for the facet plot to include
+#' @param scales "fixed" or "free_y"
+#' @param Y_counts needed if curve_type = "slope" and continuous Z
+#'
+#' @returns ggplot object for one cluster
+#' @export
+plot_one_cluster <- function(res,
+                             cluster_val,
+                             response_names = NULL,
+                             curve_type = "baseline",
+                             nrow = 3,
+                             scales = "fixed",
+                             Y_counts = NULL){
+
+  if (is.null(response_names)) {
+    response_names <- paste0("Response ", 1:length(res$clusters$membership))
+  }
+
+  if (curve_type == "baseline") {
+    Y <- res$y_hat %>%
+      dplyr::select(-yhat) %>%
+      dplyr::rename(yhat = y_hat_baseline)
+  }
+  if (curve_type == "refit_baseline") {
+    Y <- res$y_hat %>%
+      dplyr::select(-yhat) %>%
+      dplyr::rename(yhat = y_hat_group)
+  }
+  if (curve_type == "slope") {
+    Y <- res$y_hat
+  }
+
+  Z <- Y$Z
+  binary_Z <- length(unique(Z)) <= 2
+
+  if (binary_Z ) {
+    Y <- Y %>% dplyr::mutate(Z = factor(.data$Z))
+  }
+
+
+  response_names <- paste0("Cluster ",
+                           res$clusters$membership,
+                           " - ",
+                           response_names)
+  # baseline ----------------------------------------------------------------
+
+
+  if (curve_type == "baseline" | curve_type == "refit_baseline" ) {
+    # Figure out how to order colors, based on response ordering or cluster ordering
+    # values <- viridis::viridis(length(unique(cluster_key$cluster)))
+
+    Y$Z_color <- rep(min(as.numeric(as.character(Z))), length(Y$Z))
+    if (binary_Z) {
+      Y$Z_color <- factor(Y$Z_color)
+    }
+    plot <- Y %>%
+      dplyr::filter(cluster == cluster_val) %>%
+      ggplot2::ggplot(ggplot2::aes(x = time)) +
+      ggplot2::geom_jitter(ggplot2::aes(y = y, color = Z),
+                           size = 1, alpha = .8) +
+      ggplot2::guides(color = ggplot2::guide_legend("Z")) +
+      ggplot2::geom_line(ggplot2::aes(y = yhat),
+                         color = "black",
+                         linewidth = 1.6) +
+      ggplot2::geom_line(ggplot2::aes(y = yhat,
+                                      color = Z_color),
+                         #color = "#F8766D",
+                         linewidth = 1.5) +
+      # ggnewscale::new_scale_color() +
+      # ggplot2::geom_line(ggplot2::aes(y = yhat,
+      #                                 color = cluster),
+      #                    linewidth = 1.5) +
+      ggplot2::facet_wrap(~response,
+                          scales = scales,
+                          nrow = nrow) +
+      ggplot2::labs(title = paste0("Baseline cluster ", cluster_val),
+                    color = "Cluster")
+  }
+
+
+  # slope, binary ------------------------------------------------------------
+  else if (binary_Z) {
+    # plot clusters
+    plot <- Y %>%
+      dplyr::mutate(clusterZ = ifelse(.data$Z == 0, "Baseline Curve", .data$cluster),
+                    response = factor(.data$response, labels = response_names)) %>%
+      dplyr::filter(cluster == cluster_val) %>%
+      ggplot2::ggplot(ggplot2::aes(x = time)) +
+      ggplot2::geom_jitter(ggplot2::aes(y = y,
+                                        color = factor(Z)),
+                           size = 1, alpha = .8) +
+      ggplot2::guides(color = ggplot2::guide_legend("Z"),
+                      shape = ggplot2::guide_legend("Z")) +
+      ggplot2::geom_line(ggplot2::aes(y = yhat,
+                                      color = factor(Z), group = Z),
+                         linewidth = 1.5) +
+      ggplot2::facet_wrap(~response,
+                          scales = scales,
+                          nrow = nrow) +
+      ggplot2::scale_color_discrete(
+        name = "Cluster",
+        labels = function(x) stringr::str_wrap(x, width = 10)
+      ) +
+      ggplot2::ggtitle(paste0("Slope cluster ", cluster_val))
+    # slope, continuous ------------------------------------------------------------
+  } else if (!binary_Z ) {
+
+    response_val <- res$y_hat$response[1]
+    Z_orig <- res$y_hat$Z
+    Z <- res$y_hat %>%
+      dplyr::filter(response == response_val) %>%
+      dplyr::pull(Z)
+    time <- res$y_hat %>%
+      dplyr::filter(response == response_val) %>%
+      dplyr::pull(time)
+    y_baseline <- res$y_hat_baseline$yhat
+
+    # Round Z into 4 distinct values.
+    bins <- cut(Z, breaks = 3)
+    breaks <- levels(cut(Z, breaks = 3, include.lowest = TRUE)) # string intervals
+    numeric_breaks <- as.numeric(gsub("\\(|\\]|\\[|\\)", "", unlist(strsplit(breaks, ","))))
+    break_mat <- matrix(numeric_breaks, ncol = 2, byrow = TRUE)
+
+    #midpoints <- rowMeans(as.data.frame(break_mat)) %>% round(2)
+    mins <- apply(as.data.frame(break_mat), 1, min) %>% round(2)
+    # Map factor levels to midpoints
+    Z_mid <- mins[as.integer(bins)]
+
+    Z_rounded <- data.frame(rep(1, length(Z_mid)), Z_mid)
+
+    #need original counts of y
+    y_hat <- estimate_y(beta = res$beta,
+                        B = res$B,
+                        Z = as.matrix(Z_rounded),
+                        K = length(response_names),
+                        Y = Y_counts,
+                        time = time,
+                        baseline = F)
+
+    plot <- y_hat %>%
+      dplyr::mutate(response = factor(.data$response, labels = response_names),
+                    Z_orig = Z_orig,
+                    y_baseline = y_baseline) %>%
+      dplyr::filter(cluster == cluster_val) %>%
+      ggplot2::ggplot(ggplot2::aes(x = time)) +
+      ggplot2::geom_jitter(ggplot2::aes(y = y,
+                                        color = Z_orig),
+                           alpha = .6) +
+      ggplot2::labs(color = "Z") +
+      ggplot2::geom_line(ggplot2::aes(y = yhat,
+                                      color = Z_mid,
+                                      group = factor(Z_mid)),
+                         linewidth = 1) +
+      ggplot2::labs(shape = "Cluster") +
+      ggplot2::facet_wrap(~response,
+                          scales = scales,
+                          nrow = nrow) +
+      ggplot2::ggtitle(paste0("Slope cluster ", cluster_val))
+
+  }
+
+  return(plot)
+
+}
+
+
+#' Plot fits and data for a single cluster
+#'
+#' For backwards compatibility with the simulation data and real data for the paper
+#'
+#' @param res cleverly result
+#' @param response_names vector of response naems
 #' @param cluster_val numeric which cluster to plot
 #' @param curve_type "baseline" "refit" or "slope"
 #' @param nrow number of rows for the facet plot to include
@@ -432,7 +607,6 @@ plot_one_cluster_old <- function(res,
 #' @param nrow number of rows for the facet plot
 #' @param EV_color color for the EV line
 #' @param curve_type = baseline, refit_baseline, or slope
-#' @param Z_type binary or continuous
 #' @param Y_counts need if curve_type = "slope
 #'
 #' @returns ggplot object
@@ -903,6 +1077,7 @@ plot_BIC <- function(res, BIC_type = "BIC", psis){
 #'
 #' @param res Cleverly model object
 #' @param response_names Vector of response names.
+#' @param Z_col Z column used
 #'
 #' @returns ggplot object
 #' @export

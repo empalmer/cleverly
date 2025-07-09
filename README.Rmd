@@ -105,7 +105,19 @@ res <- cleverly(Y = Y,
 names(res)
 ```
 
-
+`cleverly` outputs include 
+- `clusters`: A list object that contains the cluster membership, number of clusters, and number of responses per cluster
+- `y_hat`: A data frame that includes the fit values, useful for plots and visualizations of the results
+- `BIC`: A list of the BIC values for each psi tested
+- `B`: The B spline basis matrix used for spline fits 
+- `Z`: Copy of the external variable inputted
+- `rho`: Estimated correlation parameter
+- `phi`: Estimated overdispersion parameter
+- `psi`: Chosen hyperparameter
+- `v`: Copy of the pairwise differences 
+- `beta`: Estimated coefficients
+- `possible_clusters`: List of clusters identified for every psi - good for checking if the number and range of psi was sufficient 
+- `error`: NULL unless there was an error in the algorithm. 
 
 ## Diagnostics: 
 
@@ -140,6 +152,7 @@ plot_one_cluster(res, cluster_val = 1)
 We first simulation data with a continuous external variable, stored in `sim_cont`, and then run the algorithm.
 
 ```{r sim_cont, echo = F}
+set.seed(123)
 sim_cont <- simulation_data(n = 20,
                         range_start = 5000,
                         range_end = 20000,
@@ -196,7 +209,7 @@ res_cont <- cleverly(Y = Y_cont,
                      cluster_index = 1,
                      cor_str = "IND",
                      psi_min = 10,
-                     psi_max = 5000,
+                     psi_max = 1000,
                      npsi = 3) 
 ```
 
@@ -205,10 +218,10 @@ We change `cluster_index` to 1 to indicate that we will cluster based on the slo
 To plot a slope cluster, we specify `curve_type = "slope"` in the plotting function. We can additionally pass along the response names, as it defaults to 1:nresponses as titles. In the case of a continuous external variable and slope clustering, we also have to pass along the original counts, which are stored in `Y_counts`.
 
 ```{r slope_plot}
-# plot_clusters(res_cont,
-#               curve_type = "slope",
-#               response_names = paste0("Response ", 1:12),
-#               Y_counts = Y_cont[,3:14])
+plot_clusters(res_cont,
+              curve_type = "slope",
+              response_names = paste0("Response ", 1:12),
+              Y_counts = Y_cont[,3:14])
 ```
 
 

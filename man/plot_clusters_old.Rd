@@ -31,8 +31,6 @@ plot_clusters_old(
 \item{EV_color}{color for the EV line}
 
 \item{Y_counts}{need if curve_type = "slope}
-
-\item{Z_type}{binary or continuous}
 }
 \value{
 ggplot object

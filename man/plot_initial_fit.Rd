@@ -10,6 +10,8 @@ plot_initial_fit(res, response_names = NULL, Z_col)
 \item{res}{Cleverly model object}
 
 \item{response_names}{Vector of response names.}
+
+\item{Z_col}{Z column used}
 }
 \value{
 ggplot object

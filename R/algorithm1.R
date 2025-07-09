@@ -381,9 +381,10 @@ algorithm1 <- function(Y,
     y_hat_baseline = y_hat_baseline$yhat
   )
 
+
   cluster_key <- data.frame(
     response_names = factor(1:K,levels = 1:K),
-    cluster = factor(res$clusters$membership)
+    cluster = factor(clusters$membership)
     )
   y_returns <- y_returns %>%
     dplyr::left_join(cluster_key, by = c("response" = "response_names"))
